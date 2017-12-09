@@ -1,0 +1,8 @@
+object frmMain: TfrmMain
+  Left = 431
+  Height = 341
+  Top = 262
+  Width = 420
+  Caption = 'Assembler 2 (a2)'
+  LCLVersion = '1.8.0.6'
+end
