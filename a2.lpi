@@ -11,6 +11,14 @@
       <UseXPManifest Value="True"/>
       <Icon Value="0"/>
     </General>
+    <VersionInfo>
+      <UseVersionInfo Value="True"/>
+      <RevisionNr Value="1"/>
+      <BuildNr Value="2017"/>
+      <Language Value="041F"/>
+      <CharSet Value="04E6"/>
+      <StringTable Comments="Assembler 2 (a2)" CompanyName="Fatih KILIÇ" FileDescription="Assembler 2 (a2)" InternalName="a2.exe" OriginalFilename="a2.exe" ProductName="Assembler 2 (a2)"/>
+    </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
     </BuildModes>
@@ -27,7 +35,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="2">
+    <Units Count="4">
       <Unit0>
         <Filename Value="a2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -39,6 +47,14 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit1>
+      <Unit2>
+        <Filename Value="profunc.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="notes.txt"/>
+        <IsPartOfProject Value="True"/>
+      </Unit3>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
