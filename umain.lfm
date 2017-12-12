@@ -1,16 +1,16 @@
 object frmMain: TfrmMain
   Left = 383
-  Height = 512
+  Height = 551
   Top = 239
   Width = 684
   Caption = 'Assembler 2 (a2)'
-  ClientHeight = 512
+  ClientHeight = 551
   ClientWidth = 684
   LCLVersion = '1.8.0.6'
   object sbMain: TStatusBar
     Left = 0
     Height = 23
-    Top = 489
+    Top = 528
     Width = 684
     Panels = <>
   end
@@ -21,27 +21,36 @@ object frmMain: TfrmMain
     Width = 684
     Caption = 'tbMain'
     TabOrder = 1
+    object Button1: TButton
+      Left = 1
+      Height = 22
+      Top = 2
+      Width = 75
+      Caption = 'Button1'
+      OnClick = Button1Click
+      TabOrder = 0
+    end
   end
   object gbAsmLines: TGroupBox
     Left = 0
-    Height = 278
+    Height = 259
     Top = 34
     Width = 684
     Align = alTop
     Caption = 'Assembler Kodları'
-    ClientHeight = 258
+    ClientHeight = 239
     ClientWidth = 680
     TabOrder = 2
     object mmAsmLines: TMemo
       Left = 0
-      Height = 258
+      Height = 239
       Top = 0
       Width = 680
       Align = alClient
       Font.Height = -11
       Font.Name = 'Courier New'
       Lines.Strings = (
-        '; kodları çözümlenecek tüm yönerge (intruction) olasılıkları'
+        '; kodları çözümlenecek tüm yönerge (instruction) olasılıkları'
         '; ------------------------------------------------------------'
         '; ön_ek'
         '; işlem_kodu  yazmaç1, yazmaç2'
@@ -54,8 +63,13 @@ object frmMain: TfrmMain
         '; işlem_kodu  yazmaç1, [yazmaç2 + sabit_değer]'
         '; işlem_kodu  yazmaç1, [yazmaç2 + yazmaç3 * ölçek]'
         '; işlem_kodu  yazmaç1, [yazmaç2 + yazmaç3 + sabit_değer]'
+        'nop'
+        'mov eax,1'
+        'int 3'
+        'lea eax,[eax+ebx*2]'
       )
       ParentFont = False
+      ScrollBars = ssAutoBoth
       TabOrder = 0
     end
   end
@@ -63,30 +77,31 @@ object frmMain: TfrmMain
     Cursor = crVSplit
     Left = 0
     Height = 5
-    Top = 312
+    Top = 293
     Width = 684
     Align = alTop
     ResizeAnchor = akTop
   end
   object gbAsmLinesOutput: TGroupBox
     Left = 0
-    Height = 172
-    Top = 317
+    Height = 230
+    Top = 298
     Width = 684
     Align = alClient
     Caption = 'Assembler Kod Test Çıktısı'
-    ClientHeight = 152
+    ClientHeight = 210
     ClientWidth = 680
     TabOrder = 4
     object mmAsmLinesOutput: TMemo
       Left = 0
-      Height = 152
+      Height = 210
       Top = 0
       Width = 680
       Align = alClient
       Font.Height = -11
       Font.Name = 'Courier New'
       ParentFont = False
+      ScrollBars = ssAutoBoth
       TabOrder = 0
     end
   end

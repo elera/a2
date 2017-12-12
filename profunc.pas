@@ -40,6 +40,33 @@ const
   sREG_ESI = 'ESI';
   sREG_EDI = 'EDI';
 
+function GetOpcode(CodeData: string): string;
+function LowerCaseTR(s: string): string;
+
 implementation
+
+function GetOpcode(CodeData: string): string;
+var
+  Len, i: Integer;
+  s: string;
+begin
+
+  Len := Length(CodeData);
+  i := 1;
+  s := '';
+  repeat
+
+    s += CodeData[i];
+    Inc(i);
+  until (CodeData[i] = ' ') or (i > Len);
+
+  Result := LowerCaseTR(s);
+end;
+
+function LowerCaseTR(s: string): string;
+begin
+
+  Result := LowerCase(s);
+end;
 
 end.
