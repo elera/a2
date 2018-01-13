@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, umain, profunc;
+  Forms, anasayfa, yorumla;
 
 {$R *.res}
 
@@ -15,7 +15,7 @@ begin
   Application.Title:='Assembler 2 (a2)';
   RequireDerivedFormResource:=True;
   Application.Initialize;
-  Application.CreateForm(TfrmMain, frmMain);
+  Application.CreateForm(TfrmAnaSayfa, frmAnaSayfa);
   Application.Run;
 end.
 

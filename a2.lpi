@@ -13,8 +13,8 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <RevisionNr Value="1"/>
-      <BuildNr Value="2017"/>
+      <RevisionNr Value="2"/>
+      <BuildNr Value="2018"/>
       <Language Value="041F"/>
       <CharSet Value="04E6"/>
       <StringTable Comments="Assembler 2 (a2)" CompanyName="Fatih KILIÇ" FileDescription="Assembler 2 (a2)" InternalName="a2.exe" OriginalFilename="a2.exe" ProductName="Assembler 2 (a2)"/>
@@ -30,31 +30,54 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="1">
+    <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="SynEdit"/>
       </Item1>
+      <Item2>
+        <PackageName Value="LCL"/>
+      </Item2>
     </RequiredPackages>
-    <Units Count="4">
+    <Units Count="9">
       <Unit0>
         <Filename Value="a2.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="umain.pas"/>
+        <Filename Value="anasayfa.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="frmMain"/>
+        <ComponentName Value="frmAnaSayfa"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit1>
       <Unit2>
-        <Filename Value="profunc.pas"/>
+        <Filename Value="genel.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="notes.txt"/>
         <IsPartOfProject Value="True"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="yorumla.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="assembly.txt"/>
+        <IsPartOfProject Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="mark.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="tasnif.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="gelisim.txt"/>
+        <IsPartOfProject Value="True"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
