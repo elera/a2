@@ -28,7 +28,7 @@ interface
 uses genel;
 
 type
-  TIfadeKontrol = (ikBaslamadi, ikBasladi, ikTamamlandi);
+  TIfadeDurum = (idBaslamadi, idBasladi, idTamamlandi, idAciklama);
 
 var
   ParametreTip1: TParametreTipi;
@@ -44,17 +44,17 @@ implementation
 uses sysutils, yorumla;
 
 var
-  KomutCalistir: TAsmKomut = nil;
+  iKomutYorumla: TAsmKomut = nil;     // assembler komutuna işaretçi (pointer)
 
 // her bir kod satırının yönlendirildiği, incelenerek parçalara ayrıldığı,
 // assembler kodlarının üretildiği ana bölüm
 function KodUret(KodDizisi: string): Integer;
 var
   Komut: string;
-  UKodDizisi, i, KodDizisiSira: Integer;
+  UKodDizisi, KodDizisiSira: Integer;
   C: Char;
   ParcaNo: Integer;
-  IfadeKontrol: TIfadeKontrol;
+  IfadeDurum: TIfadeDurum;
   SatirSonu: Boolean;
   KontrolKarakteri: Boolean;
 
@@ -70,6 +70,39 @@ var
       Result := StatementState.Sonuc;
     end;
   end;
+
+  function KomutYorumla(AParcaNo: Integer; AKontrolKarakteri: Char;
+    AKomut: string; ASatirSonu: Boolean): Integer;
+  var
+    _i: Integer;
+  begin
+
+    // KomutCalistir'a atama yapılmamışsa (ilk kez çağrılacaksa)
+    if(iKomutYorumla = nil) then
+    begin
+
+      // komutun sıra değeri alınarak var olup olmadığı test ediliyor
+      _i := KomutSiraDegeriniAl(AParcaNo, AKomut);
+
+      // eğer komut, komut listesinde yok ise, hata ile ilgili işlev çağrılıyor
+      if(_i = -1) then
+      begin
+
+        iKomutYorumla := @KomutHata;
+        if(ASatirSonu) then
+          Result := iKomutYorumla(AParcaNo, #255, AKomut, _i)
+        else Result := iKomutYorumla(AParcaNo, AKontrolKarakteri, AKomut, _i)
+      end
+      else
+      begin
+
+        iKomutYorumla := KomutListe[_i];
+        if(ASatirSonu) then
+          Result := iKomutYorumla(AParcaNo, #255, AKomut, _i)
+        else Result := iKomutYorumla(AParcaNo, AKontrolKarakteri, AKomut, _i)
+      end;
+    end else Result := iKomutYorumla(AParcaNo, AKontrolKarakteri, AKomut, _i);
+  end;
 begin
 
   // ilk değer atamaları
@@ -82,13 +115,15 @@ begin
 
   Komut := '';
 
-  IfadeKontrol := ikBaslamadi;
+  IfadeDurum := idBaslamadi;
 
   SatirSonu := False;
 
   HataKodu := 0;
 
-  KomutCalistir := nil;
+  KomutTipi := ktBilinmiyor;
+
+  iKomutYorumla := nil;
 
   repeat
 
@@ -103,56 +138,56 @@ begin
     if(C in [' ', ':', ',', '[', '(', ')', ']', ';', '+', '-', '*', '/']) then
     begin
 
-      //frmMain.mmAsmLinesOutput.Lines.Add('Val1: ' + Data);
       KontrolKarakteri := True;
-      IfadeKontrol := ikTamamlandi;
-    end
-    else if(SatirSonu) then
-    begin
 
-      //Data := Data + C;
-      KontrolKarakteri := False;
-      IfadeKontrol := ikTamamlandi;
+      if(IfadeDurum = idBasladi) and (C = ' ') then
+
+        IfadeDurum := idTamamlandi
+      else if(C = ';') and not(IfadeDurum = idAciklama) then
+      begin
+
+        // açıklama satırından önce sürmekte olan bir komut var ise çalıştır
+        if(Length(Komut) > 0) then
+        begin
+
+          HataKodu := KomutYorumla(ParcaNo, C, Komut, True);
+        end;
+
+        if(HataKodu = 0) then
+        begin
+
+          Aciklama := '';
+          IfadeDurum := idAciklama;
+        end;
+      end;
     end
     else
     begin
 
-      KontrolKarakteri := False;
-    end;
-
-    // kontrol karakteri gelmediği müddetçe Komut içeriği sürekli güncellenecektir
-    if not(KontrolKarakteri) then Komut := Komut + C;
-
-    // bir kontrol karakteri ile ifade tamamlanmış veya satırın sonuna gelindiyse
-    // ilgili ifadeye yorumlamak için işleve yönlendir
-    if(IfadeKontrol = ikTamamlandi) then
-    begin
-
-      // KomutCalistir'a atama yapılmamışsa (ilk kez çağrılacaksa)
-      if(KomutCalistir = nil) then
+      if(IfadeDurum <> idAciklama) then
       begin
 
-        // komutun sıra değeri alınarak var olup olmadığı test ediliyor
-        i := KomutSiraDegeriniAl(ParcaNo, Komut);
+        IfadeDurum := idBasladi;
+        KontrolKarakteri := False;
+      end;
+    end;
 
-        // eğer komut, komut listesinde yok ise, hata ile ilgili işlev çağrılıyor
-        if(i = -1) then
-        begin
+    // komut ve açıklama içerik güncellemeleri
+    if(IfadeDurum = idBasladi) then
+      Komut := Komut + C
+    else if(IfadeDurum = idAciklama) then
+      Aciklama := Aciklama + C;
 
-          KomutCalistir := @KomutHata;
-          if(SatirSonu) then
-            HataKodu := KomutCalistir(ParcaNo, #255, Komut, i)
-          else HataKodu := KomutCalistir(ParcaNo, C, Komut, i)
-        end
-        else
-        begin
+    // satır sonuna gelinmesi ve durumunda komutun yorumlanmasını sağla
+    if(SatirSonu) and (IfadeDurum <> idAciklama) then IfadeDurum := idTamamlandi;
 
-          KomutCalistir := KomutListe[i];
-          if(SatirSonu) then
-            HataKodu := KomutCalistir(ParcaNo, #255, Komut, i)
-          else HataKodu := KomutCalistir(ParcaNo, C, Komut, i)
-        end;
-      end else HataKodu := KomutCalistir(ParcaNo, C, Komut, i);
+    // ifade yorumlanmak üzere tamamlanmış ise komutu yorumla
+    if(IfadeDurum = idTamamlandi) then
+    begin
+
+      if(SatirSonu) then
+        HataKodu := KomutYorumla(ParcaNo, C, Komut, True)
+      else HataKodu := KomutYorumla(ParcaNo, C, Komut, SatirSonu);
 
       // her bir tamamlanan ifade ile;
       // 1. Parça numarası bir artırılıyor
@@ -161,11 +196,15 @@ begin
       //    değişkeni ikBaslamadi değerine çekiliyor
       Inc(ParcaNo);
       Komut := '';
-      IfadeKontrol := ikBaslamadi;
+      IfadeDurum := idBaslamadi;
     end;
 
   // satır sonuna gelinceye veya hata oluncaya kadar döngüye devam et!
   until (KodDizisiSira > UKodDizisi) or (HataKodu > 0);
+
+  // satır SADECE açıklama içeriyorsa ifadenin türünü AÇIKLAMA olarak değiştir
+  if(IfadeDurum = idAciklama) and (KomutTipi = ktBilinmiyor)
+    and (HataKodu = 0) then KomutTipi := ktAciklama;
 
   Result := HataKodu;
 end;

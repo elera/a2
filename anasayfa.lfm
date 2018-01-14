@@ -1,7 +1,7 @@
 object frmAnaSayfa: TfrmAnaSayfa
-  Left = 915
+  Left = 1071
   Height = 580
-  Top = 92
+  Top = 266
   Width = 380
   Caption = 'Assembler 2 (a2)'
   ClientHeight = 560
@@ -37,30 +37,32 @@ object frmAnaSayfa: TfrmAnaSayfa
   end
   object gbAssembler: TGroupBox
     Left = 0
-    Height = 137
+    Height = 168
     Top = 29
     Width = 380
     Align = alTop
     Caption = 'Assembler Kodları'
-    ClientHeight = 117
+    ClientHeight = 148
     ClientWidth = 376
     TabOrder = 2
     object mmAssembler: TMemo
       Left = 0
-      Height = 117
+      Height = 148
       Top = 0
       Width = 376
       Align = alClient
       Font.Height = -11
       Font.Name = 'Courier New'
       Lines.Strings = (
+        ';assembler kod başlangıcı'
         'pushad'
-        'cli'
+        'cli ;kesmeleri durdur'
         'rdtsc'
-        'sti'
+        'sti ;kesmeleri aktifleştir'
         'popad'
         'iretd'
-        'hlt 123'
+        'hlt'
+        ';assembler kod sonu'
       )
       ParentFont = False
       ScrollBars = ssAutoBoth
@@ -71,24 +73,24 @@ object frmAnaSayfa: TfrmAnaSayfa
     Cursor = crVSplit
     Left = 0
     Height = 5
-    Top = 166
+    Top = 197
     Width = 380
     Align = alTop
     ResizeAnchor = akTop
   end
   object gbDurumBilgisi: TGroupBox
     Left = 0
-    Height = 366
-    Top = 171
+    Height = 335
+    Top = 202
     Width = 380
     Align = alClient
     Caption = 'Assembler Kod Test Çıktısı'
-    ClientHeight = 346
+    ClientHeight = 315
     ClientWidth = 376
     TabOrder = 4
     object mmDurumBilgisi: TMemo
       Left = 0
-      Height = 346
+      Height = 315
       Top = 0
       Width = 376
       Align = alClient

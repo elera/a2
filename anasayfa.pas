@@ -78,20 +78,29 @@ begin
       if(IslevSonuc = 0) then
       begin
 
-        // eğer kod, işlem kodu (opcode) ise ...
-        if(KomutTipi = ktIslemKodu) then
-        begin
+        case KomutTipi of
 
-          mmDurumBilgisi.Lines.Add('İşlem Kodu: ' + Komutlar[IslemKodu].Komut);
-          if(ParametreTip1 = ptYazmac) then
+          // eğer kod, işlem kodu (opcode) ise ...
+          ktIslemKodu:
           begin
 
-            mmDurumBilgisi.Lines.Add('Hedef Yazmaç: ' + Yazmaclar[Yazmac1].Ad);
+            mmDurumBilgisi.Lines.Add('İşlem Kodu: ' + Komutlar[IslemKodu].Komut);
+            if(ParametreTip1 = ptYazmac) then
+            begin
+
+              mmDurumBilgisi.Lines.Add('Hedef Yazmaç: ' + Yazmaclar[Yazmac1].Ad);
+            end;
+            if(ParametreTip2 = ptYazmac) then
+            begin
+
+              mmDurumBilgisi.Lines.Add('Kaynak Yazmaç: ' + Yazmaclar[Yazmac2].Ad);
+            end;
           end;
-          if(ParametreTip2 = ptYazmac) then
+          // açıklama satırı
+          ktAciklama:
           begin
 
-            mmDurumBilgisi.Lines.Add('Kaynak Yazmaç: ' + Yazmaclar[Yazmac2].Ad);
+            mmDurumBilgisi.Lines.Add('Açıklama: ' + Aciklama);
           end;
         end;
 

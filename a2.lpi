@@ -38,7 +38,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="9">
+    <Units Count="6">
       <Unit0>
         <Filename Value="a2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -55,29 +55,17 @@
         <IsPartOfProject Value="True"/>
       </Unit2>
       <Unit3>
-        <Filename Value="notes.txt"/>
+        <Filename Value="yorumla.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit3>
       <Unit4>
-        <Filename Value="yorumla.pas"/>
+        <Filename Value="tasnif.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
-        <Filename Value="assembly.txt"/>
-        <IsPartOfProject Value="True"/>
-      </Unit5>
-      <Unit6>
-        <Filename Value="mark.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit6>
-      <Unit7>
-        <Filename Value="tasnif.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit7>
-      <Unit8>
         <Filename Value="gelisim.txt"/>
         <IsPartOfProject Value="True"/>
-      </Unit8>
+      </Unit5>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
