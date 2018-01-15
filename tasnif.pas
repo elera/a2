@@ -28,7 +28,7 @@ interface
 uses genel;
 
 type
-  TIfadeDurum = (idBaslamadi, idBasladi, idTamamlandi, idAciklama);
+  TIfadeDurum = (idBaslamadi, idBasladi, idTamamlandi, idAciklama, idEtiket);
 
 var
   ParametreTip1: TParametreTipi;
@@ -41,7 +41,7 @@ function KodUret(KodDizisi: string): Integer;
 
 implementation
 
-uses sysutils, yorumla;
+uses sysutils, yorumla, anasayfa;
 
 var
   iKomutYorumla: TAsmKomut = nil;     // assembler komutuna işaretçi (pointer)
@@ -56,6 +56,7 @@ var
   ParcaNo: Integer;
   IfadeDurum: TIfadeDurum;
   SatirSonu: Boolean;
+  EtiketTamam: Boolean;     // üstüste etiket değeri girilmesini engellemek için
   KontrolKarakteri: Boolean;
 
   function KomutSiraDegeriniAl(AParcaNo: Integer; AKomut: string): Integer;
@@ -123,6 +124,9 @@ begin
 
   KomutTipi := ktBilinmiyor;
 
+  EtiketTamam := False;
+  Etiket := '';
+
   iKomutYorumla := nil;
 
   repeat
@@ -140,9 +144,31 @@ begin
 
       KontrolKarakteri := True;
 
-      if(IfadeDurum = idBasladi) and (C = ' ') then
+      // etiket kontrol işlemi
+      if(C = ':') and (ParcaNo = 1) and not(EtiketTamam) then
+      begin
+
+        if(Length(Komut) > 0) then
+        begin
+
+          EtiketTamam := True;    // üstüste etiket tanımlamasını engellemek için
+          Etiket := Komut;
+
+          { TODO : etiket kontrolünü gerçekleştiren işlev buraya eklenecektir }
+          if(HataKodu = 0) then
+          begin
+
+            Komut := '';
+            IfadeDurum := idEtiket;
+          end;
+        end else IfadeDurum := idBasladi;
+      end
+      // genel ayıraç. özelleştirilecek
+      else if(IfadeDurum = idBasladi) and (C = ' ') then
 
         IfadeDurum := idTamamlandi
+
+      // açıklama kontrolü
       else if(C = ';') and not(IfadeDurum = idAciklama) then
       begin
 
@@ -178,8 +204,9 @@ begin
     else if(IfadeDurum = idAciklama) then
       Aciklama := Aciklama + C;
 
-    // satır sonuna gelinmesi ve durumunda komutun yorumlanmasını sağla
-    if(SatirSonu) and (IfadeDurum <> idAciklama) then IfadeDurum := idTamamlandi;
+    // satır sonuna gelinmesi durumunda komutun yorumlanmasını sağla
+    if(SatirSonu) and (IfadeDurum <> idAciklama) and (IfadeDurum <> idEtiket) then
+      IfadeDurum := idTamamlandi;
 
     // ifade yorumlanmak üzere tamamlanmış ise komutu yorumla
     if(IfadeDurum = idTamamlandi) then
@@ -205,6 +232,15 @@ begin
   // satır SADECE açıklama içeriyorsa ifadenin türünü AÇIKLAMA olarak değiştir
   if(IfadeDurum = idAciklama) and (KomutTipi = ktBilinmiyor)
     and (HataKodu = 0) then KomutTipi := ktAciklama;
+
+  // ifade içerisinde SADECE etiket veya açıklama + etiket mevcut ise
+  // ifadenin türünü etiket olarak değiştir
+  if(IfadeDurum = idEtiket) and (ParcaNo = 1) and (Length(Etiket) > 0) then
+  begin
+
+    KomutTipi := ktEtiket;
+    HataKodu := 0;
+  end;
 
   Result := HataKodu;
 end;

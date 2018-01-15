@@ -14,7 +14,7 @@ interface
 uses Classes, SysUtils;
 
 type
-  TKomutTipi = (ktBilinmiyor, ktIslemKodu, ktAciklama);
+  TKomutTipi = (ktBilinmiyor, ktIslemKodu, ktAciklama, ktEtiket);
 
 type
   TParametreTipi = (ptYok, ptYazmac, ptBellek);

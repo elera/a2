@@ -1,26 +1,26 @@
 object frmAnaSayfa: TfrmAnaSayfa
-  Left = 1071
-  Height = 580
-  Top = 266
-  Width = 380
+  Left = 1076
+  Height = 618
+  Top = 269
+  Width = 484
   Caption = 'Assembler 2 (a2)'
-  ClientHeight = 560
-  ClientWidth = 380
+  ClientHeight = 598
+  ClientWidth = 484
   Menu = mmAnaMenu
   Position = poScreenCenter
   LCLVersion = '1.8.0.6'
   object sbDurum: TStatusBar
     Left = 0
     Height = 23
-    Top = 537
-    Width = 380
+    Top = 575
+    Width = 484
     Panels = <>
   end
   object tbAnaSayfa: TToolBar
     Left = 0
     Height = 29
     Top = 0
-    Width = 380
+    Width = 484
     ButtonHeight = 24
     ButtonWidth = 24
     Caption = 'tbAnaSayfa'
@@ -37,31 +37,30 @@ object frmAnaSayfa: TfrmAnaSayfa
   end
   object gbAssembler: TGroupBox
     Left = 0
-    Height = 168
+    Height = 190
     Top = 29
-    Width = 380
+    Width = 484
     Align = alTop
     Caption = 'Assembler Kodları'
-    ClientHeight = 148
-    ClientWidth = 376
+    ClientHeight = 170
+    ClientWidth = 480
     TabOrder = 2
     object mmAssembler: TMemo
       Left = 0
-      Height = 148
+      Height = 170
       Top = 0
-      Width = 376
+      Width = 480
       Align = alClient
       Font.Height = -11
       Font.Name = 'Courier New'
       Lines.Strings = (
         ';assembler kod başlangıcı'
-        'pushad'
-        'cli ;kesmeleri durdur'
-        'rdtsc'
-        'sti ;kesmeleri aktifleştir'
-        'popad'
+        ''
+        'başla:'
+        ''
         'iretd'
-        'hlt'
+        ''
+        'son:'
         ';assembler kod sonu'
       )
       ParentFont = False
@@ -73,26 +72,26 @@ object frmAnaSayfa: TfrmAnaSayfa
     Cursor = crVSplit
     Left = 0
     Height = 5
-    Top = 197
-    Width = 380
+    Top = 219
+    Width = 484
     Align = alTop
     ResizeAnchor = akTop
   end
   object gbDurumBilgisi: TGroupBox
     Left = 0
-    Height = 335
-    Top = 202
-    Width = 380
+    Height = 351
+    Top = 224
+    Width = 484
     Align = alClient
     Caption = 'Assembler Kod Test Çıktısı'
-    ClientHeight = 315
-    ClientWidth = 376
+    ClientHeight = 331
+    ClientWidth = 480
     TabOrder = 4
     object mmDurumBilgisi: TMemo
       Left = 0
-      Height = 315
+      Height = 331
       Top = 0
-      Width = 376
+      Width = 480
       Align = alClient
       Font.Height = -11
       Font.Name = 'Courier New'

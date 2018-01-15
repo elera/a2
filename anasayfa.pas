@@ -84,6 +84,9 @@ begin
           ktIslemKodu:
           begin
 
+            // mevcut komut satırının etiket değeri var ise ...
+            if(Length(Etiket) > 0) then mmDurumBilgisi.Lines.Add('Etiket: ' + Etiket);
+
             mmDurumBilgisi.Lines.Add('İşlem Kodu: ' + Komutlar[IslemKodu].Komut);
             if(ParametreTip1 = ptYazmac) then
             begin
@@ -100,7 +103,17 @@ begin
           ktAciklama:
           begin
 
+            // mevcut komut satırının etiket değeri var ise ...
+            if(Length(Etiket) > 0) then mmDurumBilgisi.Lines.Add('Etiket: ' + Etiket);
+
             mmDurumBilgisi.Lines.Add('Açıklama: ' + Aciklama);
+          end;
+          // etiket satırı
+          ktEtiket:
+          begin
+
+            // etiket değeri
+            mmDurumBilgisi.Lines.Add('Etiket: ' + Etiket);
           end;
         end;
 
