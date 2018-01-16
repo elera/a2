@@ -7,6 +7,8 @@ object frmAnaSayfa: TfrmAnaSayfa
   ClientHeight = 598
   ClientWidth = 484
   Menu = mmAnaMenu
+  OnClose = FormClose
+  OnCreate = FormCreate
   Position = poScreenCenter
   LCLVersion = '1.8.0.6'
   object sbDurum: TStatusBar

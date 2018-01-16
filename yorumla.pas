@@ -280,7 +280,7 @@ function KomutHata(ParcaNo: Integer; KontrolKarakteri: Char; Veri1: string;
   Veri2: Integer): Integer;
 begin
 
-  HataAciklama := Veri1;
+  GHataAciklama := Veri1;
   Result := HATA_BILINMEYEN_KOMUT;
 end;
 
@@ -292,7 +292,7 @@ begin
   if(ParcaNo = 1) then
   begin
 
-    KomutTipi := ktIslemKodu;
+    GKomutTipi := ktIslemKodu;
     IslemKodu := Veri2;
     ParametreTip1 := ptYok;
     ParametreTip2 := ptYok;
@@ -301,7 +301,7 @@ begin
   else if(ParcaNo > 1) then
   begin
 
-    HataAciklama := Veri1;
+    GHataAciklama := Veri1;
     Result := HATA_BEKLENMEYEN_IFADE;
   end
 end;
@@ -336,7 +336,7 @@ begin
   else if(ParcaNo = 1) then
   begin
 
-    KomutTipi := ktIslemKodu;
+    GKomutTipi := ktIslemKodu;
     IslemKodu := Veri2;
     //frmMain.mmAsmLinesOutput.Lines.Add('Parça No: ' + IntToStr(ParcaNo));
     //frmMain.mmAsmLinesOutput.Lines.Add('Komut: MOV');

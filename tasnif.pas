@@ -34,7 +34,6 @@ var
   ParametreTip1: TParametreTipi;
   ParametreTip2: TParametreTipi;
   IslemKodu, Yazmac1, Yazmac2, Yazmac3, BellekAdresleyenYazmacSayisi, Olcek, HizliDeger: Integer;
-  Aciklama, Etiket: string;
   P1, P2, P3: string;
 
 function KodUret(KodDizisi: string): Integer;
@@ -120,12 +119,12 @@ begin
 
   SatirSonu := False;
 
-  HataKodu := 0;
+  GHataKodu := 0;
 
-  KomutTipi := ktBilinmiyor;
+  GKomutTipi := ktBilinmiyor;
 
   EtiketTamam := False;
-  Etiket := '';
+  GEtiket := '';
 
   iKomutYorumla := nil;
 
@@ -151,16 +150,19 @@ begin
         if(Length(Komut) > 0) then
         begin
 
-          EtiketTamam := True;    // üstüste etiket tanımlamasını engellemek için
-          Etiket := Komut;
+          IfadeDurum := idEtiket;
 
-          { TODO : etiket kontrolünü gerçekleştiren işlev buraya eklenecektir }
-          if(HataKodu = 0) then
+          // etiketin mevcut olup olmadığını gerçekleştir
+          GHataKodu := GEtiketler.Ekle(Komut, 0, False);
+          if(GHataKodu = 0) then
           begin
 
+            GEtiket := Komut;
+            EtiketTamam := True;    // üstüste etiket tanımlamasını engellemek için
             Komut := '';
-            IfadeDurum := idEtiket;
-          end;
+          end else GHataAciklama := Komut;    // hata olması durumunda
+
+          GEtiket := '';
         end else IfadeDurum := idBasladi;
       end
       // genel ayıraç. özelleştirilecek
@@ -176,13 +178,13 @@ begin
         if(Length(Komut) > 0) then
         begin
 
-          HataKodu := KomutYorumla(ParcaNo, C, Komut, True);
+          GHataKodu := KomutYorumla(ParcaNo, C, Komut, True);
         end;
 
-        if(HataKodu = 0) then
+        if(GHataKodu = 0) then
         begin
 
-          Aciklama := '';
+          GAciklama := '';
           IfadeDurum := idAciklama;
         end;
       end;
@@ -202,7 +204,7 @@ begin
     if(IfadeDurum = idBasladi) then
       Komut := Komut + C
     else if(IfadeDurum = idAciklama) then
-      Aciklama := Aciklama + C;
+      GAciklama := GAciklama + C;
 
     // satır sonuna gelinmesi durumunda komutun yorumlanmasını sağla
     if(SatirSonu) and (IfadeDurum <> idAciklama) and (IfadeDurum <> idEtiket) then
@@ -213,8 +215,8 @@ begin
     begin
 
       if(SatirSonu) then
-        HataKodu := KomutYorumla(ParcaNo, C, Komut, True)
-      else HataKodu := KomutYorumla(ParcaNo, C, Komut, SatirSonu);
+        GHataKodu := KomutYorumla(ParcaNo, C, Komut, True)
+      else GHataKodu := KomutYorumla(ParcaNo, C, Komut, SatirSonu);
 
       // her bir tamamlanan ifade ile;
       // 1. Parça numarası bir artırılıyor
@@ -227,22 +229,22 @@ begin
     end;
 
   // satır sonuna gelinceye veya hata oluncaya kadar döngüye devam et!
-  until (KodDizisiSira > UKodDizisi) or (HataKodu > 0);
+  until (KodDizisiSira > UKodDizisi) or (GHataKodu > 0);
 
   // satır SADECE açıklama içeriyorsa ifadenin türünü AÇIKLAMA olarak değiştir
-  if(IfadeDurum = idAciklama) and (KomutTipi = ktBilinmiyor)
-    and (HataKodu = 0) then KomutTipi := ktAciklama;
+  if(IfadeDurum = idAciklama) and (GKomutTipi = ktBilinmiyor)
+    and (GHataKodu = 0) then GKomutTipi := ktAciklama;
 
   // ifade içerisinde SADECE etiket veya açıklama + etiket mevcut ise
   // ifadenin türünü etiket olarak değiştir
-  if(IfadeDurum = idEtiket) and (ParcaNo = 1) and (Length(Etiket) > 0) then
+  if(IfadeDurum = idEtiket) and (ParcaNo = 1) and (Length(GEtiket) > 0) then
   begin
 
-    KomutTipi := ktEtiket;
-    HataKodu := 0;
+    GKomutTipi := ktEtiket;
+    GHataKodu := 0;
   end;
 
-  Result := HataKodu;
+  Result := GHataKodu;
 end;
 
 end.

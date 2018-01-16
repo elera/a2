@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="12">
+    <Units Count="13">
       <Unit0>
         <Filename Value="a2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -27,7 +27,6 @@
         <Filename Value="genel.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="3"/>
-        <CursorPos X="64" Y="17"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit2>
@@ -35,22 +34,21 @@
         <Filename Value="yorumla.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="2"/>
-        <UsageCount Value="183"/>
+        <UsageCount Value="185"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="tasnif.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="1"/>
-        <UsageCount Value="103"/>
+        <UsageCount Value="105"/>
         <Loaded Value="True"/>
       </Unit4>
       <Unit5>
         <Filename Value="gelisim.txt"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="4"/>
-        <CursorPos X="4" Y="5"/>
-        <UsageCount Value="35"/>
+        <UsageCount Value="37"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit5>
@@ -93,126 +91,117 @@
         <EditorIndex Value="-1"/>
         <UsageCount Value="5"/>
       </Unit11>
+      <Unit12>
+        <Filename Value="etiket.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="22"/>
+      </Unit12>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="26" HistoryIndex="25">
       <Position1>
-        <Filename Value="genel.pas"/>
-        <Caret Line="77" Column="61" TopLine="53"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="145" Column="25" TopLine="112"/>
       </Position1>
       <Position2>
-        <Filename Value="yorumla.pas"/>
-        <Caret Line="302" Column="61" TopLine="277"/>
+        <Filename Value="genel.pas"/>
+        <Caret Line="50" Column="13" TopLine="33"/>
       </Position2>
       <Position3>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="205" TopLine="177"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="146" TopLine="114"/>
       </Position3>
       <Position4>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="75" Column="5" TopLine="40"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="53" Column="9" TopLine="40"/>
       </Position4>
       <Position5>
-        <Filename Value="anasayfa.pas"/>
-        <Caret Line="114" Column="43" TopLine="91"/>
+        <Filename Value="tasnif.pas"/>
+        <Caret Line="157" Column="48" TopLine="136"/>
       </Position5>
       <Position6>
-        <Filename Value="anasayfa.pas"/>
+        <Filename Value="genel.pas"/>
+        <Caret Line="50" TopLine="23"/>
       </Position6>
       <Position7>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="44" Column="23" TopLine="26"/>
+        <Filename Value="genel.pas"/>
+        <Caret Line="32" Column="19" TopLine="14"/>
       </Position7>
       <Position8>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="59" Column="19" TopLine="41"/>
+        <Filename Value="genel.pas"/>
+        <Caret Line="49" Column="94" TopLine="32"/>
       </Position8>
       <Position9>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="74" Column="61" TopLine="45"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="53" Column="32" TopLine="40"/>
       </Position9>
       <Position10>
         <Filename Value="tasnif.pas"/>
-        <Caret Line="94" Column="65" TopLine="66"/>
+        <Caret Line="129" Column="31" TopLine="113"/>
       </Position10>
       <Position11>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="102" Column="65" TopLine="74"/>
+        <Filename Value="yorumla.pas"/>
       </Position11>
       <Position12>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="104" Column="65" TopLine="77"/>
+        <Filename Value="yorumla.pas"/>
+        <Caret Line="283" Column="16" TopLine="254"/>
       </Position12>
       <Position13>
         <Filename Value="tasnif.pas"/>
-        <Caret Line="141" Column="23" TopLine="113"/>
+        <Caret Line="163" Column="15" TopLine="137"/>
       </Position13>
       <Position14>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="54" Column="15" TopLine="37"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="134" Column="19" TopLine="121"/>
       </Position14>
       <Position15>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="105" Column="43" TopLine="79"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="141" Column="19" TopLine="128"/>
       </Position15>
       <Position16>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="147" Column="51" TopLine="124"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="70" Column="28" TopLine="65"/>
       </Position16>
       <Position17>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="146" Column="15" TopLine="128"/>
+        <Filename Value="genel.pas"/>
+        <Caret Line="53" Column="3" TopLine="35"/>
       </Position17>
       <Position18>
         <Filename Value="tasnif.pas"/>
-        <Caret Line="44" Column="33" TopLine="37"/>
+        <Caret Line="163" Column="29" TopLine="141"/>
       </Position18>
       <Position19>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="218" Column="64" TopLine="188"/>
+        <Filename Value="yorumla.pas"/>
+        <Caret Line="304" Column="28" TopLine="275"/>
       </Position19>
       <Position20>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="197" TopLine="168"/>
+        <Filename Value="genel.pas"/>
+        <Caret Line="53" Column="3" TopLine="35"/>
       </Position20>
       <Position21>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="147" Column="60" TopLine="131"/>
+        <Filename Value="gelisim.txt"/>
+        <Caret Line="5" Column="4"/>
       </Position21>
       <Position22>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="232" Column="73" TopLine="207"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="81" Column="28" TopLine="65"/>
       </Position22>
       <Position23>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="233" Column="49" TopLine="209"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="53" TopLine="46"/>
       </Position23>
       <Position24>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="244" Column="5" TopLine="209"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="52" TopLine="45"/>
       </Position24>
       <Position25>
-        <Filename Value="tasnif.pas"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="34" Column="20" TopLine="17"/>
       </Position25>
       <Position26>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="244" Column="5" TopLine="209"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="18" Column="5"/>
       </Position26>
-      <Position27>
-        <Filename Value="yorumla.pas"/>
-        <Caret Line="300" Column="63" TopLine="275"/>
-      </Position27>
-      <Position28>
-        <Filename Value="anasayfa.pas"/>
-        <Caret Line="101" Column="13"/>
-      </Position28>
-      <Position29>
-        <Filename Value="tasnif.pas"/>
-        <Caret Line="162" Column="31" TopLine="140"/>
-      </Position29>
-      <Position30>
-        <Filename Value="anasayfa.pas"/>
-        <Caret Line="26" Column="32"/>
-      </Position30>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

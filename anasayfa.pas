@@ -29,6 +29,8 @@ type
     sbDurum: TStatusBar;
     tbAnaSayfa: TToolBar;
     tbDerle: TToolButton;
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
+    procedure FormCreate(Sender: TObject);
     procedure miKodDerleClick(Sender: TObject);
   private
   public
@@ -41,7 +43,19 @@ implementation
 
 {$R *.lfm}
 
-uses tasnif, genel, yorumla;
+uses tasnif, genel, yorumla, etiket;
+
+procedure TfrmAnaSayfa.FormCreate(Sender: TObject);
+begin
+
+  GEtiketler := TEtiket.Create;
+end;
+
+procedure TfrmAnaSayfa.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+begin
+
+  GEtiketler.Destroy;
+end;
 
 // kod derleme menüsü
 procedure TfrmAnaSayfa.miKodDerleClick(Sender: TObject);
@@ -50,6 +64,9 @@ var
   HamVeri: string;
   IslevSonuc: Integer;
 begin
+
+  // mevcut etiketleri temizle
+  GEtiketler.Temizle;
 
   // durum nesne içeriğini temizle
   mmDurumBilgisi.Clear;
@@ -78,14 +95,14 @@ begin
       if(IslevSonuc = 0) then
       begin
 
-        case KomutTipi of
+        case GKomutTipi of
 
           // eğer kod, işlem kodu (opcode) ise ...
           ktIslemKodu:
           begin
 
             // mevcut komut satırının etiket değeri var ise ...
-            if(Length(Etiket) > 0) then mmDurumBilgisi.Lines.Add('Etiket: ' + Etiket);
+            if(Length(GEtiket) > 0) then mmDurumBilgisi.Lines.Add('Etiket: ' + GEtiket);
 
             mmDurumBilgisi.Lines.Add('İşlem Kodu: ' + Komutlar[IslemKodu].Komut);
             if(ParametreTip1 = ptYazmac) then
@@ -104,16 +121,16 @@ begin
           begin
 
             // mevcut komut satırının etiket değeri var ise ...
-            if(Length(Etiket) > 0) then mmDurumBilgisi.Lines.Add('Etiket: ' + Etiket);
+            if(Length(GEtiket) > 0) then mmDurumBilgisi.Lines.Add('Etiket: ' + GEtiket);
 
-            mmDurumBilgisi.Lines.Add('Açıklama: ' + Aciklama);
+            mmDurumBilgisi.Lines.Add('Açıklama: ' + GAciklama);
           end;
           // etiket satırı
           ktEtiket:
           begin
 
             // etiket değeri
-            mmDurumBilgisi.Lines.Add('Etiket: ' + Etiket);
+            mmDurumBilgisi.Lines.Add('Etiket: ' + GEtiket);
           end;
         end;
 
@@ -123,7 +140,7 @@ begin
       // satırda hata olması durumunda
       begin
 
-        mmDurumBilgisi.Lines.Add('Hata: ' + HataKodunuAl(IslevSonuc) + ' - ' + HataAciklama);
+        mmDurumBilgisi.Lines.Add('Hata: ' + HataKodunuAl(IslevSonuc) + ' - ' + GHataAciklama);
       end;
     end;
 
