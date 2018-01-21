@@ -1,9 +1,10 @@
 {-------------------------------------------------------------------------------
 
   Dosya: yorumla.pas
+
   İşlev: verileri yorumlayan ve kodlara çeviren işlevleri içerir
-  Tarih: 13/01/2018
-  Bilgi:
+
+  Güncelleme Tarihi: 21/01/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -11,7 +12,7 @@ unit yorumla;
 
 interface
 
-uses Classes, SysUtils;
+uses Classes, SysUtils, genel;
 
 type
   TKomutDurum = record
@@ -34,7 +35,7 @@ type
 
 { assembler komut listesi }
 const
-  TOPLAM_KOMUT = 65;
+  TOPLAM_KOMUT = 66;
   Komutlar: array[0..TOPLAM_KOMUT - 1] of TKomut = (
     (Komut: 'aaa';      ),
     (Komut: 'aas';      ),
@@ -81,6 +82,7 @@ const
     (Komut: 'fxtract';  ),
     (Komut: 'f2xm1';    ),
     (Komut: 'hlt';      ),
+    (Komut: 'int';      ),
     (Komut: 'iret';     ),
     (Komut: 'iretd';    ),
     (Komut: 'lahf';     ),
@@ -140,20 +142,25 @@ const
 
 type
   // tüm assembler komutlarının çağrı yapısı
-  // 1. ParcaNo = komut dizisinin her bir ana kesim / parça numarasıdır
-  //    1.1 ParcaNo = 1, Veri2 değeri olarak komutun kendisini döndürür
-  //    1.2 ParcaNo = -1 = komut dizisini sonuna gelindiğini belirtir
-  // 2. KontrolKarakteri = eğer varsa, dizi içerisindeki ",[()]" gibi kontrol karakteri
-  // 3. Veri1 = eğer varsa, karakter dizisi türünde veri
-  // 4. Veri2 = eğer varsa, sayısal türde veri
-  TAsmKomut = function(ParcaNo: Integer; KontrolKarakteri: Char;
+  // 1. SatirSonu = komut satırının tamamlandığını belirtir
+  // 2. ParcaNo = komut dizisinin her bir ana kesim / parça numarasıdır
+  //    not: ParcaNo = 1, Veri2 değeri olarak komutun sıra numarasını döndürür
+  // 3. VeriTipi = işleve gönderilen veri tipini belirtir
+  // 4. Veri1 = eğer varsa, karakter dizisi türünde veri
+  // 5. Veri2 = eğer varsa, sayısal türde veri
+  TAsmKomut = function(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
     Veri1: string; Veri2: Integer): Integer;
 
 function KomutBilgisiAl(AKomut: string): TKomutDurum;
 function YazmacBilgisiAl(AYazmac: string): TYazmacDurum;
-function KomutHata(ParcaNo: Integer; KontrolKarakteri: Char; Veri1: string; Veri2: Integer): Integer;
-function GenelKomutSeti1(ParcaNo: Integer; KontrolKarakteri: Char; Veri1: string; Veri2: Integer): Integer;
-function KomutMOV(ParcaNo: Integer; KontrolKarakteri: Char; Veri1: string; Veri2: Integer): Integer;
+function KomutHata(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
+  Veri1: string; Veri2: Integer): Integer;
+function GenelKomutSeti1(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
+  Veri1: string; Veri2: Integer): Integer;
+function KomutINT(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
+  Veri1: string; Veri2: Integer): Integer;
+function KomutMOV(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
+  Veri1: string; Veri2: Integer): Integer;
 
 var
   KomutListe: array[0..TOPLAM_KOMUT - 1] of TAsmKomut = (
@@ -202,6 +209,7 @@ var
     @GenelKomutSeti1,           // fxtract
     @GenelKomutSeti1,           // f2xm1
     @GenelKomutSeti1,           // hlt
+    @KomutINT,                  // int
     @GenelKomutSeti1,           // iret
     @GenelKomutSeti1,           // iretd
     @GenelKomutSeti1,           // lahf
@@ -226,7 +234,7 @@ var
 
 implementation
 
-uses anasayfa, genel, tasnif;
+uses anasayfa, tasnif;
 
 // komut sıra değerini geri döndürür
 // bilgi: ileri aşamalarda daha fazla bilgi döndürmek amacıyla KomutBilgisiAl
@@ -276,8 +284,8 @@ begin
 end;
 
 // hata olması durumunda çağrılacak işlev
-function KomutHata(ParcaNo: Integer; KontrolKarakteri: Char; Veri1: string;
-  Veri2: Integer): Integer;
+function KomutHata(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
+  Veri1: string; Veri2: Integer): Integer;
 begin
 
   GHataAciklama := Veri1;
@@ -285,7 +293,7 @@ begin
 end;
 
 // tüm parametresiz komutların ortak çağrı işlevi
-function GenelKomutSeti1(ParcaNo: Integer; KontrolKarakteri: Char;
+function GenelKomutSeti1(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
   Veri1: string; Veri2: Integer): Integer;
 begin
 
@@ -293,9 +301,9 @@ begin
   begin
 
     GKomutTipi := ktIslemKodu;
-    IslemKodu := Veri2;
-    ParametreTip1 := ptYok;
-    ParametreTip2 := ptYok;
+    GIslemKodu := Veri2;
+    GParametreTip1 := ptYok;
+    GParametreTip2 := ptYok;
     Result := 0;
   end
   else if(ParcaNo > 1) then
@@ -306,17 +314,45 @@ begin
   end
 end;
 
+// int komutu
+function KomutINT(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
+  Veri1: string; Veri2: Integer): Integer;
+begin
+
+  if(ParcaNo = 1) then
+  begin
+
+    GKomutTipi := ktIslemKodu;
+    GIslemKodu := Veri2;
+    GParametreTip1 := ptSayisalDeger;
+    GParametreTip2 := ptYok;
+    Result := 0;
+  end
+  else if(ParcaNo = 2) then
+  begin
+
+    GSayisalDeger := Veri2;
+    Result := 0;
+  end
+  else if(ParcaNo > 2) then
+  begin
+
+    GSayisalDeger := Veri2;
+    Result := HATA_BEKLENMEYEN_IFADE;
+  end;
+end;
+
 // işlev üzerinde çalışmalar devam etmektedir...
-function KomutMOV(ParcaNo: Integer; KontrolKarakteri: Char;
+function KomutMOV(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
   Veri1: string; Veri2: Integer): Integer;
 var
   Yazmac: TYazmacDurum;
 begin
 
-  //frmMain.mmAsmLinesOutput.Lines.Add('Veri No: ' + IntToStr(ParcaNo));
-  //frmMain.mmAsmLinesOutput.Lines.Add('Veri: ' + Veri1);
+  //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Veri No: ' + IntToStr(ParcaNo));
+  //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Veri: ' + Veri1);
 
-  if(KontrolKarakteri = #255) then
+  if(ParcaNo = -1) then
   begin
 
     Yazmac := YazmacBilgisiAl(Veri1);
@@ -337,15 +373,15 @@ begin
   begin
 
     GKomutTipi := ktIslemKodu;
-    IslemKodu := Veri2;
-    //frmMain.mmAsmLinesOutput.Lines.Add('Parça No: ' + IntToStr(ParcaNo));
-    //frmMain.mmAsmLinesOutput.Lines.Add('Komut: MOV');
+    GIslemKodu := Veri2;
+    //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Parça No: ' + IntToStr(ParcaNo));
+    //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Komut: MOV');
     Result := 0;
   end
   else if(ParcaNo = 2) {or (ParcaNo = 3)} then
   begin
 
-    if(KontrolKarakteri = ',') then
+    if(VeriTipi = vtVirgul) then
     begin
 
       Yazmac := YazmacBilgisiAl(Veri1);
@@ -358,9 +394,9 @@ begin
       else
       begin
 
-        ParametreTip1 := ptYazmac;
-        Yazmac1 := Yazmac.Sonuc;
-        //frmMain.mmAsmLinesOutput.Lines.Add('Yazmac: ' + IntToStr(Yazmac.Sonuc));
+        GParametreTip1 := ptYazmac;
+        GYazmac1 := Yazmac.Sonuc;
+        //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Yazmac: ' + IntToStr(Yazmac.Sonuc));
         Result := 0;
       end;
     end else Result := 1;
@@ -378,9 +414,9 @@ begin
     else
     begin
 
-      ParametreTip2 := ptYazmac;
-      Yazmac2 := Yazmac.Sonuc;
-      //frmMain.mmAsmLinesOutput.Lines.Add('Yazmac: ' + IntToStr(Yazmac.Sonuc));
+      GParametreTip2 := ptYazmac;
+      GYazmac2 := Yazmac.Sonuc;
+      //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Yazmac: ' + IntToStr(Yazmac.Sonuc));
       Result := 0;
     end;
   end else Result := 1;

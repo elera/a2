@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, anasayfa, yorumla;
+  Forms, anasayfa, yorumla, sayilar, matematik;
 
 {$R *.res}
 
@@ -18,4 +18,3 @@ begin
   Application.CreateForm(TfrmAnaSayfa, frmAnaSayfa);
   Application.Run;
 end.
-

@@ -9,6 +9,8 @@
   Devam Eden Ana Çalışmalar
 ================================================================================
 - tüm hatırlatıcı (mnemonic) kodların ayrıştırma ve yönlendirme işlevleri
+- derleyici tarafından yönetilecek olan ikili / onlu / onaltılı sayı sistemlerinin
+  çoklu aritmetik / parantez önceliği / mantıksal işlemler dahilinde yorumlanması
 
 ================================================================================
   Tamamlanan Ana Çalışmalar

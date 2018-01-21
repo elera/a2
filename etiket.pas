@@ -1,9 +1,10 @@
 {-------------------------------------------------------------------------------
 
   Dosya: etiket.pas
+
   İşlev: proje içerisindeki etiketleri (label) yönetir
-  Tarih: 16/01/2018
-  Bilgi:
+
+  Güncelleme Tarihi: 16/01/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -17,7 +18,7 @@ type
   TEtiketYapisi = record
     Ad: string;
     Adres: Integer;
-    AtamaYapildi: Boolean;    // Adres değerine adres değeri atandı mı?
+    AtamaYapildi: Boolean;    // adres değerine adres değeri atandı mı?
   end;
 
   TEtiket = class

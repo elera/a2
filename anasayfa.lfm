@@ -1,11 +1,11 @@
 object frmAnaSayfa: TfrmAnaSayfa
-  Left = 1076
+  Left = 920
   Height = 618
-  Top = 269
-  Width = 484
+  Top = 52
+  Width = 410
   Caption = 'Assembler 2 (a2)'
   ClientHeight = 598
-  ClientWidth = 484
+  ClientWidth = 410
   Menu = mmAnaMenu
   OnClose = FormClose
   OnCreate = FormCreate
@@ -15,14 +15,14 @@ object frmAnaSayfa: TfrmAnaSayfa
     Left = 0
     Height = 23
     Top = 575
-    Width = 484
+    Width = 410
     Panels = <>
   end
   object tbAnaSayfa: TToolBar
     Left = 0
     Height = 29
     Top = 0
-    Width = 484
+    Width = 410
     ButtonHeight = 24
     ButtonWidth = 24
     Caption = 'tbAnaSayfa'
@@ -41,17 +41,17 @@ object frmAnaSayfa: TfrmAnaSayfa
     Left = 0
     Height = 190
     Top = 29
-    Width = 484
+    Width = 410
     Align = alTop
     Caption = 'Assembler Kodları'
     ClientHeight = 170
-    ClientWidth = 480
+    ClientWidth = 406
     TabOrder = 2
     object mmAssembler: TMemo
       Left = 0
       Height = 170
       Top = 0
-      Width = 480
+      Width = 406
       Align = alClient
       Font.Height = -11
       Font.Name = 'Courier New'
@@ -60,10 +60,12 @@ object frmAnaSayfa: TfrmAnaSayfa
         ''
         'başla:'
         ''
+        'int (1 + (2 + (3 * 4) + (4 + 3) + 2) + 1)'
+        ''
         'iretd'
         ''
         'son:'
-        ';assembler kod sonu'
+        ';assembler kod sonu 25'
       )
       ParentFont = False
       ScrollBars = ssAutoBoth
@@ -75,7 +77,7 @@ object frmAnaSayfa: TfrmAnaSayfa
     Left = 0
     Height = 5
     Top = 219
-    Width = 484
+    Width = 410
     Align = alTop
     ResizeAnchor = akTop
   end
@@ -83,17 +85,17 @@ object frmAnaSayfa: TfrmAnaSayfa
     Left = 0
     Height = 351
     Top = 224
-    Width = 484
+    Width = 410
     Align = alClient
     Caption = 'Assembler Kod Test Çıktısı'
     ClientHeight = 331
-    ClientWidth = 480
+    ClientWidth = 406
     TabOrder = 4
     object mmDurumBilgisi: TMemo
       Left = 0
       Height = 331
       Top = 0
-      Width = 480
+      Width = 406
       Align = alClient
       Font.Height = -11
       Font.Name = 'Courier New'

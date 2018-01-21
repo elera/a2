@@ -1,9 +1,10 @@
 {-------------------------------------------------------------------------------
 
   Dosya: anasayfa.pas
+
   İşlev: program ana sayfası
-  Tarih: 13/01/2018
-  Bilgi:
+
+  Güncelleme Tarihi: 21/01/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -43,17 +44,21 @@ implementation
 
 {$R *.lfm}
 
-uses tasnif, genel, yorumla, etiket;
+uses tasnif, genel, yorumla, etiket, matematik;
 
 procedure TfrmAnaSayfa.FormCreate(Sender: TObject);
 begin
 
+  // çalışma zamanlı nesneler oluşturuluyor
   GEtiketler := TEtiket.Create;
+  GMatematik := TMatematik.Create;
 end;
 
 procedure TfrmAnaSayfa.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
 
+  // çalışma zamanlı oluşturulan nesneler yok ediliyor
+  GMatematik.Destroy;
   GEtiketler.Destroy;
 end;
 
@@ -104,16 +109,30 @@ begin
             // mevcut komut satırının etiket değeri var ise ...
             if(Length(GEtiket) > 0) then mmDurumBilgisi.Lines.Add('Etiket: ' + GEtiket);
 
-            mmDurumBilgisi.Lines.Add('İşlem Kodu: ' + Komutlar[IslemKodu].Komut);
-            if(ParametreTip1 = ptYazmac) then
+            mmDurumBilgisi.Lines.Add('İşlem Kodu: ' + Komutlar[GIslemKodu].Komut);
+
+            // ilk parametre değerleri
+
+            // ilk parametre yazmaç ise
+            if(GParametreTip1 = ptYazmac) then
             begin
 
-              mmDurumBilgisi.Lines.Add('Hedef Yazmaç: ' + Yazmaclar[Yazmac1].Ad);
+              mmDurumBilgisi.Lines.Add('Hedef Yazmaç: ' + Yazmaclar[GYazmac1].Ad);
+            end
+            // ilk parametre sayısal değer ise
+            else if(GParametreTip1 = ptSayisalDeger) then
+            begin
+
+              mmDurumBilgisi.Lines.Add('Sayısal Değer: ' + IntToStr(GSayisalDeger));
             end;
-            if(ParametreTip2 = ptYazmac) then
+
+            // ikinci parametre değerleri
+
+            // ikinci parametre yazmaç ise
+            if(GParametreTip2 = ptYazmac) then
             begin
 
-              mmDurumBilgisi.Lines.Add('Kaynak Yazmaç: ' + Yazmaclar[Yazmac2].Ad);
+              mmDurumBilgisi.Lines.Add('Kaynak Yazmaç: ' + Yazmaclar[GYazmac2].Ad);
             end;
           end;
           // açıklama satırı

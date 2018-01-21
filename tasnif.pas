@@ -1,9 +1,10 @@
 {-------------------------------------------------------------------------------
 
   Dosya: tasnif.pas
+
   İşlev: her bir veri satırının parçalanma ve yönlendirme işlevlerini içerir
-  Tarih: 13/01/2018
-  Bilgi:
+
+  Güncelleme Tarihi: 21/01/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -30,17 +31,11 @@ uses genel;
 type
   TIfadeDurum = (idBaslamadi, idBasladi, idTamamlandi, idAciklama, idEtiket);
 
-var
-  ParametreTip1: TParametreTipi;
-  ParametreTip2: TParametreTipi;
-  IslemKodu, Yazmac1, Yazmac2, Yazmac3, BellekAdresleyenYazmacSayisi, Olcek, HizliDeger: Integer;
-  P1, P2, P3: string;
-
 function KodUret(KodDizisi: string): Integer;
 
 implementation
 
-uses sysutils, yorumla, anasayfa;
+uses sysutils, yorumla, anasayfa, sayilar;
 
 var
   iKomutYorumla: TAsmKomut = nil;     // assembler komutuna işaretçi (pointer)
@@ -55,24 +50,28 @@ var
   ParcaNo: Integer;
   IfadeDurum: TIfadeDurum;
   SatirSonu: Boolean;
-  EtiketTamam: Boolean;     // üstüste etiket değeri girilmesini engellemek için
+  EtiketTamam: Boolean;       // üstüste etiket değeri girilmesini engellemek için
   KontrolKarakteri: Boolean;
+  VeriSayiMi: Boolean;        // sayısal değer algılandığında "doğru" değerini alır
+  SayisalDeger: Integer;      // geçici deger değişkeni
+  SayiToplam: Integer;        // derleyicinin kullanacağı geçici sayısal değer
+  Isleyici: string;           // derleyicinin yapacağı matematiksel işlem
 
   function KomutSiraDegeriniAl(AParcaNo: Integer; AKomut: string): Integer;
   var
-    StatementState: TKomutDurum;
+    KomutDurum: TKomutDurum;
   begin
 
     if(AParcaNo = 1) then
     begin
 
-      StatementState := KomutBilgisiAl(AKomut);
-      Result := StatementState.Sonuc;
+      KomutDurum := KomutBilgisiAl(AKomut);
+      Result := KomutDurum.Sonuc;
     end;
   end;
 
-  function KomutYorumla(AParcaNo: Integer; AKontrolKarakteri: Char;
-    AKomut: string; ASatirSonu: Boolean): Integer;
+  function KomutYorumla(ASatirSonu: Boolean; AParcaNo: Integer; AVeriTipi:
+    TVeriTipi; AVeri1: string; AVeri2: Integer): Integer;
   var
     _i: Integer;
   begin
@@ -82,26 +81,17 @@ var
     begin
 
       // komutun sıra değeri alınarak var olup olmadığı test ediliyor
-      _i := KomutSiraDegeriniAl(AParcaNo, AKomut);
+      _i := KomutSiraDegeriniAl(AParcaNo, AVeri1);
 
       // eğer komut, komut listesinde yok ise, hata ile ilgili işlev çağrılıyor
       if(_i = -1) then
-      begin
+        iKomutYorumla := @KomutHata
+      else iKomutYorumla := KomutListe[_i];
+    end;
 
-        iKomutYorumla := @KomutHata;
-        if(ASatirSonu) then
-          Result := iKomutYorumla(AParcaNo, #255, AKomut, _i)
-        else Result := iKomutYorumla(AParcaNo, AKontrolKarakteri, AKomut, _i)
-      end
-      else
-      begin
-
-        iKomutYorumla := KomutListe[_i];
-        if(ASatirSonu) then
-          Result := iKomutYorumla(AParcaNo, #255, AKomut, _i)
-        else Result := iKomutYorumla(AParcaNo, AKontrolKarakteri, AKomut, _i)
-      end;
-    end else Result := iKomutYorumla(AParcaNo, AKontrolKarakteri, AKomut, _i);
+    if(AParcaNo = 1) then
+      Result := iKomutYorumla(ASatirSonu, AParcaNo, AVeriTipi, AVeri1, _i)
+    else Result := iKomutYorumla(ASatirSonu, AParcaNo, AVeriTipi, AVeri1, AVeri2)
   end;
 begin
 
@@ -126,7 +116,13 @@ begin
   EtiketTamam := False;
   GEtiket := '';
 
+  VeriSayiMi := False;
+  SayiToplam := 0;
+  Isleyici := '+';        // öntanımlı işlem = toplama
+
   iKomutYorumla := nil;
+
+  GMatematik.Temizle;     // mevcut matematisel işlemleri temizle
 
   repeat
 
@@ -161,26 +157,40 @@ begin
             EtiketTamam := True;    // üstüste etiket tanımlamasını engellemek için
             Komut := '';
           end else GHataAciklama := Komut;    // hata olması durumunda
-
-          GEtiket := '';
         end else IfadeDurum := idBasladi;
       end
-      // genel ayıraç. özelleştirilecek
+      // boşluk karakterinin şu aşamdaki işlevi
+      // ilk parçada, birden fazla parametre olması durumunda her zaman boşluk
+      // karakterinin gelmesi gerekmekte. diğer durumlarda kontrol karakteri olarak
+      // algılanması GEREKMEMEKTE. (boşluk karakteri gözardı edilmekte)
       else if(IfadeDurum = idBasladi) and (C = ' ') then
+      begin
 
-        IfadeDurum := idTamamlandi
+        if(ParcaNo = 1) then
+          IfadeDurum := idTamamlandi
+        else IfadeDurum := idBaslamadi;
+      end
+      // açıklama durumunun haricinde tüm bu işleyicilerin çalışma durumu
+      else if((IfadeDurum <> idAciklama) and ((C = '(') or (C = ')') or (C = '+') or
+        (C = '-') or (C = '*') or (C = '/'))) then
+      begin
 
+        Isleyici := C;
+        IfadeDurum := idTamamlandi;
+      end
       // açıklama kontrolü
       else if(C = ';') and not(IfadeDurum = idAciklama) then
       begin
 
-        // açıklama satırından önce sürmekte olan bir komut var ise çalıştır
+        // açıklama satırından önce sürmekte olan bir komut var ise
+        // mevcut komutun yorumlanmasını sağla
         if(Length(Komut) > 0) then
         begin
 
-          GHataKodu := KomutYorumla(ParcaNo, C, Komut, True);
+          GHataKodu := KomutYorumla(True, ParcaNo, vtIslemKodu, Komut, 0);
         end;
 
+        // eğer hata yok ise ifade durumunu AÇIKLAMA olarak belirle
         if(GHataKodu = 0) then
         begin
 
@@ -192,6 +202,8 @@ begin
     else
     begin
 
+      // kontrol karakteri OLMAMASI ve ifadenin açıklama OLMAMASI durumunda
+      // ifadenin durumunu her zaman BAŞLADI olarak belirle
       if(IfadeDurum <> idAciklama) then
       begin
 
@@ -214,22 +226,81 @@ begin
     if(IfadeDurum = idTamamlandi) then
     begin
 
-      if(SatirSonu) then
-        GHataKodu := KomutYorumla(ParcaNo, C, Komut, True)
-      else GHataKodu := KomutYorumla(ParcaNo, C, Komut, SatirSonu);
+      if(ParcaNo = 1) then
+      begin
 
-      // her bir tamamlanan ifade ile;
-      // 1. Parça numarası bir artırılıyor
-      // 2. Komut değeri bir sonraki döngü için sıfırlanıyor
-      // 3. bir sonraki kontrol karakteri ile buraya gelinmesi için IfadeKontrol
-      //    değişkeni ikBaslamadi değerine çekiliyor
-      Inc(ParcaNo);
+        if(SatirSonu) then
+          GHataKodu := KomutYorumla(True, ParcaNo, vtIslemKodu, Komut, 0)
+        else GHataKodu := KomutYorumla(False, ParcaNo, vtIslemKodu, Komut, 0);
+
+        // her bir tamamlanan ifade ile;
+        // 1. Parça numarası bir artırılıyor
+        // 2. Komut değeri bir sonraki döngü için sıfırlanıyor
+        // 3. bir sonraki kontrol karakteri ile buraya gelinmesi için IfadeKontrol
+        //    değişkeni ikBaslamadi değerine çekiliyor
+        Inc(ParcaNo);
+      end
+      else if(ParcaNo > 1) then
+      begin
+
+        // 2. parça (bu kısım) sayısal çoklu değer ve parantez işlemlerinin
+        // gerçekleştirilmesi amacıyla yapılandırılmıştır
+        // test amaçlı olarak int komutunun 2. parametresi olarak kullanılmıştır
+        if(Isleyici = '(') then
+        begin
+
+          if(Length(Komut) > 0) then
+            GHataKodu := GMatematik.ParantezEkle(Isleyici[1], True, StrToInt(Komut))
+          else GHataKodu := GMatematik.ParantezEkle(Isleyici[1], False, 0);
+        end
+        else if(Isleyici = ')') then
+        begin
+
+          if(Length(Komut) > 0) then
+            GMatematik.ParantezEkle(Isleyici[1], True, StrToInt(Komut))
+          else GMatematik.ParantezEkle(Isleyici[1], False, 0);
+        end
+        else
+        begin
+
+          if(Length(Komut) > 0) then
+          begin
+
+            // sayıya çevirme işlemi şu aşamada ondalık sayılarla ilgilidir
+            // sayısal ifade test işlemleri SADECE int komutu üzerinde
+            // gerçekleştirilmiştir. çalışma genişletilecektir.
+            // ikili, onaltılı sayı sistemlerinden başka bellek etiket değerleri
+            // de sayısal ifadelerin içerisinde yer alacaktır
+            if(SayiyaCevir(Komut, SayisalDeger)) then
+            begin
+
+              VeriSayiMi := True;
+              if(Length(Isleyici) > 0) then GMatematik.SayiEkle(Isleyici, True, SayisalDeger);
+            end;
+          end else GMatematik.SayiEkle(Isleyici, False, 0);
+        end;
+
+        // satır sonuna gelinmesi durumunda, işlenen değer ilgili
+        // komuta yönlendirilmektedir
+        if(SatirSonu) then
+        begin
+
+          GHataKodu := GMatematik.Sonuc(SayiToplam);
+          if(GHataKodu = 0) then
+          begin
+
+            GHataKodu := KomutYorumla(True, ParcaNo, vtSayi, Komut, SayiToplam);
+          end;
+        end;
+      end;
+
+      Isleyici := '';
       Komut := '';
       IfadeDurum := idBaslamadi;
     end;
 
   // satır sonuna gelinceye veya hata oluncaya kadar döngüye devam et!
-  until (KodDizisiSira > UKodDizisi) or (GHataKodu > 0);
+  until (SatirSonu) or (GHataKodu > 0);
 
   // satır SADECE açıklama içeriyorsa ifadenin türünü AÇIKLAMA olarak değiştir
   if(IfadeDurum = idAciklama) and (GKomutTipi = ktBilinmiyor)
