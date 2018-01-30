@@ -4,7 +4,7 @@
 
   İşlev: program ana sayfası
 
-  Güncelleme Tarihi: 21/01/2018
+  Güncelleme Tarihi: 30/01/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -44,7 +44,7 @@ implementation
 
 {$R *.lfm}
 
-uses tasnif, genel, yorumla, etiket, matematik;
+uses incele, genel, yorumla, etiket, matematik;
 
 procedure TfrmAnaSayfa.FormCreate(Sender: TObject);
 begin
@@ -93,6 +93,10 @@ begin
       // assembler koduna çevrilecek satır numarasını durum bilgisinde görüntüle
       mmDurumBilgisi.Lines.Add(IntToStr(MevcutSatirSayisi + 1) + '. satır: ' + HamVeri);
 
+      // her 2 değişken tipi de burada yok olarak belirtiliyor
+      GParametreTip1 := ptYok;
+      GParametreTip2 := ptYok;
+
       // ilgili satırın incelendiği / kodların üretildiği ana çağrı
       IslevSonuc := KodUret(HamVeri);
 
@@ -102,39 +106,9 @@ begin
 
         case GKomutTipi of
 
-          // eğer kod, işlem kodu (opcode) ise ...
-          ktIslemKodu:
-          begin
+          // verilerin görüntülenmesi takip kısmına alınmıştır
+          // ktIslemKodu:
 
-            // mevcut komut satırının etiket değeri var ise ...
-            if(Length(GEtiket) > 0) then mmDurumBilgisi.Lines.Add('Etiket: ' + GEtiket);
-
-            mmDurumBilgisi.Lines.Add('İşlem Kodu: ' + Komutlar[GIslemKodu].Komut);
-
-            // ilk parametre değerleri
-
-            // ilk parametre yazmaç ise
-            if(GParametreTip1 = ptYazmac) then
-            begin
-
-              mmDurumBilgisi.Lines.Add('Hedef Yazmaç: ' + Yazmaclar[GYazmac1].Ad);
-            end
-            // ilk parametre sayısal değer ise
-            else if(GParametreTip1 = ptSayisalDeger) then
-            begin
-
-              mmDurumBilgisi.Lines.Add('Sayısal Değer: ' + IntToStr(GSayisalDeger));
-            end;
-
-            // ikinci parametre değerleri
-
-            // ikinci parametre yazmaç ise
-            if(GParametreTip2 = ptYazmac) then
-            begin
-
-              mmDurumBilgisi.Lines.Add('Kaynak Yazmaç: ' + Yazmaclar[GYazmac2].Ad);
-            end;
-          end;
           // açıklama satırı
           ktAciklama:
           begin

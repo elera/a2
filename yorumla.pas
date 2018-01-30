@@ -4,7 +4,7 @@
 
   İşlev: verileri yorumlayan ve kodlara çeviren işlevleri içerir
 
-  Güncelleme Tarihi: 21/01/2018
+  Güncelleme Tarihi: 30/01/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -142,25 +142,24 @@ const
 
 type
   // tüm assembler komutlarının çağrı yapısı
-  // 1. SatirSonu = komut satırının tamamlandığını belirtir
-  // 2. ParcaNo = komut dizisinin her bir ana kesim / parça numarasıdır
+  // 1. ParcaNo = komut dizisinin her bir ana kesim / parça numarasıdır
   //    not: ParcaNo = 1, Veri2 değeri olarak komutun sıra numarasını döndürür
-  // 3. VeriTipi = işleve gönderilen veri tipini belirtir
-  // 4. Veri1 = eğer varsa, karakter dizisi türünde veri
-  // 5. Veri2 = eğer varsa, sayısal türde veri
-  TAsmKomut = function(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
-    Veri1: string; Veri2: Integer): Integer;
+  // 2. VeriTipi = işleve gönderilen veri tipini belirtir
+  // 3. Veri1 = eğer varsa, karakter dizisi türünde veri
+  // 4. Veri2 = eğer varsa, sayısal türde veri
+  TAsmKomut = function(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+    Veri2: Integer): Integer;
 
 function KomutBilgisiAl(AKomut: string): TKomutDurum;
 function YazmacBilgisiAl(AYazmac: string): TYazmacDurum;
-function KomutHata(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
-  Veri1: string; Veri2: Integer): Integer;
-function GenelKomutSeti1(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
-  Veri1: string; Veri2: Integer): Integer;
-function KomutINT(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
-  Veri1: string; Veri2: Integer): Integer;
-function KomutMOV(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
-  Veri1: string; Veri2: Integer): Integer;
+function KomutHata(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+  Veri2: Integer): Integer;
+function GenelKomutSeti1(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+  Veri2: Integer): Integer;
+function KomutINT(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+  Veri2: Integer): Integer;
+function KomutMOV(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+  Veri2: Integer): Integer;
 
 var
   KomutListe: array[0..TOPLAM_KOMUT - 1] of TAsmKomut = (
@@ -234,7 +233,13 @@ var
 
 implementation
 
-uses anasayfa, tasnif;
+uses anasayfa, incele, takip;
+
+// ünite içi genel kullanımlık yerel değişkenler
+var
+  // ifadeyi yorumlayan işlevler tarafından kullanılan genel değişkenler
+  VirgulKullanildi, ArtiIsleyiciKullanildi: Boolean;
+  KoseliParantezSayisi: Integer;
 
 // komut sıra değerini geri döndürür
 // bilgi: ileri aşamalarda daha fazla bilgi döndürmek amacıyla KomutBilgisiAl
@@ -284,8 +289,8 @@ begin
 end;
 
 // hata olması durumunda çağrılacak işlev
-function KomutHata(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
-  Veri1: string; Veri2: Integer): Integer;
+function KomutHata(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+  Veri2: Integer): Integer;
 begin
 
   GHataAciklama := Veri1;
@@ -293,20 +298,24 @@ begin
 end;
 
 // tüm parametresiz komutların ortak çağrı işlevi
-function GenelKomutSeti1(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
-  Veri1: string; Veri2: Integer): Integer;
+function GenelKomutSeti1(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+  Veri2: Integer): Integer;
 begin
 
-  if(ParcaNo = 1) then
+  if(VeriTipi = vtIslemKodu) and (ParcaNo = 1) then
   begin
 
     GKomutTipi := ktIslemKodu;
     GIslemKodu := Veri2;
-    GParametreTip1 := ptYok;
-    GParametreTip2 := ptYok;
     Result := 0;
   end
-  else if(ParcaNo > 1) then
+  else if(VeriTipi = vtSon) then
+  begin
+
+    VerileriGoruntule;
+    Result := 0;
+  end
+  else
   begin
 
     GHataAciklama := Veri1;
@@ -315,110 +324,318 @@ begin
 end;
 
 // int komutu
-function KomutINT(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
-  Veri1: string; Veri2: Integer): Integer;
+function KomutINT(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+  Veri2: Integer): Integer;
 begin
 
-  if(ParcaNo = 1) then
+  if(VeriTipi = vtIslemKodu) and (ParcaNo = 1) then
   begin
 
     GKomutTipi := ktIslemKodu;
     GIslemKodu := Veri2;
+    Result := 0;
+  end
+  else if(VeriTipi = vtSayi) and (ParcaNo = 2) then
+  begin
+
     GParametreTip1 := ptSayisalDeger;
-    GParametreTip2 := ptYok;
+    GIslemKodDegisken := [ikdSabitDeger];
+    GSabitDeger := Veri2;
     Result := 0;
   end
-  else if(ParcaNo = 2) then
+  else if(VeriTipi = vtSon) then
   begin
 
-    GSayisalDeger := Veri2;
+    VerileriGoruntule;
     Result := 0;
   end
-  else if(ParcaNo > 2) then
+  else
   begin
 
-    GSayisalDeger := Veri2;
-    Result := HATA_BEKLENMEYEN_IFADE;
+    GHataAciklama := Veri1;
+    Result := HATA_HATALI_KULLANIM;
   end;
 end;
 
-// işlev üzerinde çalışmalar devam etmektedir...
-function KomutMOV(SatirSonu: Boolean; ParcaNo: Integer; VeriTipi: TVeriTipi;
-  Veri1: string; Veri2: Integer): Integer;
-var
-  Yazmac: TYazmacDurum;
+// mov komutu ve diğer ilgili en karmaşık komutların prototipi
+function KomutMOV(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+  Veri2: Integer): Integer;
 begin
 
-  //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Veri No: ' + IntToStr(ParcaNo));
-  //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Veri: ' + Veri1);
+  {frmAnaSayfa.mmDurumBilgisi.Lines.Add('Parça No: ' + IntToStr(ParcaNo));
+  case VeriTipi of
+    vtIslemKodu: frmAnaSayfa.mmDurumBilgisi.Lines.Add('VT IslemKodu: ' + Komutlar[Veri2].Komut);
+    vtYazmac: frmAnaSayfa.mmDurumBilgisi.Lines.Add('VT Yazmaç: ' + Yazmaclar[Veri2].Ad);
+    vtSayi: frmAnaSayfa.mmDurumBilgisi.Lines.Add('VT Sayı: ' + IntToStr(Veri2));
+    vtVirgul: frmAnaSayfa.mmDurumBilgisi.Lines.Add('VT: vtVirgul');
+    vtArti: frmAnaSayfa.mmDurumBilgisi.Lines.Add('VT: vtArti');
+    vtKPAc: frmAnaSayfa.mmDurumBilgisi.Lines.Add('VT: vtKPAc');
+    vtKPKapat: frmAnaSayfa.mmDurumBilgisi.Lines.Add('VT: vtKPKapat');
+  end;}
 
-  if(ParcaNo = -1) then
+  // ilk parça = işlem kodunun bulunduğu veri (opcode)
+  // ilk parça ile birlikte Veri2 değeri de işlem kodunun sıra değerini içerir
+  if(VeriTipi = vtIslemKodu) then
   begin
 
-    Yazmac := YazmacBilgisiAl(Veri1);
-    if(Yazmac.Sonuc = -1) then
-    begin
+    // işlem kodunun (opcode) her zaman 1. değer olarak gelmesi gerekmektedir
+    if(ParcaNo <> 1) then
 
-      frmAnaSayfa.mmDurumBilgisi.Lines.Add('Bilinmeyen Yazmac!');
-      Result := 1;
-    end
+      Result := HATA_HATALI_KULLANIM
     else
     begin
 
-      frmAnaSayfa.mmDurumBilgisi.Lines.Add('Yazmac: ' + IntToStr(Yazmac.Sonuc));
+      // işlem kodu ile ilgili ilk değer atamaları burada gerçekleştirilir
+      GIslemKodDegisken := [];
+      GKomutTipi := ktIslemKodu;
+      GIslemKodu := Veri2;
+      VirgulKullanildi := False;
+      ArtiIsleyiciKullanildi := False;
+      KoseliParantezSayisi := 0;
+      GYazmacB1OlcekM := False;
+      GYazmacB2OlcekM := False;
       Result := 0;
     end;
   end
-  else if(ParcaNo = 1) then
+  // ÖNEMLİ:
+  // 1. GParametreTip1 ve GParametreTip2 değişkenlerine anasayfa'da ptYok olarak ilk değer atanıyor
+  // 2. GParametreTip1 ve GParametreTip2 değişkenleri vtKPAc kısmında ptBellek olarak atama yapılıyor
+  // 3. Köşeli parantez kontrolü vtKPAc sorgulama kısmında gerçekleştiriliyor
+  // 4. Sabit sayısal değer (imm) ve ölçek değeri (scale) diğer sorgu aşamalarında atanmaktadır
+  else if(VeriTipi = vtYazmac) then
   begin
 
-    GKomutTipi := ktIslemKodu;
-    GIslemKodu := Veri2;
-    //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Parça No: ' + IntToStr(ParcaNo));
-    //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Komut: MOV');
-    Result := 0;
-  end
-  else if(ParcaNo = 2) {or (ParcaNo = 3)} then
-  begin
-
-    if(VeriTipi = vtVirgul) then
+    if(ParcaNo = 2) then
     begin
 
-      Yazmac := YazmacBilgisiAl(Veri1);
-      if(Yazmac.Sonuc = -1) then
+      if(GParametreTip1 = ptYok) then GParametreTip1 := ptYazmac;
+
+      if(GParametreTip1 = ptYazmac) then
       begin
 
-        frmAnaSayfa.mmDurumBilgisi.Lines.Add('Bilinmeyen Yazmac!');
-        Result := 1;
+        GYazmac1 := Veri2;
+        GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodY1];
+        Result := 0;
       end
       else
       begin
 
-        GParametreTip1 := ptYazmac;
-        GYazmac1 := Yazmac.Sonuc;
-        //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Yazmac: ' + IntToStr(Yazmac.Sonuc));
-        Result := 0;
-      end;
-    end else Result := 1;
-  end
-  else if(ParcaNo = 3) then
-  begin
+        if(ikdIslemKodB1 in GIslemKodDegisken) then
+        begin
 
-    Yazmac := YazmacBilgisiAl(Veri1);
-    if(Yazmac.Sonuc = -1) then
+          if(ikdIslemKodB2 in GIslemKodDegisken) then
+          begin
+
+            Result := HATA_HATALI_KULLANIM
+          end
+          else
+          begin
+
+            GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodB2];
+            GYazmacB2 := Veri2;
+            Result := 0;
+          end;
+        end
+        else
+        begin
+
+          GYazmacB1 := Veri2;
+          GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodB1];
+          Result := 0;
+        end;
+      end;
+    end
+    else if(ParcaNo = 3) then
     begin
 
-      frmAnaSayfa.mmDurumBilgisi.Lines.Add('Bilinmeyen Yazmac!');
-      Result := 1;
+      // 3. parça işlenmeden önce virgülün kullanılıp kullanılmadığı test edilmektedir
+      if not VirgulKullanildi then
+      begin
+
+        Result := HATA_HATALI_ISL_KULLANIM;
+      end
+      else
+      begin
+
+        if(GParametreTip2 = ptYok) then GParametreTip2 := ptYazmac;
+
+        if(GParametreTip2 = ptYazmac) then
+        begin
+
+          GYazmac2 := Veri2;
+          GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodY2];
+          Result := 0;
+        end
+        else
+        begin
+
+          if(ikdIslemKodB1 in GIslemKodDegisken) then
+          begin
+
+            if(ikdIslemKodB2 in GIslemKodDegisken) then
+            begin
+
+              Result := HATA_HATALI_KULLANIM
+            end
+            else
+            begin
+
+              GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodB2];
+              GYazmacB2 := Veri2;
+              Result := 0;
+            end;
+          end
+          else
+          begin
+
+            GYazmacB1 := Veri2;
+            GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodB1];
+            Result := 0;
+          end;
+        end;
+      end;
+    end else Result := HATA_HATALI_KULLANIM;
+  end
+  else if(VeriTipi = vtVirgul) then
+  begin
+
+    // virgül kullanılmadan önce:
+    // 1. yazmaç değeri kullanılmamışsa
+    // 2. sabit bellek değeri kullanılmamışsa
+    // 3. ikinci kez virgül kullanılmışsa
+    if not((ikdIslemKodY1 in GIslemKodDegisken) or (ikdIslemKodB1 in GIslemKodDegisken) or
+      (ikdSabitDegerB in GIslemKodDegisken)) then
+
+      Result := HATA_YAZMAC_GEREKLI
+    else if (VirgulKullanildi) then
+
+      Result := HATA_HATALI_KULLANIM
+    else
+    begin
+
+      VirgulKullanildi := True;
+      Result := 0;
+    end;
+  end
+  else if(VeriTipi = vtKPAc) then
+  begin
+
+    // daha önce köşeli parantez kullanılmışsa
+    if(KoseliParantezSayisi > 0) then
+
+      Result := HATA_HATALI_KULLANIM
+    // daha önce bellek adreslemede yazmaç veya bellek sabit değeri kullanılmışsa
+    else if(ikdIslemKodB1 in GIslemKodDegisken) or (ikdSabitDegerB in GIslemKodDegisken) then
+
+      Result := HATA_BELLEKTEN_BELLEGE
+    else
+    begin
+
+      // ParcaNo = 2 = hedef alan, ParcaNo = 3 = kaynak alan
+      if(ParcaNo = 2) then
+        GParametreTip1 := ptBellek
+      else if(ParcaNo = 3) then GParametreTip2 := ptBellek;
+
+      Inc(KoseliParantezSayisi);
+      Result := 0;
+    end;
+  end
+  else if(VeriTipi = vtKPKapat) then
+  begin
+
+    // açılan parantez sayısı kadar parantez kapatılmalıdır
+    if(KoseliParantezSayisi < 1) then
+
+      Result := HATA_HATALI_KULLANIM
+    else
+    begin
+
+      Dec(KoseliParantezSayisi);
+      Result := 0;
+    end;
+  end
+  else if(VeriTipi = vtArti) then
+  begin
+
+    // artı toplam değerinin kullanılması için tek bir köşeli parantez
+    // açılması gerekmekte (bellek adresleme)
+    if(KoseliParantezSayisi <> 1) then
+
+      Result := HATA_HATALI_ISL_KULLANIM
+    else
+    begin
+
+      ArtiIsleyiciKullanildi := True;
+      Result := 0;
+    end;
+  end
+  // ölçek (scale) - bellek adreslemede yazmaç ölçek değeri
+  else if(VeriTipi = vtOlcek) then
+  begin
+
+    if(ikdOlcek in GIslemKodDegisken) then
+    begin
+
+      Result := HATA_OLCEK_ZATEN_KULLANILMIS;
     end
     else
     begin
 
-      GParametreTip2 := ptYazmac;
-      GYazmac2 := Yazmac.Sonuc;
-      //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Yazmac: ' + IntToStr(Yazmac.Sonuc));
-      Result := 0;
+      if(Veri2 = 1) or (Veri2 = 2) or (Veri2 = 4) or (Veri2 = 8) then
+      begin
+
+        GIslemKodDegisken := GIslemKodDegisken + [ikdOlcek];
+        if(ArtiIsleyiciKullanildi) then
+
+          GYazmacB2OlcekM := True
+        else GYazmacB1OlcekM := True;
+
+        GOlcek := Veri2;
+        Result := 0;
+      end
+      else
+      begin
+
+        Result := HATA_HATALI_OLCEK_DEGER;
+      end;
     end;
+  end
+  else if(VeriTipi = vtSayi) then
+  begin
+
+    // ParcaNo 2 veya 3'ün bellek adreslemesi olması durumunda
+    if(GParametreTip1 = ptBellek) or (GParametreTip2 = ptBellek) then
+    begin
+
+      if not(ikdSabitDegerB in GIslemKodDegisken) then
+      begin
+
+        GIslemKodDegisken := GIslemKodDegisken + [ikdSabitDegerB];
+        GSabitDeger := Veri2;
+        Result := 0;
+      end
+      else
+      begin
+
+        Result := HATA_HATALI_KULLANIM;
+      end;
+    end
+    else if(GParametreTip2 = ptYok) and (ParcaNo = 3) then
+    begin
+
+      GParametreTip2 := ptSayisalDeger;
+      GIslemKodDegisken := GIslemKodDegisken + [ikdSabitDeger];
+      GSabitDeger := Veri2;
+      Result := 0;
+    end else Result := HATA_HATALI_KULLANIM;
+  end
+  // son kontroller bu aşamada gerçekleştirilecek
+  else if(VeriTipi = vtSon) then
+  begin
+
+    VerileriGoruntule;
+    //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Son: ' + IntToStr(ParcaNo));
+    Result := 0;
   end else Result := 1;
 end;
 

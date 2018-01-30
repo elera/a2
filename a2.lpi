@@ -13,7 +13,7 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <RevisionNr Value="4"/>
+      <RevisionNr Value="5"/>
       <BuildNr Value="2018"/>
       <Language Value="041F"/>
       <CharSet Value="04E6"/>
@@ -38,7 +38,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="9">
+    <Units Count="10">
       <Unit0>
         <Filename Value="a2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -59,7 +59,7 @@
         <IsPartOfProject Value="True"/>
       </Unit3>
       <Unit4>
-        <Filename Value="tasnif.pas"/>
+        <Filename Value="incele.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
@@ -78,6 +78,10 @@
         <Filename Value="matematik.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit8>
+      <Unit9>
+        <Filename Value="takip.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
