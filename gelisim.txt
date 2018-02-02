@@ -6,23 +6,10 @@
 2. 09.12.2017 tarihinde başlayan projenin tamamlanması 09.12.2018 olarak öngörülmüştür
 
 ================================================================================
-  Devam Eden Ana Çalışmalar
+  Çalışma Listesine Alınan ve / veya Devam Eden Çalışmalar
 ================================================================================
 - tüm hatırlatıcı (mnemonic) kodların ayrıştırma ve yönlendirme işlevleri
-- derleyici tarafından yönetilecek olan ikili / onlu / onaltılı sayı sistemlerinin
+- derleyici tarafından yönetilen ikili / onlu / onaltılı sayı sistem karakter katarının
   çoklu aritmetik / parantez önceliği / mantıksal işlemler dahilinde yorumlanması
-
-================================================================================
-  Tamamlanan Ana Çalışmalar
-================================================================================
-
-
-================================================================================
-  Yapılanlar / Yapılacaklar
-================================================================================
-+ hatırlatıcı (mnemonic) kodların ayrıştırma ve yönlendirme temel işlevleri tamamlandı
-+ 64 adet parametresiz hatırlatıcıların (opcode) ayrıştırma ve yönlendirme işlemi tamamlandı
-- kodların adres hesaplama işlevleri gerçekleştirilecek
-- ikili, onlu, onaltılı sayı sistemlerin kontrol ve denetim işlevleri sağlanacak
 - hatırlatıcı (mnemonic) komutlar dışında kalan türkçe tanımlanacak komutlar için
   küçük - büyük karakter çevrim (utf-8) işlevi tanımlanacak

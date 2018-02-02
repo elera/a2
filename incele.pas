@@ -202,7 +202,7 @@ var
             GMatematik.SayiEkle(SonKullanilanIsleyici, True, SayisalDeger);
             SonKullanilanIsleyici := '+';     // geçici değer
           end;
-        end;
+        end else GHataKodu := HATA_HATALI_SAYISAL_DEGER;
       end else GMatematik.SayiEkle(AIsleyici, False, 0);
     end;
 
@@ -300,12 +300,16 @@ begin
                 begin
 
                   if(KomutUz > 0) then SayisalVeriyiIsle('');
-                  GHataKodu := GMatematik.Sonuc(i);
                   if(GHataKodu = HATA_YOK) then
                   begin
 
-                    SayisalDegerMevcut := False;
-                    GHataKodu := KomutYorumla(ParcaNo, vtSayi, '', i);
+                    GHataKodu := GMatematik.Sonuc(i);
+                    if(GHataKodu = HATA_YOK) then
+                    begin
+
+                      SayisalDegerMevcut := False;
+                      GHataKodu := KomutYorumla(ParcaNo, vtSayi, '', i);
+                    end;
                   end;
                 end;
 
@@ -457,9 +461,13 @@ begin
         begin
 
           SayisalVeriyiIsle('');
-          GHataKodu := GMatematik.Sonuc(i);
           if(GHataKodu = HATA_YOK) then
-            GHataKodu := KomutYorumla(ParcaNo, vtSayi, '', i)
+          begin
+
+            GHataKodu := GMatematik.Sonuc(i);
+            if(GHataKodu = HATA_YOK) then
+              GHataKodu := KomutYorumla(ParcaNo, vtSayi, '', i)
+          end;
         end else GHataKodu := KomutYorumla(ParcaNo, vtKarakterDizisi, Komut, 0);
       end;
     end;

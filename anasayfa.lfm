@@ -1,11 +1,11 @@
 object frmAnaSayfa: TfrmAnaSayfa
-  Left = 810
-  Height = 598
-  Top = 81
-  Width = 528
+  Left = 417
+  Height = 606
+  Top = 216
+  Width = 540
   Caption = 'Assembler 2 (a2)'
-  ClientHeight = 578
-  ClientWidth = 528
+  ClientHeight = 586
+  ClientWidth = 540
   Menu = mmAnaMenu
   OnClose = FormClose
   OnCreate = FormCreate
@@ -14,15 +14,15 @@ object frmAnaSayfa: TfrmAnaSayfa
   object sbDurum: TStatusBar
     Left = 0
     Height = 23
-    Top = 555
-    Width = 528
+    Top = 563
+    Width = 540
     Panels = <>
   end
   object tbAnaSayfa: TToolBar
     Left = 0
     Height = 29
     Top = 0
-    Width = 528
+    Width = 540
     ButtonHeight = 24
     ButtonWidth = 24
     Caption = 'tbAnaSayfa'
@@ -39,29 +39,29 @@ object frmAnaSayfa: TfrmAnaSayfa
   end
   object gbAssembler: TGroupBox
     Left = 0
-    Height = 190
+    Height = 198
     Top = 29
-    Width = 528
+    Width = 540
     Align = alTop
     Caption = 'Assembler Kodları'
-    ClientHeight = 170
-    ClientWidth = 524
+    ClientHeight = 178
+    ClientWidth = 536
     TabOrder = 2
     object mmAssembler: TMemo
       Left = 0
-      Height = 170
+      Height = 178
       Top = 0
-      Width = 524
+      Width = 536
       Align = alClient
       Font.Height = -11
       Font.Name = 'Courier New'
       Lines.Strings = (
         'başla:'
         ''
-        'mov eax,1'
-        'mov eax,[ebx+10+20+((10+1)+(30+20))]'
-        'mov ecx,[esi*4+edi+123]'
-        'int 1 + (2 + (3 * 4) + (4 + 3) + 2) + 1'
+        'mov esi,[eax+110b]'
+        'mov ecx,[esi+0BABAh]'
+        'mov ebp,0ABCDEFh'
+        'int 11b+011h'
         ''
         'iretd'
         ''
@@ -77,26 +77,26 @@ object frmAnaSayfa: TfrmAnaSayfa
     Cursor = crVSplit
     Left = 0
     Height = 5
-    Top = 219
-    Width = 528
+    Top = 227
+    Width = 540
     Align = alTop
     ResizeAnchor = akTop
   end
   object gbDurumBilgisi: TGroupBox
     Left = 0
     Height = 331
-    Top = 224
-    Width = 528
+    Top = 232
+    Width = 540
     Align = alClient
     Caption = 'Assembler Kod Test Çıktısı'
     ClientHeight = 311
-    ClientWidth = 524
+    ClientWidth = 536
     TabOrder = 4
     object mmDurumBilgisi: TMemo
       Left = 0
       Height = 311
       Top = 0
-      Width = 524
+      Width = 536
       Align = alClient
       Font.Height = -11
       Font.Name = 'Courier New'

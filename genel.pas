@@ -35,7 +35,7 @@ type
 
 const
   // 0 numaralı hata kodu, HataKodunuAl işlevinin kendisi için tanımlanmıştır.
-  TOPLAM_HATA_BILGI_UYARI = 14;
+  TOPLAM_HATA_BILGI_UYARI = 15;
   HATA_YOK = 0;
   HATA_BILINMEYEN_HATA_KODU = 1;
   HATA_BILINMEYEN_KOMUT = 2;
@@ -51,6 +51,7 @@ const
   HATA_OLCEK_DEGER_GEREKLI = 12;
   HATA_HATALI_KULLANIM = 13;
   HATA_BELLEKTEN_BELLEGE = 14;
+  HATA_HATALI_SAYISAL_DEGER = 15;
 
   sHATA_BILINMEYEN_HATA_KODU = 'Bilinmeyen hata kodu!';
   sHATA_BILINMEYEN_KOMUT = 'Bilinmeyen komut!';
@@ -66,6 +67,7 @@ const
   sHATA_OLCEK_DEGER_GEREKLI = 'Ölçek değer gerekli!';
   sHATA_HATALI_KULLANIM = 'İşlem kodu hatalı kullanılmakta!';
   sHATA_BELLEKTEN_BELLEGE = 'Bellek bölgesinde diğer bellek bölgesine atama yapamazsınız!';
+  sHATA_HATALI_SAYISAL_DEGER = 'Hatalı sayısal değer!';
 
   BilgiDizisi: array[1..TOPLAM_HATA_BILGI_UYARI] of TBilgi = (
     (Tip: btHata;   Kod: HATA_BILINMEYEN_HATA_KODU;   Aciklama: sHATA_BILINMEYEN_HATA_KODU),
@@ -81,7 +83,8 @@ const
     (Tip: btHata;   Kod: HATA_HATALI_OLCEK_DEGER;     Aciklama: sHATA_HATALI_OLCEK_DEGER),
     (Tip: btHata;   Kod: HATA_OLCEK_DEGER_GEREKLI;    Aciklama: sHATA_OLCEK_DEGER_GEREKLI),
     (Tip: btHata;   Kod: HATA_HATALI_KULLANIM;        Aciklama: sHATA_HATALI_KULLANIM),
-    (Tip: btHata;   Kod: HATA_BELLEKTEN_BELLEGE;      Aciklama: sHATA_BELLEKTEN_BELLEGE)
+    (Tip: btHata;   Kod: HATA_BELLEKTEN_BELLEGE;      Aciklama: sHATA_BELLEKTEN_BELLEGE),
+    (Tip: btHata;   Kod: HATA_HATALI_SAYISAL_DEGER;   Aciklama: sHATA_HATALI_SAYISAL_DEGER)
   );
 
 var
