@@ -30,13 +30,13 @@ interface
 uses genel, Dialogs;
 
 type
-  TIfadeDurum = (idYok, idAciklama, idEtiket, idKPAc, idKPKapat);
+  TIfadeDurum = (idYok, idAciklama, idKPAc, idKPKapat);
 
 function KodUret(KodDizisi: string): Integer;
 
 implementation
 
-uses sysutils, yorumla, anasayfa, sayilar;
+uses sysutils, yorumla, anasayfa, donusum;
 
 var
   iKomutYorumla: TAsmKomut = nil;     // assembler komutuna işaretçi (pointer)
@@ -52,7 +52,6 @@ var
   ParcaNo, i: Integer;
   IfadeDurum: TIfadeDurum;
   SatirSonu: Boolean;
-  EtiketTamam: Boolean;       // üstüste etiket değeri girilmesini engellemek için
   SayisalDeger: Integer;      // geçici deger değişkeni
   KPSayisi: Integer;          // köşeli parantezlerin takibini gerçekleştiren değişken
   SayisalDegerMevcut,         // dizi içerisinde sayısal değer olup olmadığını takip eder
@@ -230,10 +229,9 @@ begin
   KomutUz := 0;
   SonKullanilanIsleyici := '+';
 
-  EtiketTamam := False;
   GEtiket := '';
 
-  GKomutTipi := ktBilinmiyor;
+  GIslemKodAnaBolum := [];
   IfadeDurum := idYok;
 
   iKomutYorumla := nil;
@@ -325,28 +323,34 @@ begin
         end;
       end
       // etiket kontrol işlemi
-      else if(C = ':') and (ParcaNo = 1) and not(EtiketTamam) then
+      else if(C = ':') and (ParcaNo = 1) then
       begin
 
         if(KomutUz > 0) then
         begin
 
-          IfadeDurum := idEtiket;
+          if(ikabEtiket in GIslemKodAnaBolum) then
 
-          // etiketin mevcut olup olmadığını gerçekleştir
-          GHataKodu := GEtiketler.Ekle(Komut, 0, False);
-          if(GHataKodu = HATA_YOK) then
+            GHataKodu := HATA_BIRDEN_FAZLA_ETIKET
+          else
           begin
 
-            GEtiket := Komut;
-            EtiketTamam := True;    // üstüste etiket tanımlamasını engellemek için
-            Komut := '';
-            KomutUz := 0;
-          end else GHataAciklama := Komut;    // hata olması durumunda
+            GIslemKodAnaBolum += [ikabEtiket];
+
+            // etiketin mevcut olup olmadığını gerçekleştir
+            GHataKodu := GEtiketler.Ekle(Komut, 0, False);
+            if(GHataKodu = HATA_YOK) then
+            begin
+
+              GEtiket := Komut;
+              Komut := '';
+              KomutUz := 0;
+            end else GHataAciklama := Komut;    // hata olması durumunda
+          end;
         end;
       end
       // boşluk karakteri SADECE işlem kodunu almak için kullanılıyor
-      else if(C = ' ') and (GKomutTipi = ktBilinmiyor) and (KomutUz > 0) then
+      else if(C = ' ') and not(ikabIslemKodu in GIslemKodAnaBolum) and (KomutUz > 0) then
       begin
 
         GHataKodu := KomutYorumla(ParcaNo, vtBosluk, Komut, 0)
@@ -428,6 +432,7 @@ begin
         if(GHataKodu = HATA_YOK) then
         begin
 
+          GIslemKodAnaBolum += [ikabAciklama];
           GAciklama := '';
           IfadeDurum := idAciklama;
         end;
@@ -476,22 +481,9 @@ begin
   until (SatirSonu) or (GHataKodu > HATA_YOK);
 
   // işlem kodunu işleyen çağrıya, tüm satırın işlendiğine dair sonlandırma mesajı gönder
-  if(GHataKodu = HATA_YOK) and (GKomutTipi = ktIslemKodu) then
+  if(GHataKodu = HATA_YOK) and (ikabIslemKodu in GIslemKodAnaBolum) then
 
-    GHataKodu := KomutYorumla(0, vtSon, '', 0)
-
-  // satır SADECE açıklama içeriyorsa ifadenin türünü AÇIKLAMA olarak değiştir
-  else if(IfadeDurum = idAciklama) and (GKomutTipi = ktBilinmiyor)
-    and (GHataKodu = HATA_YOK) then GKomutTipi := ktAciklama
-
-  // ifade içerisinde SADECE etiket veya açıklama + etiket mevcut ise
-  // ifadenin türünü etiket olarak değiştir
-  else if(IfadeDurum = idEtiket) and (ParcaNo = 1) and (Length(GEtiket) > 0) then
-  begin
-
-    GKomutTipi := ktEtiket;
-    GHataKodu := HATA_YOK;
-  end;
+    GHataKodu := KomutYorumla(0, vtSon, '', 0);
 
   Result := GHataKodu;
 end;

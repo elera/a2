@@ -305,7 +305,7 @@ begin
   if(VeriTipi = vtIslemKodu) and (ParcaNo = 1) then
   begin
 
-    GKomutTipi := ktIslemKodu;
+    GIslemKodAnaBolum += [ikabIslemKodu];
     GIslemKodu := Veri2;
     Result := 0;
   end
@@ -331,7 +331,7 @@ begin
   if(VeriTipi = vtIslemKodu) and (ParcaNo = 1) then
   begin
 
-    GKomutTipi := ktIslemKodu;
+    GIslemKodAnaBolum += [ikabIslemKodu];
     GIslemKodu := Veri2;
     Result := 0;
   end
@@ -387,7 +387,7 @@ begin
 
       // işlem kodu ile ilgili ilk değer atamaları burada gerçekleştirilir
       GIslemKodDegisken := [];
-      GKomutTipi := ktIslemKodu;
+      GIslemKodAnaBolum += [ikabIslemKodu];
       GIslemKodu := Veri2;
       VirgulKullanildi := False;
       ArtiIsleyiciKullanildi := False;

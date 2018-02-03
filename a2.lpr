@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, anasayfa, yorumla, sayilar, matematik, takip;
+  Forms, anasayfa, yorumla, donusum, matematik, takip;
 
 {$R *.res}
 

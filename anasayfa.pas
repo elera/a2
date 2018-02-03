@@ -17,6 +17,9 @@ uses
   StdCtrls, ComCtrls, ExtCtrls, Menus;
 
 type
+
+  { TfrmAnaSayfa }
+
   TfrmAnaSayfa = class(TForm)
     gbAssembler: TGroupBox;
     gbDurumBilgisi: TGroupBox;
@@ -44,7 +47,7 @@ implementation
 
 {$R *.lfm}
 
-uses incele, genel, yorumla, etiket, matematik;
+uses incele, genel, yorumla, etiket, matematik, donusum;
 
 procedure TfrmAnaSayfa.FormCreate(Sender: TObject);
 begin
@@ -80,10 +83,10 @@ begin
   // ilk değer atamaları
   ToplamSatirSayisi := mmAssembler.Lines.Count;
   MevcutSatirSayisi := 0;
-  IslevSonuc := 0;
+  IslevSonuc := HATA_YOK;
 
   // son satıra gelinmediği ve hata olmadığı müddetçe devam et
-  while (MevcutSatirSayisi < ToplamSatirSayisi) and (IslevSonuc = 0) do
+  while (MevcutSatirSayisi < ToplamSatirSayisi) and (IslevSonuc = HATA_YOK) do
   begin
 
     HamVeri := mmAssembler.Lines[MevcutSatirSayisi];
@@ -100,41 +103,9 @@ begin
       // ilgili satırın incelendiği / kodların üretildiği ana çağrı
       IslevSonuc := KodUret(HamVeri);
 
-      // satırda hata olmaması durumunda ...
-      if(IslevSonuc = 0) then
-      begin
-
-        case GKomutTipi of
-
-          // verilerin görüntülenmesi takip kısmına alınmıştır
-          // ktIslemKodu:
-
-          // açıklama satırı
-          ktAciklama:
-          begin
-
-            // mevcut komut satırının etiket değeri var ise ...
-            if(Length(GEtiket) > 0) then mmDurumBilgisi.Lines.Add('Etiket: ' + GEtiket);
-
-            mmDurumBilgisi.Lines.Add('Açıklama: ' + GAciklama);
-          end;
-          // etiket satırı
-          ktEtiket:
-          begin
-
-            // etiket değeri
-            mmDurumBilgisi.Lines.Add('Etiket: ' + GEtiket);
-          end;
-        end;
-
-        mmDurumBilgisi.Lines.Add('');
-      end
-      else
-      // satırda hata olması durumunda
-      begin
-
+      // hata olması durumunda
+      if(IslevSonuc > HATA_YOK) then
         mmDurumBilgisi.Lines.Add('Hata: ' + HataKodunuAl(IslevSonuc) + ' - ' + GHataAciklama);
-      end;
     end;
 
     // bir sonraki satıra geçiş yap

@@ -15,7 +15,9 @@ interface
 uses Classes, SysUtils, etiket, matematik;
 
 type
-  TKomutTipi = (ktBilinmiyor, ktIslemKodu, ktAciklama, ktEtiket);
+  // işlem kod ana bölümleri
+  TIslemKodAnaBolumler = (ikabEtiket, ikabIslemKodu, ikabAciklama);
+  TIslemKodAnaBolum = set of TIslemKodAnaBolumler;
   TVeriTipi = (vtYok, vtBosluk, vtIslemKodu, vtSayi, vtYazmac, vtKarakterDizisi,
     vtVirgul, vtArti, vtKPAc, vtKPKapat, vtOlcek, vtSon);
   TIslemKodDegiskenler = (ikdIslemKodY1, ikdIslemKodY2, ikdIslemKodB1, ikdIslemKodB2,
@@ -35,29 +37,31 @@ type
 
 const
   // 0 numaralı hata kodu, HataKodunuAl işlevinin kendisi için tanımlanmıştır.
-  TOPLAM_HATA_BILGI_UYARI = 15;
+  TOPLAM_HATA_BILGI_UYARI = 16;
   HATA_YOK = 0;
   HATA_BILINMEYEN_HATA_KODU = 1;
   HATA_BILINMEYEN_KOMUT = 2;
   HATA_BEKLENMEYEN_IFADE = 3;
   HATA_SAYISAL_DEGER_GEREKLI = 4;
   HATA_ETIKET_TANIMLANMIS = 5;
-  HATA_KAPATMA_PAR_GEREKLI = 6;
-  HATA_PAR_ONC_SAYISAL_DEGER = 7;
-  HATA_HATALI_ISL_KULLANIM = 8;
-  HATA_YAZMAC_GEREKLI = 9;
-  HATA_OLCEK_ZATEN_KULLANILMIS = 10;
-  HATA_HATALI_OLCEK_DEGER = 11;
-  HATA_OLCEK_DEGER_GEREKLI = 12;
-  HATA_HATALI_KULLANIM = 13;
-  HATA_BELLEKTEN_BELLEGE = 14;
-  HATA_HATALI_SAYISAL_DEGER = 15;
+  HATA_BIRDEN_FAZLA_ETIKET = 6;
+  HATA_KAPATMA_PAR_GEREKLI = 7;
+  HATA_PAR_ONC_SAYISAL_DEGER = 8;
+  HATA_HATALI_ISL_KULLANIM = 9;
+  HATA_YAZMAC_GEREKLI = 10;
+  HATA_OLCEK_ZATEN_KULLANILMIS = 11;
+  HATA_HATALI_OLCEK_DEGER = 12;
+  HATA_OLCEK_DEGER_GEREKLI = 13;
+  HATA_HATALI_KULLANIM = 14;
+  HATA_BELLEKTEN_BELLEGE = 15;
+  HATA_HATALI_SAYISAL_DEGER = 16;
 
   sHATA_BILINMEYEN_HATA_KODU = 'Bilinmeyen hata kodu!';
   sHATA_BILINMEYEN_KOMUT = 'Bilinmeyen komut!';
   sHATA_BEKLENMEYEN_IFADE = 'Beklenmeyen ifade!';
   sHATA_SAYISAL_DEGER_GEREKLI = 'Sayısal değer gerekli!';
   sHATA_ETIKET_TANIMLANMIS = 'Etiket daha önce tanımlanmış!';
+  sHATA_BIRDEN_FAZLA_ETIKET = 'Aynı satırda birden fazla etiket tanımlayamazsınız!';
   sHATA_KAPATMA_PAR_GEREKLI = 'Kapatma '')'' parantezi gerekli!';
   sHATA_PAR_ONC_SAYISAL_DEGER = 'Parantez öncesi sayısal değer hatası!';
   sHATA_HATALI_ISL_KULLANIM = 'Hatalı işleyici kullanımı!';
@@ -75,6 +79,7 @@ const
     (Tip: btHata;   Kod: HATA_BEKLENMEYEN_IFADE;      Aciklama: sHATA_BEKLENMEYEN_IFADE),
     (Tip: btHata;   Kod: HATA_SAYISAL_DEGER_GEREKLI;  Aciklama: sHATA_SAYISAL_DEGER_GEREKLI),
     (Tip: btHata;   Kod: HATA_ETIKET_TANIMLANMIS;     Aciklama: sHATA_ETIKET_TANIMLANMIS),
+    (Tip: btHata;   Kod: HATA_BIRDEN_FAZLA_ETIKET;    Aciklama: sHATA_BIRDEN_FAZLA_ETIKET),
     (Tip: btHata;   Kod: HATA_KAPATMA_PAR_GEREKLI;    Aciklama: sHATA_KAPATMA_PAR_GEREKLI),
     (Tip: btHata;   Kod: HATA_PAR_ONC_SAYISAL_DEGER;  Aciklama: sHATA_PAR_ONC_SAYISAL_DEGER),
     (Tip: btHata;   Kod: HATA_HATALI_ISL_KULLANIM;    Aciklama: sHATA_HATALI_ISL_KULLANIM),
@@ -91,7 +96,7 @@ var
   GEtiketler: TEtiket;                      // derleme aşamasındaki tüm etiketleri yönetir
   GMatematik: TMatematik;                   // tüm çoklu matematiksel / mantıksal işlemleri yönetir
   GAciklama, GEtiket: string;
-  GKomutTipi: TKomutTipi;
+  GIslemKodAnaBolum: TIslemKodAnaBolum;
   GHataKodu: Integer;
   GHataAciklama: string;
   GIslemKodDegisken: TIslemKodDegisken;     // her bir satır içerisinde tanımlanan değişken değerleri
@@ -114,18 +119,9 @@ var
   GSabitDeger: Integer;                     // bellek / yazmaç için sayısal değer
   GYazmacB1OlcekM, GYazmacB2OlcekM: Boolean;// bellek yazmaçlarının ölçek değerleri var mı?
 
-function KucukHarfTR(s: string): string;
 function HataKodunuAl(HataKodu: Integer): string;
 
 implementation
-
-// karakter dizisini türkçe küçük harfe çevirir
-{ TODO : işlev henüz tamamlanmamıştır }
-function KucukHarfTR(s: string): string;
-begin
-
-  Result := LowerCase(s);
-end;
 
 // hata kodunun karakter dizi karşılığını geri döndürür
 function HataKodunuAl(HataKodu: Integer): string;

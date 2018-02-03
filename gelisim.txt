@@ -11,5 +11,3 @@
 - tüm hatırlatıcı (mnemonic) kodların ayrıştırma ve yönlendirme işlevleri
 - derleyici tarafından yönetilen ikili / onlu / onaltılı sayı sistem karakter katarının
   çoklu aritmetik / parantez önceliği / mantıksal işlemler dahilinde yorumlanması
-- hatırlatıcı (mnemonic) komutlar dışında kalan türkçe tanımlanacak komutlar için
-  küçük - büyük karakter çevrim (utf-8) işlevi tanımlanacak

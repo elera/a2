@@ -1,14 +1,14 @@
 {-------------------------------------------------------------------------------
 
-  Dosya: sayilar.pas
+  Dosya: donusum.pas
 
-  İşlev: tüm sayı sistemleri ile ilgili işlevleri içerir
+  İşlev: sayısal / karaktersel çevrim ile ilgili işlevleri içerir
 
-  Güncelleme Tarihi: 02/02/2018
+  Güncelleme Tarihi: 03/02/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
-unit sayilar;
+unit donusum;
 
 interface
 
@@ -17,10 +17,11 @@ uses Classes, SysUtils;
 function SayiyaCevir(Sistem10s: string; var Sistem10i: Integer): Boolean;
 function Sistem2Sistem10(Sistem2: string; var Sistem10: Integer): Boolean;
 function Sistem16Sistem10(Sistem16: string; var Sistem10: Integer): Boolean;
+function KucukHarfeCevir(s: string): string;
 
 implementation
 
-uses strutils;
+uses LazUTF8, strutils;
 
 // ikili / onlu / onaltılı sayısal karakter katarının (string) sayısal (int)
 // değere dönüştürme işlemini gerçekleştirir
@@ -107,6 +108,60 @@ begin
   end;
 
   if(Result) then Sistem10 := i;
+end;
+
+//  büyük karakterleri (2 karakter uzunluğundaki UTF-8 karakterler de dahil)
+//  küçük karakterlere çevirir
+function KucukHarfeCevir(s: string): string;
+var
+  i: Integer;
+  s2, s3: string;
+begin
+
+  if(UTF8Length(s) = 0) then
+  begin
+
+    Result := '';
+    Exit;
+  end;
+
+  s2 := '';
+  for i := 1 to UTF8Length(s) do
+  begin
+
+    s3 := UTF8Copy(s, i, 1);
+    if(Length(s3) = 1) and (s3[1] in ['A'..'Z']) then
+    begin
+
+      // I karakterinin küçük harf ascii kod karşılığı i'dir
+      // her ne kadar doğrunun böyle olduğunu zannediyorsak da,
+      // olması gereken doğru çevrim burada olduğu gibidir
+      if(s3[1] = 'I') then
+        s2 += 'ı'
+      else s2 += Chr(Byte(s3[1]) + 32);
+    end
+    else
+    begin
+
+      if(s3 = 'Ğ') then
+        s2 += 'ğ'
+      else if(s3 = 'Ü') then
+        s2 += 'ü'
+      else if(s3 = 'Ş') then
+        s2 += 'ş'
+      else if(s3 = 'I') then
+        s2 += 'ı'
+      else if(s3 = 'İ') then
+        s2 += 'i'
+      else if(s3 = 'Ö') then
+        s2 += 'ö'
+      else if(s3 = 'Ç') then
+        s2 += 'ç'
+      else s2 += s3;
+    end;
+  end;
+
+  Result := s2;
 end;
 
 end.
