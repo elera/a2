@@ -59,6 +59,8 @@ begin
   inherited;
 end;
 
+{ TODO : eklenecek etiket değerleri KESİNLİKLE işlem kodu, yazmaç vb
+  özel bir değer olmayacak. etiketler kontrol edilecek}
 function TEtiket.Ekle(AAd: string; AAdres: Integer; AAtamaYapildi: Boolean): Integer;
 var
   i: Integer;

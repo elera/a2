@@ -125,6 +125,10 @@ begin
     Exit;
   end;
 
+  // ascii kod harf aralıkları
+  // 65..90 = A..Z - 97..122 = a..z
+
+  // not: UTF-8 karakter kodları 1'den fazla karakter uzunluğundadır
   s2 := '';
   for i := 1 to UTF8Length(s) do
   begin

@@ -16,7 +16,8 @@ uses Classes, SysUtils, genel;
 
 type
   TKomutDurum = record
-    Sonuc: Integer;
+    SiraNo: Integer;
+    ABVT: TAnaBolumVeriTipi;
   end;
 
 type
@@ -31,78 +32,83 @@ type
 type
   TKomut = record
     Komut: string[15];
+    ABVT: TAnaBolumVeriTipi;
   end;
 
 { assembler komut listesi }
 const
-  TOPLAM_KOMUT = 66;
+  TOPLAM_KOMUT = 70;
   Komutlar: array[0..TOPLAM_KOMUT - 1] of TKomut = (
-    (Komut: 'aaa';      ),
-    (Komut: 'aas';      ),
-    (Komut: 'cbw';      ),
-    (Komut: 'cdq';      ),
-    (Komut: 'cld';      ),
-    (Komut: 'cli';      ),
-    (Komut: 'cmc';      ),
-    (Komut: 'cpuid';    ),
-    (Komut: 'cwd';      ),
-    (Komut: 'daa';      ),
-    (Komut: 'das';      ),
-    (Komut: 'emms';     ),
-    (Komut: 'fabs';     ),
-    (Komut: 'fchs';     ),
-    (Komut: 'fclex';    ),
-    (Komut: 'fcos';     ),
-    (Komut: 'fdecstp';  ),
-    (Komut: 'fincstp';  ),
-    (Komut: 'finit';    ),
-    (Komut: 'fldlg2';   ),
-    (Komut: 'fldln2';   ),
-    (Komut: 'fldpi';    ),
-    (Komut: 'fldz';     ),
-    (Komut: 'fldl2e';   ),
-    (Komut: 'fldl2t';   ),
-    (Komut: 'fld1';     ),
-    (Komut: 'fnclex';   ),
-    (Komut: 'fninit';   ),
-    (Komut: 'fnop';     ),
-    (Komut: 'fpatan';   ),
-    (Komut: 'fprem';    ),
-    (Komut: 'fprem1';   ),
-    (Komut: 'fptan';    ),
-    (Komut: 'frndint';  ),
-    (Komut: 'fscale';   ),
-    (Komut: 'fsin';     ),
-    (Komut: 'fsincos';  ),
-    (Komut: 'fsqrt';    ),
-    (Komut: 'ftst';     ),
-    (Komut: 'fyl2x';    ),
-    (Komut: 'fyl2xp1';  ),
-    (Komut: 'fxam';     ),
-    (Komut: 'fxtract';  ),
-    (Komut: 'f2xm1';    ),
-    (Komut: 'hlt';      ),
-    (Komut: 'int';      ),
-    (Komut: 'iret';     ),
-    (Komut: 'iretd';    ),
-    (Komut: 'lahf';     ),
-    (Komut: 'leave';    ),
-    (Komut: 'lock';     ),
-    (Komut: 'mov';      ),
-    (Komut: 'nop';      ),
-    (Komut: 'popa';     ),
-    (Komut: 'popad';    ),
-    (Komut: 'popf';     ),
-    (Komut: 'popfd';    ),
-    (Komut: 'pusha';    ),
-    (Komut: 'pushad';   ),
-    (Komut: 'pushf';    ),
-    (Komut: 'pushfd';   ),
-    (Komut: 'rdtsc';    ),
-    (Komut: 'rdtscp';   ),
-    (Komut: 'stc';      ),
-    (Komut: 'sti';      ),
-    (Komut: 'wbinvd';   ));
+    (Komut: 'aaa';        ABVT: abvtIslemKodu),
+    (Komut: 'aas';        ABVT: abvtIslemKodu),
+    (Komut: 'cbw';        ABVT: abvtIslemKodu),
+    (Komut: 'cdq';        ABVT: abvtIslemKodu),
+    (Komut: 'cld';        ABVT: abvtIslemKodu),
+    (Komut: 'cli';        ABVT: abvtIslemKodu),
+    (Komut: 'cmc';        ABVT: abvtIslemKodu),
+    (Komut: 'cpuid';      ABVT: abvtIslemKodu),
+    (Komut: 'cwd';        ABVT: abvtIslemKodu),
+    (Komut: 'daa';        ABVT: abvtIslemKodu),
+    (Komut: 'das';        ABVT: abvtIslemKodu),
+    (Komut: 'db';         ABVT: abvtTanim),
+    (Komut: 'dd';         ABVT: abvtTanim),
+    (Komut: 'dw';         ABVT: abvtTanim),
+    (Komut: 'dq';         ABVT: abvtTanim),
+    (Komut: 'emms';       ABVT: abvtIslemKodu),
+    (Komut: 'fabs';       ABVT: abvtIslemKodu),
+    (Komut: 'fchs';       ABVT: abvtIslemKodu),
+    (Komut: 'fclex';      ABVT: abvtIslemKodu),
+    (Komut: 'fcos';       ABVT: abvtIslemKodu),
+    (Komut: 'fdecstp';    ABVT: abvtIslemKodu),
+    (Komut: 'fincstp';    ABVT: abvtIslemKodu),
+    (Komut: 'finit';      ABVT: abvtIslemKodu),
+    (Komut: 'fldlg2';     ABVT: abvtIslemKodu),
+    (Komut: 'fldln2';     ABVT: abvtIslemKodu),
+    (Komut: 'fldpi';      ABVT: abvtIslemKodu),
+    (Komut: 'fldz';       ABVT: abvtIslemKodu),
+    (Komut: 'fldl2e';     ABVT: abvtIslemKodu),
+    (Komut: 'fldl2t';     ABVT: abvtIslemKodu),
+    (Komut: 'fld1';       ABVT: abvtIslemKodu),
+    (Komut: 'fnclex';     ABVT: abvtIslemKodu),
+    (Komut: 'fninit';     ABVT: abvtIslemKodu),
+    (Komut: 'fnop';       ABVT: abvtIslemKodu),
+    (Komut: 'fpatan';     ABVT: abvtIslemKodu),
+    (Komut: 'fprem';      ABVT: abvtIslemKodu),
+    (Komut: 'fprem1';     ABVT: abvtIslemKodu),
+    (Komut: 'fptan';      ABVT: abvtIslemKodu),
+    (Komut: 'frndint';    ABVT: abvtIslemKodu),
+    (Komut: 'fscale';     ABVT: abvtIslemKodu),
+    (Komut: 'fsin';       ABVT: abvtIslemKodu),
+    (Komut: 'fsincos';    ABVT: abvtIslemKodu),
+    (Komut: 'fsqrt';      ABVT: abvtIslemKodu),
+    (Komut: 'ftst';       ABVT: abvtIslemKodu),
+    (Komut: 'fyl2x';      ABVT: abvtIslemKodu),
+    (Komut: 'fyl2xp1';    ABVT: abvtIslemKodu),
+    (Komut: 'fxam';       ABVT: abvtIslemKodu),
+    (Komut: 'fxtract';    ABVT: abvtIslemKodu),
+    (Komut: 'f2xm1';      ABVT: abvtIslemKodu),
+    (Komut: 'hlt';        ABVT: abvtIslemKodu),
+    (Komut: 'int';        ABVT: abvtIslemKodu),
+    (Komut: 'iret';       ABVT: abvtIslemKodu),
+    (Komut: 'iretd';      ABVT: abvtIslemKodu),
+    (Komut: 'lahf';       ABVT: abvtIslemKodu),
+    (Komut: 'leave';      ABVT: abvtIslemKodu),
+    (Komut: 'lock';       ABVT: abvtIslemKodu),
+    (Komut: 'mov';        ABVT: abvtIslemKodu),
+    (Komut: 'nop';        ABVT: abvtIslemKodu),
+    (Komut: 'popa';       ABVT: abvtIslemKodu),
+    (Komut: 'popad';      ABVT: abvtIslemKodu),
+    (Komut: 'popf';       ABVT: abvtIslemKodu),
+    (Komut: 'popfd';      ABVT: abvtIslemKodu),
+    (Komut: 'pusha';      ABVT: abvtIslemKodu),
+    (Komut: 'pushad';     ABVT: abvtIslemKodu),
+    (Komut: 'pushf';      ABVT: abvtIslemKodu),
+    (Komut: 'pushfd';     ABVT: abvtIslemKodu),
+    (Komut: 'rdtsc';      ABVT: abvtIslemKodu),
+    (Komut: 'rdtscp';     ABVT: abvtIslemKodu),
+    (Komut: 'stc';        ABVT: abvtIslemKodu),
+    (Komut: 'sti';        ABVT: abvtIslemKodu),
+    (Komut: 'wbinvd';     ABVT: abvtIslemKodu));
 
 type
   TYazmac = record
@@ -144,21 +150,23 @@ type
   // tüm assembler komutlarının çağrı yapısı
   // 1. ParcaNo = komut dizisinin her bir ana kesim / parça numarasıdır
   //    not: ParcaNo = 1, Veri2 değeri olarak komutun sıra numarasını döndürür
-  // 2. VeriTipi = işleve gönderilen veri tipini belirtir
+  // 2. VeriKontrolTip = işleve gönderilen veri tipini belirtir
   // 3. Veri1 = eğer varsa, karakter dizisi türünde veri
   // 4. Veri2 = eğer varsa, sayısal türde veri
-  TAsmKomut = function(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+  TAsmKomut = function(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
     Veri2: Integer): Integer;
 
 function KomutBilgisiAl(AKomut: string): TKomutDurum;
 function YazmacBilgisiAl(AYazmac: string): TYazmacDurum;
-function KomutHata(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+function KomutHata(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
   Veri2: Integer): Integer;
-function GenelKomutSeti1(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+function GenelKomutSeti1(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
   Veri2: Integer): Integer;
-function KomutINT(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+function KomutINT(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
   Veri2: Integer): Integer;
-function KomutMOV(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+function KomutMOV(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
+  Veri2: Integer): Integer;
+function GenelTanimlama(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
   Veri2: Integer): Integer;
 
 var
@@ -174,6 +182,10 @@ var
     @GenelKomutSeti1,           // cwd
     @GenelKomutSeti1,           // daa
     @GenelKomutSeti1,           // das
+    @GenelTanimlama,            // db
+    @GenelTanimlama,            // dd
+    @GenelTanimlama,            // dw
+    @GenelTanimlama,            // dq
     @GenelKomutSeti1,           // emms
     @GenelKomutSeti1,           // fabs
     @GenelKomutSeti1,           // fchs
@@ -252,14 +264,15 @@ begin
 
   Komut := LowerCase(AKomut);
 
-  Result.Sonuc := -1;
+  Result.SiraNo := -1;
   for i := 0 to TOPLAM_KOMUT - 1 do
   begin
 
     if(Komutlar[i].Komut = Komut) then
     begin
 
-      Result.Sonuc := i;
+      Result.ABVT := Komutlar[i].ABVT;
+      Result.SiraNo := i;
       Break;
     end;
   end;
@@ -289,7 +302,7 @@ begin
 end;
 
 // hata olması durumunda çağrılacak işlev
-function KomutHata(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+function KomutHata(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
   Veri2: Integer): Integer;
 begin
 
@@ -298,18 +311,18 @@ begin
 end;
 
 // tüm parametresiz komutların ortak çağrı işlevi
-function GenelKomutSeti1(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+function GenelKomutSeti1(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
   Veri2: Integer): Integer;
 begin
 
-  if(VeriTipi = vtIslemKodu) and (ParcaNo = 1) then
+  if(VeriKontrolTip = vktIslemKodu) and (ParcaNo = 1) then
   begin
 
     GIslemKodAnaBolum += [ikabIslemKodu];
     GIslemKodu := Veri2;
     Result := 0;
   end
-  else if(VeriTipi = vtSon) then
+  else if(VeriKontrolTip = vktSon) then
   begin
 
     VerileriGoruntule;
@@ -324,26 +337,26 @@ begin
 end;
 
 // int komutu
-function KomutINT(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+function KomutINT(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
   Veri2: Integer): Integer;
 begin
 
-  if(VeriTipi = vtIslemKodu) and (ParcaNo = 1) then
+  if(VeriKontrolTip = vktIslemKodu) and (ParcaNo = 1) then
   begin
 
     GIslemKodAnaBolum += [ikabIslemKodu];
     GIslemKodu := Veri2;
     Result := 0;
   end
-  else if(VeriTipi = vtSayi) and (ParcaNo = 2) then
+  else if(VeriKontrolTip = vktSayi) and (ParcaNo = 2) then
   begin
 
-    GParametreTip1 := ptSayisalDeger;
-    GIslemKodDegisken := [ikdSabitDeger];
+    GIKABVeriTipi1 := vtSayisalDeger;
+    GIslemKodAyrinti := [ikaSabitDeger];
     GSabitDeger := Veri2;
     Result := 0;
   end
-  else if(VeriTipi = vtSon) then
+  else if(VeriKontrolTip = vktSon) then
   begin
 
     VerileriGoruntule;
@@ -358,7 +371,7 @@ begin
 end;
 
 // mov komutu ve diğer ilgili en karmaşık komutların prototipi
-function KomutMOV(ParcaNo: Integer; VeriTipi: TVeriTipi; Veri1: string;
+function KomutMOV(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
   Veri2: Integer): Integer;
 begin
 
@@ -375,7 +388,7 @@ begin
 
   // ilk parça = işlem kodunun bulunduğu veri (opcode)
   // ilk parça ile birlikte Veri2 değeri de işlem kodunun sıra değerini içerir
-  if(VeriTipi = vtIslemKodu) then
+  if(VeriKontrolTip = vktIslemKodu) then
   begin
 
     // işlem kodunun (opcode) her zaman 1. değer olarak gelmesi gerekmektedir
@@ -386,7 +399,7 @@ begin
     begin
 
       // işlem kodu ile ilgili ilk değer atamaları burada gerçekleştirilir
-      GIslemKodDegisken := [];
+      GIslemKodAyrinti := [];
       GIslemKodAnaBolum += [ikabIslemKodu];
       GIslemKodu := Veri2;
       VirgulKullanildi := False;
@@ -402,28 +415,28 @@ begin
   // 2. GParametreTip1 ve GParametreTip2 değişkenleri vtKPAc kısmında ptBellek olarak atama yapılıyor
   // 3. Köşeli parantez kontrolü vtKPAc sorgulama kısmında gerçekleştiriliyor
   // 4. Sabit sayısal değer (imm) ve ölçek değeri (scale) diğer sorgu aşamalarında atanmaktadır
-  else if(VeriTipi = vtYazmac) then
+  else if(VeriKontrolTip = vktYazmac) then
   begin
 
     if(ParcaNo = 2) then
     begin
 
-      if(GParametreTip1 = ptYok) then GParametreTip1 := ptYazmac;
+      if(GIKABVeriTipi1 = vtYok) then GIKABVeriTipi1 := vtYazmac;
 
-      if(GParametreTip1 = ptYazmac) then
+      if(GIKABVeriTipi1 = vtYazmac) then
       begin
 
         GYazmac1 := Veri2;
-        GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodY1];
+        GIslemKodAyrinti += [ikaIslemKodY1];
         Result := 0;
       end
       else
       begin
 
-        if(ikdIslemKodB1 in GIslemKodDegisken) then
+        if(ikaIslemKodB1 in GIslemKodAyrinti) then
         begin
 
-          if(ikdIslemKodB2 in GIslemKodDegisken) then
+          if(ikaIslemKodB2 in GIslemKodAyrinti) then
           begin
 
             Result := HATA_HATALI_KULLANIM
@@ -431,7 +444,7 @@ begin
           else
           begin
 
-            GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodB2];
+            GIslemKodAyrinti += [ikaIslemKodB2];
             GYazmacB2 := Veri2;
             Result := 0;
           end;
@@ -440,7 +453,7 @@ begin
         begin
 
           GYazmacB1 := Veri2;
-          GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodB1];
+          GIslemKodAyrinti += [ikaIslemKodB1];
           Result := 0;
         end;
       end;
@@ -457,22 +470,22 @@ begin
       else
       begin
 
-        if(GParametreTip2 = ptYok) then GParametreTip2 := ptYazmac;
+        if(GIKABVeriTipi2 = vtYok) then GIKABVeriTipi2 := vtYazmac;
 
-        if(GParametreTip2 = ptYazmac) then
+        if(GIKABVeriTipi2 = vtYazmac) then
         begin
 
           GYazmac2 := Veri2;
-          GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodY2];
+          GIslemKodAyrinti += [ikaIslemKodY2];
           Result := 0;
         end
         else
         begin
 
-          if(ikdIslemKodB1 in GIslemKodDegisken) then
+          if(ikaIslemKodB1 in GIslemKodAyrinti) then
           begin
 
-            if(ikdIslemKodB2 in GIslemKodDegisken) then
+            if(ikaIslemKodB2 in GIslemKodAyrinti) then
             begin
 
               Result := HATA_HATALI_KULLANIM
@@ -480,7 +493,7 @@ begin
             else
             begin
 
-              GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodB2];
+              GIslemKodAyrinti += [ikaIslemKodB2];
               GYazmacB2 := Veri2;
               Result := 0;
             end;
@@ -489,22 +502,22 @@ begin
           begin
 
             GYazmacB1 := Veri2;
-            GIslemKodDegisken := GIslemKodDegisken + [ikdIslemKodB1];
+            GIslemKodAyrinti += [ikaIslemKodB1];
             Result := 0;
           end;
         end;
       end;
     end else Result := HATA_HATALI_KULLANIM;
   end
-  else if(VeriTipi = vtVirgul) then
+  else if(VeriKontrolTip = vktVirgul) then
   begin
 
     // virgül kullanılmadan önce:
     // 1. yazmaç değeri kullanılmamışsa
     // 2. sabit bellek değeri kullanılmamışsa
     // 3. ikinci kez virgül kullanılmışsa
-    if not((ikdIslemKodY1 in GIslemKodDegisken) or (ikdIslemKodB1 in GIslemKodDegisken) or
-      (ikdSabitDegerB in GIslemKodDegisken)) then
+    if not((ikaIslemKodY1 in GIslemKodAyrinti) or (ikaIslemKodB1 in GIslemKodAyrinti) or
+      (ikaSabitDegerB in GIslemKodAyrinti)) then
 
       Result := HATA_YAZMAC_GEREKLI
     else if (VirgulKullanildi) then
@@ -517,7 +530,7 @@ begin
       Result := 0;
     end;
   end
-  else if(VeriTipi = vtKPAc) then
+  else if(VeriKontrolTip = vktKPAc) then
   begin
 
     // daha önce köşeli parantez kullanılmışsa
@@ -525,7 +538,7 @@ begin
 
       Result := HATA_HATALI_KULLANIM
     // daha önce bellek adreslemede yazmaç veya bellek sabit değeri kullanılmışsa
-    else if(ikdIslemKodB1 in GIslemKodDegisken) or (ikdSabitDegerB in GIslemKodDegisken) then
+    else if(ikaIslemKodB1 in GIslemKodAyrinti) or (ikaSabitDegerB in GIslemKodAyrinti) then
 
       Result := HATA_BELLEKTEN_BELLEGE
     else
@@ -533,14 +546,14 @@ begin
 
       // ParcaNo = 2 = hedef alan, ParcaNo = 3 = kaynak alan
       if(ParcaNo = 2) then
-        GParametreTip1 := ptBellek
-      else if(ParcaNo = 3) then GParametreTip2 := ptBellek;
+        GIKABVeriTipi1 := vtBellek
+      else if(ParcaNo = 3) then GIKABVeriTipi2 := vtBellek;
 
       Inc(KoseliParantezSayisi);
       Result := 0;
     end;
   end
-  else if(VeriTipi = vtKPKapat) then
+  else if(VeriKontrolTip = vktKPKapat) then
   begin
 
     // açılan parantez sayısı kadar parantez kapatılmalıdır
@@ -554,7 +567,7 @@ begin
       Result := 0;
     end;
   end
-  else if(VeriTipi = vtArti) then
+  else if(VeriKontrolTip = vktArti) then
   begin
 
     // artı toplam değerinin kullanılması için tek bir köşeli parantez
@@ -570,10 +583,10 @@ begin
     end;
   end
   // ölçek (scale) - bellek adreslemede yazmaç ölçek değeri
-  else if(VeriTipi = vtOlcek) then
+  else if(VeriKontrolTip = vktOlcek) then
   begin
 
-    if(ikdOlcek in GIslemKodDegisken) then
+    if(ikaOlcek in GIslemKodAyrinti) then
     begin
 
       Result := HATA_OLCEK_ZATEN_KULLANILMIS;
@@ -584,7 +597,7 @@ begin
       if(Veri2 = 1) or (Veri2 = 2) or (Veri2 = 4) or (Veri2 = 8) then
       begin
 
-        GIslemKodDegisken := GIslemKodDegisken + [ikdOlcek];
+        GIslemKodAyrinti += [ikaOlcek];
         if(ArtiIsleyiciKullanildi) then
 
           GYazmacB2OlcekM := True
@@ -600,17 +613,17 @@ begin
       end;
     end;
   end
-  else if(VeriTipi = vtSayi) then
+  else if(VeriKontrolTip = vktSayi) then
   begin
 
     // ParcaNo 2 veya 3'ün bellek adreslemesi olması durumunda
-    if(GParametreTip1 = ptBellek) or (GParametreTip2 = ptBellek) then
+    if(GIKABVeriTipi1 = vtBellek) or (GIKABVeriTipi2 = vtBellek) then
     begin
 
-      if not(ikdSabitDegerB in GIslemKodDegisken) then
+      if not(ikaSabitDegerB in GIslemKodAyrinti) then
       begin
 
-        GIslemKodDegisken := GIslemKodDegisken + [ikdSabitDegerB];
+        GIslemKodAyrinti += [ikaSabitDegerB];
         GSabitDeger := Veri2;
         Result := 0;
       end
@@ -620,23 +633,33 @@ begin
         Result := HATA_HATALI_KULLANIM;
       end;
     end
-    else if(GParametreTip2 = ptYok) and (ParcaNo = 3) then
+    else if(GIKABVeriTipi2 = vtYok) and (ParcaNo = 3) then
     begin
 
-      GParametreTip2 := ptSayisalDeger;
-      GIslemKodDegisken := GIslemKodDegisken + [ikdSabitDeger];
+      GIKABVeriTipi2 := vtSayisalDeger;
+      GIslemKodAyrinti += [ikaSabitDeger];
       GSabitDeger := Veri2;
       Result := 0;
     end else Result := HATA_HATALI_KULLANIM;
   end
   // son kontroller bu aşamada gerçekleştirilecek
-  else if(VeriTipi = vtSon) then
+  else if(VeriKontrolTip = vktSon) then
   begin
 
     VerileriGoruntule;
     //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Son: ' + IntToStr(ParcaNo));
     Result := 0;
   end else Result := 1;
+end;
+
+function GenelTanimlama(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip;
+  Veri1: string; Veri2: Integer): Integer;
+begin
+
+  if(VeriKontrolTip = vktSayi) then
+    frmAnaSayfa.mmDurumBilgisi.Lines.Add('Tanım: ' + IntToStr(Veri2));
+
+  Result := 0;
 end;
 
 end.

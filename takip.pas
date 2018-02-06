@@ -37,43 +37,43 @@ begin
     // ---------------------------------------------------------------------------
 
     // ilk parametre yazmaç ise
-    if(GParametreTip1 = ptYazmac) then
+    if(GIKABVeriTipi1 = vtYazmac) then
     begin
 
       frmAnaSayfa.mmDurumBilgisi.Lines.Add('Hedef Yazmaç: ' + Yazmaclar[GYazmac1].Ad);
     end
     // ilk parametre bellek adresleme ise
-    else if(GParametreTip1 = ptBellek) then
+    else if(GIKABVeriTipi1 = vtBellek) then
     begin
 
       // 1. bellek içerik ve ölçek değerleri
-      if(ikdIslemKodB1 in GIslemKodDegisken) then
+      if(ikaIslemKodB1 in GIslemKodAyrinti) then
       begin
 
         frmAnaSayfa.mmDurumBilgisi.Lines.Add('1. Hedef Bellek Yazmaç: ' +
           Yazmaclar[GYazmacB1].Ad);
       end;
 
-      if(ikdOlcek in GIslemKodDegisken) and (GYazmacB1OlcekM) then
+      if(ikaOlcek in GIslemKodAyrinti) and (GYazmacB1OlcekM) then
         frmAnaSayfa.mmDurumBilgisi.Lines.Add('Ölçek Değeri: ' + IntToStr(GOlcek));
 
       // 2. bellek içerik ve ölçek değerleri
-      if(ikdIslemKodB2 in GIslemKodDegisken) then
+      if(ikaIslemKodB2 in GIslemKodAyrinti) then
       begin
 
         frmAnaSayfa.mmDurumBilgisi.Lines.Add('2. Hedef Bellek Yazmaç: ' +
           Yazmaclar[GYazmacB2].Ad);
       end;
 
-      if(ikdOlcek in GIslemKodDegisken) and (GYazmacB2OlcekM) then
+      if(ikaOlcek in GIslemKodAyrinti) and (GYazmacB2OlcekM) then
         frmAnaSayfa.mmDurumBilgisi.Lines.Add('Ölçek Değeri: ' + IntToStr(GOlcek));
 
       // bellek adresleme sabit değeri
-      if(ikdSabitDegerB in GIslemKodDegisken) then
+      if(ikaSabitDegerB in GIslemKodAyrinti) then
         frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sabit Değer: ' + IntToStr(GSabitDeger));
     end
     // ilk parametre sayısal sabit değer ise
-    else if(GParametreTip1 = ptSayisalDeger) then
+    else if(GIKABVeriTipi1 = vtSayisalDeger) then
     begin
 
       frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sabit Değer: ' + IntToStr(GSabitDeger));
@@ -83,43 +83,43 @@ begin
     // ---------------------------------------------------------------------------
 
     // ikinci parametre yazmaç ise
-    if(GParametreTip2 = ptYazmac) then
+    if(GIKABVeriTipi2 = vtYazmac) then
     begin
 
       frmAnaSayfa.mmDurumBilgisi.Lines.Add('Kaynak Yazmaç: ' + Yazmaclar[GYazmac2].Ad);
     end
     // ikinci parametre bellek adresleme ise
-    else if(GParametreTip2 = ptBellek) then
+    else if(GIKABVeriTipi2 = vtBellek) then
     begin
 
       // 1. bellek içerik ve ölçek değerleri
-      if(ikdIslemKodB1 in GIslemKodDegisken) then
+      if(ikaIslemKodB1 in GIslemKodAyrinti) then
       begin
 
         frmAnaSayfa.mmDurumBilgisi.Lines.Add('1. Kaynak Bellek Yazmaç: ' +
           Yazmaclar[GYazmacB1].Ad);
       end;
 
-      if(ikdOlcek in GIslemKodDegisken) and (GYazmacB1OlcekM) then
+      if(ikaOlcek in GIslemKodAyrinti) and (GYazmacB1OlcekM) then
         frmAnaSayfa.mmDurumBilgisi.Lines.Add('Ölçek Değeri: ' + IntToStr(GOlcek));
 
       // 2. bellek içerik ve ölçek değerleri
-      if(ikdIslemKodB2 in GIslemKodDegisken) then
+      if(ikaIslemKodB2 in GIslemKodAyrinti) then
       begin
 
         frmAnaSayfa.mmDurumBilgisi.Lines.Add('2. Kaynak Bellek Yazmaç: ' +
           Yazmaclar[GYazmacB2].Ad);
       end;
 
-      if(ikdOlcek in GIslemKodDegisken) and (GYazmacB2OlcekM) then
+      if(ikaOlcek in GIslemKodAyrinti) and (GYazmacB2OlcekM) then
         frmAnaSayfa.mmDurumBilgisi.Lines.Add('Ölçek Değeri: ' + IntToStr(GOlcek));
 
       // bellek adresleme sabit değeri
-      if(ikdSabitDegerB in GIslemKodDegisken) then
+      if(ikaSabitDegerB in GIslemKodAyrinti) then
         frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sabit Değer: ' + IntToStr(GSabitDeger));
     end
     // ikinci parametre sayısal sabit değer ise
-    else if(GParametreTip2 = ptSayisalDeger) then
+    else if(GIKABVeriTipi2 = vtSayisalDeger) then
     begin
 
       frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sabit Değer: ' + IntToStr(GSabitDeger));

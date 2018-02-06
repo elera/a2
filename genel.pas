@@ -15,17 +15,23 @@ interface
 uses Classes, SysUtils, etiket, matematik;
 
 type
-  // işlem kod ana bölümleri
+  // her bir satırın veri tipi.
+  // not: abvtBuyukYapi (makrolar) ileride tanımlanabilir - 03.02.2018
+  TAnaBolumVeriTipi = (abvtBelirsiz, abvtIslemKodu, abvtTanim{, abvtBuyukYapi});
+
+  // işlem kod ana ve alt bölümleri
   TIslemKodAnaBolumler = (ikabEtiket, ikabIslemKodu, ikabAciklama);
   TIslemKodAnaBolum = set of TIslemKodAnaBolumler;
-  TVeriTipi = (vtYok, vtBosluk, vtIslemKodu, vtSayi, vtYazmac, vtKarakterDizisi,
-    vtVirgul, vtArti, vtKPAc, vtKPKapat, vtOlcek, vtSon);
-  TIslemKodDegiskenler = (ikdIslemKodY1, ikdIslemKodY2, ikdIslemKodB1, ikdIslemKodB2,
-    ikdOlcek, ikdSabitDegerB, ikdSabitDeger);
-  TIslemKodDegisken = set of TIslemKodDegiskenler;
+  TIslemKodAyrintilar = (ikaIslemKodY1, ikaIslemKodY2, ikaIslemKodB1, ikaIslemKodB2,
+    ikaOlcek, ikaSabitDegerB, ikaSabitDeger);
+  TIslemKodAyrinti = set of TIslemKodAyrintilar;
+  TIKABVeriTipi = (vtYok, vtYazmac, vtBellek, vtSayisalDeger);
+  TVeriKontrolTip = (vktYok, vktKarakterDizisi, vktSayi, vktIslemKodu, vktTanim,
+    vktYazmac, vktBosluk, vktVirgul, vktArti, vktKPAc, vktKPKapat, vktOlcek, vktSon);
 
-type
-  TParametreTipi = (ptYok, ptYazmac, ptBellek, ptSayisalDeger);
+  // etiket kod ana ve alt bölümleri
+  TTanimAnaBolumler = (tabEtiket, tabEtiketAdi, tabAciklama);
+  TTanimAnaBolum = set of TTanimAnaBolumler;
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -95,12 +101,14 @@ const
 var
   GEtiketler: TEtiket;                      // derleme aşamasındaki tüm etiketleri yönetir
   GMatematik: TMatematik;                   // tüm çoklu matematiksel / mantıksal işlemleri yönetir
-  GAciklama, GEtiket: string;
-  GIslemKodAnaBolum: TIslemKodAnaBolum;
+  GAciklama,                                // her bir satır için tanımlanan açıklama
+  GEtiket,                                  // her bir satır için tanımlanan etiket
+  GTanimEtiket: string;                     // dx (db, dd..) veri öncesi için yapılan tanım etiketi
+  GAnaBolumVeriTipi: TAnaBolumVeriTipi;     // her bir satırın veri tipi
+  GIslemKodAnaBolum: TIslemKodAnaBolum;     // her bir işlem kodunun ana bölümleri
+  GIslemKodAyrinti: TIslemKodAyrinti;       // her bir işlem kod içerisinde tanımlı diğer ayrıntılar
   GHataKodu: Integer;
   GHataAciklama: string;
-  GIslemKodDegisken: TIslemKodDegisken;     // her bir satır içerisinde tanımlanan değişken değerleri
-  GSonIslenenVeriTipi: TVeriTipi;           // en son işlenen veri tipini içerir
 
   // GENEL BİLGİ:
   // 1. her bir kod satırı, 2 öndeğeri (parametre) işleyecek şekilde yapılandırılmıştır
@@ -108,8 +116,8 @@ var
   // 2. her bir komut satırının (opcode) GIslemKodu değişkeni ile ifade edilen sıra numarası vardır
   // 3. her 2 öndeğerin yazmaç olması halinde GYazmac1 ve GYazmac2 değişkenleri kullanılırken;
   //   adresleme işleminin olması durumunda GYazmac1, GYazmacB1 ve GYazmacB2 kullanımaktadır
-  GParametreTip1: TParametreTipi;           // komutun birinci parametre tipi
-  GParametreTip2: TParametreTipi;           // komutun ikinci parametre tipi
+  GIKABVeriTipi1: TIKABVeriTipi;            // işlem kodunun birinci parametre tipi
+  GIKABVeriTipi2: TIKABVeriTipi;            // işlem kodunun ikinci parametre tipi
   GIslemKodu,                               // işlem kodunun (opcode) sıra değer karşılığı
   GYazmac1,                                 // birinci yazmaç değeri
   GYazmac2,                                 // ikinci yazmaç değeri
