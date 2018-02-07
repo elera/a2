@@ -1,7 +1,7 @@
 object frmAnaSayfa: TfrmAnaSayfa
-  Left = 1217
+  Left = 983
   Height = 606
-  Top = 239
+  Top = 234
   Width = 540
   Caption = 'Assembler 2 (a2)'
   ClientHeight = 586
@@ -495,12 +495,12 @@ object frmAnaSayfa: TfrmAnaSayfa
         ''
         'mov eax,1'
         ''
-        'veri1: etiket db 10,12,14'
+        'veri1: etiket db 12,34,56'
         ''
         'veri2:'
-        'dw 12,23,44'
-        'dd 34,43,22'
-        'dq 44,55,66'
+        'dw 12,34,56'
+        'dd 12,34,56'
+        'dq 12,34,66'
         ''
         'son:'
         ';assembler kod sonu'

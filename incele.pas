@@ -186,7 +186,7 @@ var
       end;
 
       // işleyici değerini işleve yönlendir.
-      // (burada virgül kontrolü tekrar ele alınmalıdır)
+      { TODO : (burada virgül kontrolü tekrar ele alınmalıdır) }
       if(Result = HATA_YOK) then
       begin
 

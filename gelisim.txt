@@ -11,3 +11,5 @@
 - tüm hatırlatıcı (mnemonic) kodların ayrıştırma ve yönlendirme işlevleri
 - derleyici tarafından yönetilen ikili / onlu / onaltılı sayı sistem karakter katarının
   çoklu aritmetik / parantez önceliği / mantıksal işlemler dahilinde yorumlanması
+- veri tanım (db, dw, ..) işlemleri
+- ikili formatta (binary file) dosya oluşturma işlemleri

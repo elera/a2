@@ -4,7 +4,7 @@
 
   İşlev: verileri yorumlayan ve kodlara çeviren işlevleri içerir
 
-  Güncelleme Tarihi: 30/01/2018
+  Güncelleme Tarihi: 07/02/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -245,7 +245,7 @@ var
 
 implementation
 
-uses anasayfa, incele, takip;
+uses anasayfa, incele, takip, donusum;
 
 // ünite içi genel kullanımlık yerel değişkenler
 var
@@ -652,14 +652,46 @@ begin
   end else Result := 1;
 end;
 
+var
+  GSayiTipi: TSayiTipi;
+
 function GenelTanimlama(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip;
   Veri1: string; Veri2: Integer): Integer;
+var
+  SayiTipi: TSayiTipi;
 begin
 
-  if(VeriKontrolTip = vktSayi) then
-    frmAnaSayfa.mmDurumBilgisi.Lines.Add('Tanım: ' + IntToStr(Veri2));
+  if(VeriKontrolTip = vktTanim) then
+  begin
 
-  Result := 0;
+    case Komutlar[Veri2].Komut of
+      'db': GSayiTipi := st1B;
+      'dw': GSayiTipi := st2B;
+      'dd': GSayiTipi := st4B;
+      'dq': GSayiTipi := st8B;
+    end;
+  end
+  else if(VeriKontrolTip = vktSayi) then
+  begin
+
+    SayiTipi := SayiTipiniAl(Veri2);
+    if(GSayiTipi >= SayiTipi) then
+    begin
+
+      case GSayiTipi of
+        st1B: frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sayı: ' + Format('%.2d', [Veri2]));
+        st2B: frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sayı: ' + Format('%.4d', [Veri2]));
+        st4B: frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sayı: ' + Format('%.8d', [Veri2]));
+        st8B: frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sayı: ' + Format('%.16d', [Veri2]));
+      end;
+
+      Result := 0;
+    end else Result := HATA_HATALI_SAYISAL_DEGER;
+  end else if(VeriKontrolTip = vktVirgul) then
+  begin
+
+    Result := 0;
+  end;
 end;
 
 end.

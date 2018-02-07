@@ -33,6 +33,8 @@ type
   TTanimAnaBolumler = (tabEtiket, tabEtiketAdi, tabAciklama);
   TTanimAnaBolum = set of TTanimAnaBolumler;
 
+  TSayiTipi = (stHatali, st1B, st2B, st4B, st8B);
+
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
   TBilgi = record

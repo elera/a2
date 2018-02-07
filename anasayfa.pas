@@ -49,7 +49,7 @@ implementation
 
 {$R *.lfm}
 
-uses incele, genel, yorumla, etiket, matematik, donusum;
+uses incele, genel, yorumla, etiket, matematik, donusum, dosya;
 
 procedure TfrmAnaSayfa.FormCreate(Sender: TObject);
 begin
@@ -132,6 +132,12 @@ begin
 
   // durum bilgisini güncelle
   mmDurumBilgisi.Lines.EndUpdate;
+
+  // kodların yorumlanması ve çevrilmesinde herhangi bir hata yoksa
+  // ikili formatta (binary file) dosya oluştur
+  { TODO : oluşturulacak dosya ilk aşamada saf assembler kodların makine dili karşılıklarıdır
+    ileride PE / COFF ve diğer formatlarda program dosyaları oluşturulacaktır  }
+  if(IslevSonuc = HATA_YOK) then ProgramDosyasiOlustur;
 end;
 
 end.

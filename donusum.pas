@@ -4,7 +4,7 @@
 
   İşlev: sayısal / karaktersel çevrim ile ilgili işlevleri içerir
 
-  Güncelleme Tarihi: 03/02/2018
+  Güncelleme Tarihi: 07/02/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -12,12 +12,13 @@ unit donusum;
 
 interface
 
-uses Classes, SysUtils;
+uses Classes, SysUtils, genel;
 
 function SayiyaCevir(Sistem10s: string; var Sistem10i: Integer): Boolean;
 function Sistem2Sistem10(Sistem2: string; var Sistem10: Integer): Boolean;
 function Sistem16Sistem10(Sistem16: string; var Sistem10: Integer): Boolean;
 function KucukHarfeCevir(s: string): string;
+function SayiTipiniAl(SayisalDeger: QWord): TSayiTipi;
 
 implementation
 
@@ -166,6 +167,25 @@ begin
   end;
 
   Result := s2;
+end;
+
+// sayısal verinin veri tipini belirler
+function SayiTipiniAl(SayisalDeger: QWord): TSayiTipi;
+begin
+
+  if((SayisalDeger and $FFFFFFFFFFFFFF00) > 0) then
+  begin
+
+    if((SayisalDeger and $FFFFFFFFFFFF0000) > 0) then
+    begin
+
+      if((SayisalDeger and $FFFFFFFF00000000) > 0) then
+      begin
+
+        Result := st8B;
+      end else Result := st4B;
+    end else Result := st2B;
+  end else Result := st1B;
 end;
 
 end.

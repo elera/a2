@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="16">
+    <Units Count="17">
       <Unit0>
         <Filename Value="a2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -18,19 +18,17 @@
         <ComponentName Value="frmAnaSayfa"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
-        <TopLine Value="100"/>
-        <CursorPos X="22" Y="115"/>
+        <TopLine Value="108"/>
+        <CursorPos X="48" Y="137"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="genel.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="5"/>
-        <TopLine Value="11"/>
-        <CursorPos X="3" Y="29"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="55"/>
+        <CursorPos X="28" Y="65"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit2>
@@ -38,7 +36,6 @@
         <Filename Value="yorumla.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="3"/>
-        <CursorPos X="25" Y="17"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit3>
@@ -46,17 +43,16 @@
         <Filename Value="incele.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="166"/>
-        <CursorPos X="57" Y="189"/>
+        <TopLine Value="118"/>
+        <CursorPos X="68" Y="139"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit4>
       <Unit5>
         <Filename Value="gelisim.txt"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="6"/>
-        <CursorPos X="82" Y="13"/>
-        <UsageCount Value="134"/>
+        <EditorIndex Value="7"/>
+        <UsageCount Value="140"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit5>
@@ -64,14 +60,13 @@
         <Filename Value="etiket.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="119"/>
+        <UsageCount Value="125"/>
       </Unit6>
       <Unit7>
         <Filename Value="donusum.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="2"/>
-        <CursorPos X="21" Y="17"/>
-        <UsageCount Value="112"/>
+        <UsageCount Value="118"/>
         <Loaded Value="True"/>
       </Unit7>
       <Unit8>
@@ -79,15 +74,13 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="14" Y="44"/>
-        <UsageCount Value="106"/>
+        <UsageCount Value="112"/>
       </Unit8>
       <Unit9>
         <Filename Value="takip.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="4"/>
-        <TopLine Value="13"/>
-        <CursorPos X="94" Y="28"/>
-        <UsageCount Value="54"/>
+        <EditorIndex Value="5"/>
+        <UsageCount Value="60"/>
         <Loaded Value="True"/>
       </Unit9>
       <Unit10>
@@ -129,124 +122,134 @@
         <EditorIndex Value="-1"/>
         <UsageCount Value="10"/>
       </Unit15>
+      <Unit16>
+        <Filename Value="dosya.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="4"/>
+        <UsageCount Value="22"/>
+        <Loaded Value="True"/>
+      </Unit16>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="incele.pas"/>
-        <Caret Line="370" Column="16" TopLine="342"/>
+        <Filename Value="yorumla.pas"/>
+        <Caret Line="675" Column="11" TopLine="643"/>
       </Position1>
       <Position2>
-        <Filename Value="incele.pas"/>
-        <Caret Line="377" Column="24" TopLine="349"/>
+        <Filename Value="yorumla.pas"/>
+        <Caret Line="248" Column="38" TopLine="235"/>
       </Position2>
       <Position3>
-        <Filename Value="incele.pas"/>
-        <Caret Line="379" Column="50" TopLine="351"/>
+        <Filename Value="yorumla.pas"/>
+        <Caret Line="685" Column="89" TopLine="662"/>
       </Position3>
       <Position4>
-        <Filename Value="incele.pas"/>
-        <Caret Line="383" Column="45" TopLine="355"/>
+        <Filename Value="yorumla.pas"/>
+        <Caret Line="681" Column="41" TopLine="663"/>
       </Position4>
       <Position5>
-        <Filename Value="incele.pas"/>
-        <Caret Line="388" TopLine="361"/>
+        <Filename Value="dosya.pas"/>
+        <Caret Line="15" Column="6"/>
       </Position5>
       <Position6>
-        <Filename Value="incele.pas"/>
+        <Filename Value="dosya.pas"/>
+        <Caret Line="96" TopLine="61"/>
       </Position6>
       <Position7>
-        <Filename Value="incele.pas"/>
-        <Caret Line="96" Column="74" TopLine="69"/>
+        <Filename Value="dosya.pas"/>
+        <Caret Line="21" Column="12" TopLine="9"/>
       </Position7>
       <Position8>
-        <Filename Value="incele.pas"/>
-        <Caret Line="100" Column="25" TopLine="72"/>
+        <Filename Value="dosya.pas"/>
+        <Caret Line="33" TopLine="14"/>
       </Position8>
       <Position9>
-        <Filename Value="incele.pas"/>
-        <Caret Line="107" Column="42" TopLine="79"/>
+        <Filename Value="dosya.pas"/>
+        <Caret Line="27" TopLine="14"/>
       </Position9>
       <Position10>
-        <Filename Value="incele.pas"/>
-        <Caret Line="132" Column="32" TopLine="104"/>
+        <Filename Value="dosya.pas"/>
+        <Caret Line="36" Column="23" TopLine="17"/>
       </Position10>
       <Position11>
-        <Filename Value="incele.pas"/>
-        <Caret Line="133" Column="82" TopLine="105"/>
+        <Filename Value="dosya.pas"/>
+        <Caret Line="50" Column="16" TopLine="19"/>
       </Position11>
       <Position12>
-        <Filename Value="incele.pas"/>
-        <Caret Line="232" Column="74" TopLine="204"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="136" Column="21" TopLine="103"/>
       </Position12>
       <Position13>
-        <Filename Value="incele.pas"/>
-        <Caret Line="277" Column="10" TopLine="249"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="139" TopLine="108"/>
       </Position13>
       <Position14>
-        <Filename Value="incele.pas"/>
-        <Caret Line="278" Column="15" TopLine="250"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="137" Column="35" TopLine="108"/>
       </Position14>
       <Position15>
-        <Filename Value="incele.pas"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="139" Column="5" TopLine="108"/>
       </Position15>
       <Position16>
-        <Filename Value="incele.pas"/>
-        <Caret Line="96" Column="74" TopLine="69"/>
+        <Filename Value="dosya.pas"/>
+        <Caret Line="24" Column="32"/>
       </Position16>
       <Position17>
-        <Filename Value="incele.pas"/>
-        <Caret Line="100" Column="25" TopLine="72"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="139" Column="52" TopLine="109"/>
       </Position17>
       <Position18>
-        <Filename Value="incele.pas"/>
-        <Caret Line="107" Column="42" TopLine="79"/>
+        <Filename Value="gelisim.txt"/>
+        <Caret Line="13" Column="35"/>
       </Position18>
       <Position19>
-        <Filename Value="incele.pas"/>
-        <Caret Line="304" Column="27" TopLine="298"/>
+        <Filename Value="anasayfa.pas"/>
+        <Caret Line="26" Column="30"/>
       </Position19>
       <Position20>
-        <Filename Value="incele.pas"/>
+        <Filename Value="donusum.pas"/>
+        <Caret Line="172" Column="41" TopLine="155"/>
       </Position20>
       <Position21>
-        <Filename Value="incele.pas"/>
-        <Caret Line="118" Column="47" TopLine="90"/>
+        <Filename Value="donusum.pas"/>
+        <Caret Line="191" Column="5" TopLine="156"/>
       </Position21>
       <Position22>
-        <Filename Value="incele.pas"/>
-        <Caret Line="127" Column="30" TopLine="99"/>
+        <Filename Value="donusum.pas"/>
+        <Caret Line="7" Column="25"/>
       </Position22>
       <Position23>
         <Filename Value="yorumla.pas"/>
-        <Caret Line="664" Column="73" TopLine="633"/>
+        <Caret Line="11"/>
       </Position23>
       <Position24>
-        <Filename Value="incele.pas"/>
-        <Caret Line="316" Column="56" TopLine="293"/>
+        <Filename Value="yorumla.pas"/>
       </Position24>
       <Position25>
-        <Filename Value="incele.pas"/>
-        <Caret Line="325" Column="58" TopLine="295"/>
+        <Filename Value="yorumla.pas"/>
+        <Caret Line="697" Column="5" TopLine="662"/>
       </Position25>
       <Position26>
-        <Filename Value="incele.pas"/>
-        <Caret Line="323" Column="39" TopLine="305"/>
+        <Filename Value="yorumla.pas"/>
+        <Caret Line="7" Column="28"/>
       </Position26>
       <Position27>
-        <Filename Value="yorumla.pas"/>
-        <Caret Line="650" Column="42" TopLine="640"/>
+        <Filename Value="dosya.pas"/>
+        <Caret Line="24" Column="32"/>
       </Position27>
       <Position28>
-        <Filename Value="incele.pas"/>
-        <Caret Line="326" Column="13" TopLine="302"/>
+        <Filename Value="takip.pas"/>
+        <Caret Line="28" Column="94" TopLine="13"/>
       </Position28>
       <Position29>
-        <Filename Value="yorumla.pas"/>
-        <Caret Line="651" Column="29" TopLine="629"/>
+        <Filename Value="gelisim.txt"/>
+        <Caret Line="15" Column="59"/>
       </Position29>
       <Position30>
-        <Filename Value="yorumla.pas"/>
-        <Caret Line="24" Column="35"/>
+        <Filename Value="dosya.pas"/>
+        <Caret Line="42" Column="21" TopLine="18"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>
