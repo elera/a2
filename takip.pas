@@ -14,14 +14,14 @@ interface
 
 uses Classes, SysUtils;
 
-procedure VerileriGoruntule;
+//procedure VerileriGoruntule;
 
 implementation
 
-uses anasayfa, yorumla, genel;
+uses anaform, yorumla, genel;
 
 // işlem koduna sahip satırların veri içeriklerini görüntüler
-procedure VerileriGoruntule;
+{procedure VerileriGoruntule;
 begin
 
   // etiket değeri var ise ...
@@ -131,6 +131,6 @@ begin
 
   // ve bir satır boşluk
   frmAnaSayfa.mmDurumBilgisi.Lines.Add('');
-end;
+end;}
 
 end.

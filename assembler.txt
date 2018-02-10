@@ -1,0 +1,14 @@
+Assembly
+
+Etiket Tanımlama (label):
+
+Program dallanma, bellek adres bilgisine ulaşmak amacıyla programın birçok yerinde işaretler tanımlanabilir. Etiketler, etiket ifadesinin sonunda : karakteri olacak şekilde, küçük - büyük veya karma karakterlerle tanımlabilir. Her bir satırda sadece bir adet etiket tanımlanabilir. Etiket tanımlamaları içerisinde türkçe karakterler bulunabilir. Etiketler derleyici tarafından kullanılırken her bir karakter küçük harfe çevirilir; dolayısıyla aynı sesli sözcükleri ifade eden tüm işaretler derleyici tarafından tek bir etiket olarak yorumlanırlar. Aşağıdaki etiket tanımlamalarının tümü aynı etiket tanımlamasını ifade etmekte olup; bu ifadelerin tümü derleyici tarafından "etiket" olarak yorumlanmaktadır.
+
+EtiKeT:
+EtiKet:
+EtİKET: 
+
+Etiketler kullanılırken aşağıdaki kurallara dikkat edilmesi gereklidir:
+1. Etiketlerin ilk karakterinin sayısal bir rakam ile başlamaması
+1. Arada boşluk olmaksızın, tek bir parça olarak tanımlanması
+2. Yazmaç ifadeleri (eax, esi vb), assembler komutu (mov, inc vb) ve diğer mantıksal değer (shl, shr) gibi özel ifadelerin etiket olarak kullanılmaması

@@ -14,19 +14,19 @@ interface
 
 uses Classes, SysUtils, genel;
 
-function SayiyaCevir(Sistem10s: string; var Sistem10i: Integer): Boolean;
-function Sistem2Sistem10(Sistem2: string; var Sistem10: Integer): Boolean;
-function Sistem16Sistem10(Sistem16: string; var Sistem10: Integer): Boolean;
+function SayiyaCevir(Sistem10s: string; var Sistem10i: QWord): Boolean;
+function Sistem2Sistem10(Sistem2: string; var Sistem10: QWord): Boolean;
+function Sistem16Sistem10(Sistem16: string; var Sistem10: QWord): Boolean;
 function KucukHarfeCevir(s: string): string;
 function SayiTipiniAl(SayisalDeger: QWord): TSayiTipi;
 
 implementation
 
-uses LazUTF8, strutils;
+uses LazUTF8, strutils, anaform;
 
 // ikili / onlu / onaltılı sayısal karakter katarının (string) sayısal (int)
 // değere dönüştürme işlemini gerçekleştirir
-function SayiyaCevir(Sistem10s: string; var Sistem10i: Integer): Boolean;
+function SayiyaCevir(Sistem10s: string; var Sistem10i: QWord): Boolean;
 var
   SayiSistemi: Char;
   VeriUz: Integer;
@@ -66,7 +66,7 @@ begin
 end;
 
 // ikili sistem sayısal değerini onlu sistem sayısal değerine çevirir
-function Sistem2Sistem10(Sistem2: string; var Sistem10: Integer): Boolean;
+function Sistem2Sistem10(Sistem2: string; var Sistem10: QWord): Boolean;
 var
   i, j, IkiliDegerUz: Integer;
 begin
@@ -95,15 +95,15 @@ begin
 end;
 
 // onaltılı sistem sayısal değerini onlu sistem sayısal değerine çevirir
-function Sistem16Sistem10(Sistem16: string; var Sistem10: Integer): Boolean;
+function Sistem16Sistem10(Sistem16: string; var Sistem10: QWord): Boolean;
 var
-  i: Integer;
+  i: Int64;
 begin
 
   Result := True;
 
   try
-    i := Hex2Dec(Sistem16);
+    i := StrToInt64('$' + Sistem16);
   except
     Result := False;
   end;

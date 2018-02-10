@@ -12,7 +12,7 @@ unit genel;
 
 interface
 
-uses Classes, SysUtils, etiket, matematik;
+uses Classes, SysUtils, etiket, matematik, asm2;
 
 type
   // her bir satırın veri tipi.
@@ -45,30 +45,32 @@ type
 
 const
   // 0 numaralı hata kodu, HataKodunuAl işlevinin kendisi için tanımlanmıştır.
-  TOPLAM_HATA_BILGI_UYARI = 16;
+  TOPLAM_HATA_BILGI_UYARI = 17;
   HATA_YOK = 0;
-  HATA_BILINMEYEN_HATA_KODU = 1;
+  HATA_BILINMEYEN_HATA = 1;
   HATA_BILINMEYEN_KOMUT = 2;
   HATA_BEKLENMEYEN_IFADE = 3;
   HATA_SAYISAL_DEGER_GEREKLI = 4;
   HATA_ETIKET_TANIMLANMIS = 5;
-  HATA_BIRDEN_FAZLA_ETIKET = 6;
-  HATA_KAPATMA_PAR_GEREKLI = 7;
-  HATA_PAR_ONC_SAYISAL_DEGER = 8;
-  HATA_HATALI_ISL_KULLANIM = 9;
-  HATA_YAZMAC_GEREKLI = 10;
-  HATA_OLCEK_ZATEN_KULLANILMIS = 11;
-  HATA_HATALI_OLCEK_DEGER = 12;
-  HATA_OLCEK_DEGER_GEREKLI = 13;
-  HATA_HATALI_KULLANIM = 14;
-  HATA_BELLEKTEN_BELLEGE = 15;
-  HATA_HATALI_SAYISAL_DEGER = 16;
+  HATA_HATALI_ETIKET = 6;
+  HATA_BIRDEN_FAZLA_ETIKET = 7;
+  HATA_KAPATMA_PAR_GEREKLI = 8;
+  HATA_PAR_ONC_SAYISAL_DEGER = 9;
+  HATA_HATALI_ISL_KULLANIM = 10;
+  HATA_YAZMAC_GEREKLI = 11;
+  HATA_OLCEK_ZATEN_KULLANILMIS = 12;
+  HATA_HATALI_OLCEK_DEGER = 13;
+  HATA_OLCEK_DEGER_GEREKLI = 14;
+  HATA_HATALI_KULLANIM = 15;
+  HATA_BELLEKTEN_BELLEGE = 16;
+  HATA_HATALI_SAYISAL_DEGER = 17;
 
-  sHATA_BILINMEYEN_HATA_KODU = 'Bilinmeyen hata kodu!';
+  sHATA_BILINMEYEN_HATA = 'Bilinmeyen hata!';
   sHATA_BILINMEYEN_KOMUT = 'Bilinmeyen komut!';
   sHATA_BEKLENMEYEN_IFADE = 'Beklenmeyen ifade!';
   sHATA_SAYISAL_DEGER_GEREKLI = 'Sayısal değer gerekli!';
   sHATA_ETIKET_TANIMLANMIS = 'Etiket daha önce tanımlanmış!';
+  sHATA_HATALI_ETIKET = 'Etiket, etiket tanımlama kurallarına uygun değil!';
   sHATA_BIRDEN_FAZLA_ETIKET = 'Aynı satırda birden fazla etiket tanımlayamazsınız!';
   sHATA_KAPATMA_PAR_GEREKLI = 'Kapatma '')'' parantezi gerekli!';
   sHATA_PAR_ONC_SAYISAL_DEGER = 'Parantez öncesi sayısal değer hatası!';
@@ -82,11 +84,12 @@ const
   sHATA_HATALI_SAYISAL_DEGER = 'Hatalı sayısal değer!';
 
   BilgiDizisi: array[1..TOPLAM_HATA_BILGI_UYARI] of TBilgi = (
-    (Tip: btHata;   Kod: HATA_BILINMEYEN_HATA_KODU;   Aciklama: sHATA_BILINMEYEN_HATA_KODU),
+    (Tip: btHata;   Kod: HATA_BILINMEYEN_HATA;        Aciklama: sHATA_BILINMEYEN_HATA),
     (Tip: btHata;   Kod: HATA_BILINMEYEN_KOMUT;       Aciklama: sHATA_BILINMEYEN_KOMUT),
     (Tip: btHata;   Kod: HATA_BEKLENMEYEN_IFADE;      Aciklama: sHATA_BEKLENMEYEN_IFADE),
     (Tip: btHata;   Kod: HATA_SAYISAL_DEGER_GEREKLI;  Aciklama: sHATA_SAYISAL_DEGER_GEREKLI),
     (Tip: btHata;   Kod: HATA_ETIKET_TANIMLANMIS;     Aciklama: sHATA_ETIKET_TANIMLANMIS),
+    (Tip: btHata;   Kod: HATA_HATALI_ETIKET;          Aciklama: sHATA_HATALI_ETIKET),
     (Tip: btHata;   Kod: HATA_BIRDEN_FAZLA_ETIKET;    Aciklama: sHATA_BIRDEN_FAZLA_ETIKET),
     (Tip: btHata;   Kod: HATA_KAPATMA_PAR_GEREKLI;    Aciklama: sHATA_KAPATMA_PAR_GEREKLI),
     (Tip: btHata;   Kod: HATA_PAR_ONC_SAYISAL_DEGER;  Aciklama: sHATA_PAR_ONC_SAYISAL_DEGER),
@@ -101,7 +104,11 @@ const
   );
 
 var
-  GEtiketler: TEtiket;                      // derleme aşamasındaki tüm etiketleri yönetir
+  MevcutBellekAdresi: Integer;
+  KodBellek: array[0..4095] of Byte;
+  KodBellekU: Integer;
+
+  GAsm2: TAsm2;                              // derleyici ana nesnesi
   GMatematik: TMatematik;                   // tüm çoklu matematiksel / mantıksal işlemleri yönetir
   GAciklama,                                // her bir satır için tanımlanan açıklama
   GEtiket,                                  // her bir satır için tanımlanan etiket
@@ -137,7 +144,7 @@ implementation
 function HataKodunuAl(HataKodu: Integer): string;
 begin
 
-  if(HataKodu > TOPLAM_HATA_BILGI_UYARI) then HataKodu := HATA_BILINMEYEN_HATA_KODU;
+  if(HataKodu > TOPLAM_HATA_BILGI_UYARI) then HataKodu := HATA_BILINMEYEN_HATA;
   Result := BilgiDizisi[HataKodu].Aciklama;
 end;
 

@@ -27,23 +27,23 @@ type
   TIslem = record
     Isaret: Char;               // işlem ve parantez işareti (+-*/)
     DegerMevcutMu: Boolean;     // parantez öncesi değer mevcut mu?
-    Deger: Integer;             // işlenecek değer
+    Deger: QWord;               // işlenecek değer
   end;
 
   TMatematik = class
   private
     FElemanSayisi,            // FIslemDizi dizisindeki eleman sayısı
-    FSayiToplami: Integer;
+    FSayiToplami: QWord;
     FSayiMevcut: Boolean;     // parantez öncesi sayı olup olmadığını belirtir
     FAktifIslem: TIslem;      // en son yapılan işlem
     FIslemDizi: array of TIslem;
   public
     constructor Create;
     destructor Destroy; override;
-    procedure SayiEkle(AIslem: string; ADegerMevcut: Boolean; ADeger: Integer);
+    procedure SayiEkle(AIslem: string; ADegerMevcut: Boolean; ADeger: QWord);
     function ParantezEkle(Parantez: Char; DegerMevcut: Boolean;
-      ADeger: Integer): Integer;
-    function Sonuc(var SonucDeger: Integer): Integer;
+      ADeger: QWord): Integer;
+    function Sonuc(var SonucDeger: QWord): Integer;
     procedure Temizle;
   published
   end;
@@ -75,7 +75,7 @@ end;
 
 // nesneye sayı ekleme işlevini yerine getirir
 // AIslem değişkeni, ileriye yönelik mantıksal değerleri yönetmek için tasarlanmıştır
-procedure TMatematik.SayiEkle(AIslem: string; ADegerMevcut: Boolean; ADeger: Integer);
+procedure TMatematik.SayiEkle(AIslem: string; ADegerMevcut: Boolean; ADeger: QWord);
 begin
 
   // değerin mevcut olmaması halinde mevcut değerin işareti değiştirilir
@@ -106,7 +106,7 @@ end;
 
 // öncelik içeren parantez işlemleri
 function TMatematik.ParantezEkle(Parantez: Char; DegerMevcut: Boolean;
-  ADeger: Integer): Integer;
+  ADeger: QWord): Integer;
 begin
 
   if(Parantez = '(') then
@@ -190,7 +190,7 @@ begin
 end;
 
 // girdilerden oluşan sayısal ifadelerin sonucunu geri döndürür
-function TMatematik.Sonuc(var SonucDeger: Integer): Integer;
+function TMatematik.Sonuc(var SonucDeger: QWord): Integer;
 begin
 
   // hatalı örnek ifade: ((1 + 2)

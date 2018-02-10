@@ -7,7 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, anasayfa, yorumla, donusum, matematik, takip, dosya;
+  Forms, anaform, yorumla, donusum, matematik, takip, dosya, derlemebilgisiform,
+  etiketform, asm2;
 
 {$R *.res}
 
@@ -15,6 +16,8 @@ begin
   Application.Title:='Assembler 2 (a2)';
   RequireDerivedFormResource:=True;
   Application.Initialize;
-  Application.CreateForm(TfrmAnaSayfa, frmAnaSayfa);
+  Application.CreateForm(TfrmAnaForm, frmAnaForm);
+  Application.CreateForm(TfrmDerlemeBilgisi, frmDerlemeBilgisi);
+  Application.CreateForm(TfrmEtiketForm, frmEtiketForm);
   Application.Run;
 end.

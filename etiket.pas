@@ -4,7 +4,7 @@
 
   İşlev: proje içerisindeki etiketleri (label) yönetir
 
-  Güncelleme Tarihi: 03/02/2018
+  Güncelleme Tarihi: 09/02/2018
 
   Bilgi: etiket işlemlerinde etiketlerin isimlendirmesi, küçük harflerle yapılmaktadır.
 
@@ -21,72 +21,100 @@ interface
 uses Classes, SysUtils;
 
 type
-  TEtiketYapisi = record
-    Ad: string;
-    Adres: Integer;
-    AtamaYapildi: Boolean;    // adres değerine adres değeri atandı mı?
+  TEtiket = class(TCollectionItem)
+  private
+    FAdi: string;
+    FBellekAdresi: QWord;
+  public
+    constructor Create(ACollection: TCollection); override;
+    destructor Destroy; override;
+  published
+    property Adi: string read FAdi write FAdi;
+    property BellekAdresi: QWord read FBellekAdresi write FBellekAdresi;
   end;
 
-  TEtiket = class
+  TEtiketler = class(TCollection)
   private
-    FToplam: Integer;
-    FEtiketler: array of TEtiketYapisi;
+    function Al(ASiraNo: Integer): TEtiket;
+    procedure Ver(ASiraNo: Integer; AEtiket: TEtiket);
+    function GetToplam: Integer;
   public
     constructor Create;
-    destructor Destroy; override;
-    function Ekle(AAd: string; AAdres: Integer; AAtamaYapildi: Boolean): Integer;
-    function Bul(AAd: string; var AAdres: Integer): Boolean;
+  public
+    function Ekle(AEtiketAdi: string; ABellekAdresi: QWord): Integer;
+    function Bul(AEtiketAdi: string; var ABellekAdresi: QWord): Boolean;
     procedure Temizle;
-  published
-    property Toplam: Integer read FToplam;
+    property Toplam: Integer read GetToplam;
+    property Eleman[Sira: Integer]: TEtiket read Al write Ver;
   end;
 
 implementation
 
-uses genel, donusum;
+uses genel, donusum, yorumla;
 
-constructor TEtiket.Create;
+constructor TEtiket.Create(ACollection: TCollection);
 begin
 
-  FToplam := 0;
+  inherited Create(ACollection);
 end;
 
 destructor TEtiket.Destroy;
 begin
 
-  if(FToplam > 0) then Temizle;
-
-  inherited;
+  inherited Destroy;
 end;
 
-{ TODO : eklenecek etiket değerleri KESİNLİKLE işlem kodu, yazmaç vb
-  özel bir değer olmayacak. etiketler kontrol edilecek}
-function TEtiket.Ekle(AAd: string; AAdres: Integer; AAtamaYapildi: Boolean): Integer;
+constructor TEtiketler.Create;
+begin
+
+  inherited Create(TEtiket);
+end;
+
+function TEtiketler.Ekle(AEtiketAdi: string; ABellekAdresi: QWord): Integer;
 var
   i: Integer;
   s: string;
+  Etiket: TEtiket;
+  Komut: TKomutDurum;
+  Yazmac: TYazmacDurum;
 begin
 
-  Result := 0;
+  Result := HATA_YOK;
 
-  s := KucukHarfeCevir(AAd);
+  s := KucukHarfeCevir(AEtiketAdi);
 
-  if(FToplam = 0) then
+  // etiket, bir sayı ile başlayamaz!
+  if(s[1] in ['0'..'9']) then
   begin
 
-    Inc(FToplam);
-    SetLength(FEtiketler, FToplam);
-    FEtiketler[FToplam - 1].Ad := s;
-    FEtiketler[FToplam - 1].Adres := AAdres;
-    FEtiketler[FToplam - 1].AtamaYapildi := AAtamaYapildi;
+    Result := HATA_HATALI_ETIKET;
+    Exit;
+  end;
+
+  // etiket, işlem kodu veya yazmaç olamaz!
+  Komut := KomutBilgisiAl(AEtiketAdi);
+  Yazmac := YazmacBilgisiAl(AEtiketAdi);
+  if(Komut.SiraNo >= 0) or (Yazmac.Sonuc >= 0) then
+  begin
+
+    Result := HATA_HATALI_ETIKET;
+    Exit;
+  end;
+
+  if(Toplam = 0) then
+  begin
+
+    Etiket := inherited Add as TEtiket;
+    Etiket.Adi := s;
+    Etiket.BellekAdresi := ABellekAdresi;
   end
   else
   begin
 
-    for i := 0 to FToplam - 1 do
+    for i := 0 to Toplam - 1 do
     begin
 
-      if(FEtiketler[i].Ad = s) then
+      if(Eleman[i].Adi = s) then
       begin
 
         Result := HATA_ETIKET_TANIMLANMIS;
@@ -94,15 +122,13 @@ begin
       end;
     end;
 
-    Inc(FToplam);
-    SetLength(FEtiketler, FToplam);
-    FEtiketler[FToplam - 1].Ad := s;
-    FEtiketler[FToplam - 1].Adres := AAdres;
-    FEtiketler[FToplam - 1].AtamaYapildi := AAtamaYapildi;
+    Etiket := inherited Add as TEtiket;
+    Etiket.Adi := s;
+    Etiket.BellekAdresi := ABellekAdresi;
   end;
 end;
 
-function TEtiket.Bul(AAd: string; var AAdres: Integer): Boolean;
+function TEtiketler.Bul(AEtiketAdi: string; var ABellekAdresi: QWord): Boolean;
 var
   i: Integer;
   s: string;
@@ -110,26 +136,43 @@ begin
 
   Result := False;
 
-  s := KucukHarfeCevir(AAd);
+  s := KucukHarfeCevir(AEtiketAdi);
 
-  for i := 0 to FToplam - 1 do
+  for i := 0 to Toplam - 1 do
   begin
 
-    if(FEtiketler[i].Ad = s) and (FEtiketler[i].AtamaYapildi) then
+    if(Eleman[i].Adi = s) then
     begin
 
-      AAdres := FEtiketler[i].Adres;
+      ABellekAdresi := Eleman[i].BellekAdresi;
       Result := True;
       Exit;
     end;
   end;
 end;
 
-procedure TEtiket.Temizle;
+procedure TEtiketler.Temizle;
 begin
 
-  FToplam := 0;
-  SetLength(FEtiketler, FToplam);
+  inherited Clear;
+end;
+
+function TEtiketler.Al(ASiraNo: Integer): TEtiket;
+begin
+
+  Result := TEtiket(inherited GetItem(ASiraNo));
+end;
+
+procedure TEtiketler.Ver(ASiraNo: Integer; AEtiket: TEtiket);
+begin
+
+  inherited SetItem(ASiraNo, AEtiket);
+end;
+
+function TEtiketler.GetToplam: Integer;
+begin
+
+  Result := Count;
 end;
 
 end.

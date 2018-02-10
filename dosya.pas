@@ -14,14 +14,14 @@ interface
 
 uses Classes, SysUtils;
 
-procedure ProgramDosyasiOlustur;
+function ProgramDosyasiOlustur: Boolean;
 
 implementation
 
-uses Forms;
+uses genel, Forms;
 
 // ikili dosya biçiminde (binary file format) dosya oluştur
-procedure ProgramDosyasiOlustur;
+function ProgramDosyasiOlustur: Boolean;
 var
   F: file of Byte;
   ProgramDizin, DosyaAdi, TamYol: string;
@@ -39,15 +39,20 @@ begin
   if(IOResult = 0) then
   begin
 
-    for i := 1 to $F do
+    if(KodBellekU > 0) then
     begin
 
-      Write(F, i);
-      Application.ProcessMessages;
-    end;
-  end;
+      for i := 0 to KodBellekU - 1 do
+      begin
 
-  CloseFile(F);
+        Write(F, KodBellek[i]);
+        Application.ProcessMessages;
+      end;
+    end;
+
+    CloseFile(F);
+    Result := True;
+  end else Result := False;
 end;
 
 end.

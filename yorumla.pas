@@ -154,20 +154,20 @@ type
   // 3. Veri1 = eğer varsa, karakter dizisi türünde veri
   // 4. Veri2 = eğer varsa, sayısal türde veri
   TAsmKomut = function(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-    Veri2: Integer): Integer;
+    Veri2: QWord): Integer;
 
 function KomutBilgisiAl(AKomut: string): TKomutDurum;
 function YazmacBilgisiAl(AYazmac: string): TYazmacDurum;
 function KomutHata(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: Integer): Integer;
+  Veri2: QWord): Integer;
 function GenelKomutSeti1(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: Integer): Integer;
+  Veri2: QWord): Integer;
 function KomutINT(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: Integer): Integer;
+  Veri2: QWord): Integer;
 function KomutMOV(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: Integer): Integer;
+  Veri2: QWord): Integer;
 function GenelTanimlama(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: Integer): Integer;
+  Veri2: QWord): Integer;
 
 var
   KomutListe: array[0..TOPLAM_KOMUT - 1] of TAsmKomut = (
@@ -245,7 +245,7 @@ var
 
 implementation
 
-uses anasayfa, incele, takip, donusum;
+uses anaform, incele, takip, donusum;
 
 // ünite içi genel kullanımlık yerel değişkenler
 var
@@ -303,7 +303,7 @@ end;
 
 // hata olması durumunda çağrılacak işlev
 function KomutHata(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: Integer): Integer;
+  Veri2: QWord): Integer;
 begin
 
   GHataAciklama := Veri1;
@@ -312,7 +312,7 @@ end;
 
 // tüm parametresiz komutların ortak çağrı işlevi
 function GenelKomutSeti1(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: Integer): Integer;
+  Veri2: QWord): Integer;
 begin
 
   if(VeriKontrolTip = vktIslemKodu) and (ParcaNo = 1) then
@@ -325,7 +325,7 @@ begin
   else if(VeriKontrolTip = vktSon) then
   begin
 
-    VerileriGoruntule;
+    //VerileriGoruntule;
     Result := 0;
   end
   else
@@ -338,7 +338,7 @@ end;
 
 // int komutu
 function KomutINT(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: Integer): Integer;
+  Veri2: QWord): Integer;
 begin
 
   if(VeriKontrolTip = vktIslemKodu) and (ParcaNo = 1) then
@@ -359,7 +359,7 @@ begin
   else if(VeriKontrolTip = vktSon) then
   begin
 
-    VerileriGoruntule;
+    //VerileriGoruntule;
     Result := 0;
   end
   else
@@ -372,7 +372,7 @@ end;
 
 // mov komutu ve diğer ilgili en karmaşık komutların prototipi
 function KomutMOV(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: Integer): Integer;
+  Veri2: QWord): Integer;
 begin
 
   {frmAnaSayfa.mmDurumBilgisi.Lines.Add('Parça No: ' + IntToStr(ParcaNo));
@@ -646,7 +646,7 @@ begin
   else if(VeriKontrolTip = vktSon) then
   begin
 
-    VerileriGoruntule;
+    //VerileriGoruntule;
     //frmAnaSayfa.mmDurumBilgisi.Lines.Add('Son: ' + IntToStr(ParcaNo));
     Result := 0;
   end else Result := 1;
@@ -656,9 +656,11 @@ var
   GSayiTipi: TSayiTipi;
 
 function GenelTanimlama(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip;
-  Veri1: string; Veri2: Integer): Integer;
+  Veri1: string; Veri2: QWord): Integer;
 var
   SayiTipi: TSayiTipi;
+  i, j: Integer;
+  SayisalVeri: QWord;
 begin
 
   if(VeriKontrolTip = vktTanim) then
@@ -678,12 +680,24 @@ begin
     if(GSayiTipi >= SayiTipi) then
     begin
 
+      SayisalVeri := Veri2;
+
       case GSayiTipi of
-        st1B: frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sayı: ' + Format('%.2d', [Veri2]));
-        st2B: frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sayı: ' + Format('%.4d', [Veri2]));
-        st4B: frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sayı: ' + Format('%.8d', [Veri2]));
-        st8B: frmAnaSayfa.mmDurumBilgisi.Lines.Add('Sayı: ' + Format('%.16d', [Veri2]));
+        st1B: j := 1;
+        st2B: j := 2;
+        st4B: j := 4;
+        st8B: j := 8;
       end;
+
+      for i := 1 to j do
+      begin
+
+        KodBellek[KodBellekU] := Byte(SayisalVeri);
+        SayisalVeri := SayisalVeri shr 8;
+        Inc(KodBellekU);
+      end;
+
+      Inc(MevcutBellekAdresi, j);
 
       Result := 0;
     end else Result := HATA_HATALI_SAYISAL_DEGER;
@@ -691,7 +705,7 @@ begin
   begin
 
     Result := 0;
-  end;
+  end else Result := HATA_BILINMEYEN_HATA;
 end;
 
 end.

@@ -1,0 +1,153 @@
+object frmDerlemeBilgisi: TfrmDerlemeBilgisi
+  Left = 447
+  Height = 188
+  Top = 305
+  Width = 255
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsDialog
+  Caption = 'Derleme Bilgisi'
+  ClientHeight = 188
+  ClientWidth = 255
+  OnShow = FormShow
+  LCLVersion = '1.8.0.6'
+  object lblSatirSayisiB: TLabel
+    Left = 146
+    Height = 15
+    Top = 63
+    Width = 58
+    Caption = 'Satır Sayısı:'
+    ParentColor = False
+    ParentFont = False
+  end
+  object lblDosyaSayisiB: TLabel
+    Left = 25
+    Height = 15
+    Top = 63
+    Width = 67
+    Caption = 'Dosya Sayısı:'
+    ParentColor = False
+    ParentFont = False
+  end
+  object btnTamam: TBitBtn
+    Left = 163
+    Height = 26
+    Top = 155
+    Width = 87
+    Anchors = [akRight, akBottom]
+    Cancel = True
+    Caption = '&Tamam'
+    Default = True
+    Kind = bkOK
+    ModalResult = 1
+    TabOrder = 0
+  end
+  object lblSatirSayisi: TLabel
+    Left = 218
+    Height = 15
+    Top = 63
+    Width = 7
+    Caption = '0'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+  end
+  object lblDosyaSayisi: TLabel
+    Left = 107
+    Height = 15
+    Top = 63
+    Width = 7
+    Caption = '1'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+  end
+  object lblProjeDosyasiB: TLabel
+    Left = 8
+    Height = 15
+    Top = 38
+    Width = 97
+    Caption = 'Ana Proje Dosyası:'
+    ParentColor = False
+    ParentFont = False
+  end
+  object lblProjeDosyasi: TLabel
+    Left = 118
+    Height = 15
+    Top = 38
+    Width = 130
+    AutoSize = False
+    Caption = 'test.asm'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+  end
+  object shpCizgi: TShape
+    Left = 8
+    Height = 1
+    Top = 144
+    Width = 242
+  end
+  object lblProjeDosyasiB1: TLabel
+    Left = 41
+    Height = 15
+    Top = 7
+    Width = 173
+    Caption = 'Proje dosyası başarıyla derlendi.'
+    Font.Color = clRed
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+  end
+  object shpCizgi1: TShape
+    Left = 8
+    Height = 1
+    Top = 30
+    Width = 242
+  end
+  object lblIkiliDosya: TLabel
+    Left = 118
+    Height = 15
+    Top = 96
+    Width = 130
+    AutoSize = False
+    Caption = 'test.bin'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+  end
+  object lblIkiliDosyaB: TLabel
+    Left = 8
+    Height = 15
+    Top = 96
+    Width = 100
+    Caption = 'Oluşturulan Dosya:'
+    ParentColor = False
+    ParentFont = False
+  end
+  object lblIkiliUzunlukB: TLabel
+    Left = 8
+    Height = 15
+    Top = 120
+    Width = 80
+    Caption = 'Uzunluk (Byte):'
+    ParentColor = False
+    ParentFont = False
+  end
+  object lblIkiliUzunluk: TLabel
+    Left = 118
+    Height = 15
+    Top = 120
+    Width = 130
+    AutoSize = False
+    Caption = '0'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+  end
+  object shpCizgi2: TShape
+    Left = 19
+    Height = 1
+    Top = 88
+    Width = 219
+  end
+end

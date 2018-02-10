@@ -33,7 +33,7 @@ function KodUret(KodDizisi: string): Integer;
 
 implementation
 
-uses sysutils, yorumla, anasayfa, donusum;
+uses sysutils, yorumla, anaform, donusum;
 
 type
   TIfadeDurum = (idYok, idAciklama, idKPAc, idKPKapat);
@@ -53,7 +53,7 @@ var
   ParcaNo, i: Integer;
   IfadeDurum: TIfadeDurum;
   SatirSonu: Boolean;
-  SayisalDeger: Integer;      // geçici deger değişkeni
+  SayisalDeger: QWord;        // geçici deger değişkeni
   KPSayisi: Integer;          // köşeli parantezlerin takibini gerçekleştiren değişken
   SayisalDegerMevcut,         // dizi içerisinde sayısal değer olup olmadığını takip eder
   SayisalIslemYapiliyor,
@@ -63,7 +63,7 @@ var
   // her bir komutun yorumlanarak ilgili işleve yönlendirilmesini sağlar
   // ParcaNo değişkeninin artırma işlemini SADECE bu işlev gerçekleştirmektedir
   function KomutYorumla(AParcaNo: Integer; AVeriKontrolTip: TVeriKontrolTip; AVeri1: string;
-    AVeri2: Integer): Integer;
+    AVeri2: QWord): Integer;
   var
     _i: Integer;
     _AVeriKontrolTip: TVeriKontrolTip;
@@ -132,7 +132,8 @@ var
 
             // verinin bir tanım ve etiket değeri olması halinde
             // 1. tanım etiketini listeye ekle
-            if(ParcaNo = 2) then Result := GEtiketler.Ekle(GTanimEtiket, 0, False);
+            if(ParcaNo = 2) then Result := GAsm2.Etiketler.Ekle(GTanimEtiket,
+              MevcutBellekAdresi);
 
             // 2. hata olmaması durumunda ilgili işleve çağrıda bulun
             if(Result = HATA_YOK) then
@@ -234,9 +235,6 @@ var
       if(KomutUz > 0) then
       begin
 
-        // 1. sayıya çevirme işlemi şu aşamada ondalık sayılarla ilgilidir
-        // 2. ikili, onaltılı sayı sistemlerinden başka bellek etiket değerleri
-        //   de sayısal ifadelerin içerisinde yer alacaktır
         if(SayiyaCevir(Komut, SayisalDeger)) then
         begin
 
@@ -315,17 +313,25 @@ begin
       else if(C = ',') and (GAnaBolumVeriTipi = abvtTanim) then
       begin
 
+        // eğer veri sayısal bir değer ise...
         if(SayisalDegerMevcut) then
         begin
 
-          if(SayiyaCevir(Komut, i)) then
+          if(SayiyaCevir(Komut, SayisalDeger)) then
           begin
 
-            GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', i);
+            GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
             if(GHataKodu = HATA_YOK) then
               GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0)
           end else GHataKodu := HATA_HATALI_SAYISAL_DEGER;
-        end else GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0)
+        end
+        else
+        begin
+
+          if(GAsm2.Etiketler.Bul(Komut, SayisalDeger)) then
+            GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger)
+          else GHataKodu := HATA_BILINMEYEN_HATA;
+        end;
       end
       else if(C = '[') or (C = ']') then
       begin
@@ -376,12 +382,12 @@ begin
                   if(GHataKodu = HATA_YOK) then
                   begin
 
-                    GHataKodu := GMatematik.Sonuc(i);
+                    GHataKodu := GMatematik.Sonuc(SayisalDeger);
                     if(GHataKodu = HATA_YOK) then
                     begin
 
                       SayisalDegerMevcut := False;
-                      GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', i);
+                      GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
                     end;
                   end;
                 end;
@@ -413,7 +419,7 @@ begin
             GIslemKodAnaBolum += [ikabEtiket];
 
             // etiketin mevcut olup olmadığını gerçekleştir
-            GHataKodu := GEtiketler.Ekle(Komut, 0, False);
+            GHataKodu := GAsm2.Etiketler.Ekle(Komut, MevcutBellekAdresi);
             if(GHataKodu = HATA_YOK) then
             begin
 
@@ -544,11 +550,18 @@ begin
           if(GHataKodu = HATA_YOK) then
           begin
 
-            GHataKodu := GMatematik.Sonuc(i);
+            GHataKodu := GMatematik.Sonuc(SayisalDeger);
             if(GHataKodu = HATA_YOK) then
-              GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', i)
+              GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger)
           end;
-        end else GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);
+        end
+        else
+        begin
+
+          if(GAsm2.Etiketler.Bul(Komut, SayisalDeger)) then
+            GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger)
+          else GHataKodu := HATA_BILINMEYEN_HATA;
+        end;
       end;
     end;
 
