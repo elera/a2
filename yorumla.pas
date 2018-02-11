@@ -245,7 +245,7 @@ var
 
 implementation
 
-uses anaform, incele, takip, donusum;
+uses anaform, incele, donusum;
 
 // ünite içi genel kullanımlık yerel değişkenler
 var

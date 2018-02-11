@@ -4,7 +4,7 @@
 
   İşlev: program ana sayfası
 
-  Güncelleme Tarihi: 10/02/2018
+  Güncelleme Tarihi: 11/02/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -53,7 +53,7 @@ implementation
 {$R *.lfm}
 
 uses incele, genel, yorumla, etiket, matematik, donusum, dosya, derlemebilgisiform,
-  etiketform, asm2, ShellApi, windows;
+  etiketform, asm2, ayarlar, ShellApi, windows;
 
 procedure TfrmAnaForm.FormCreate(Sender: TObject);
 begin
@@ -61,10 +61,34 @@ begin
   // çalışma zamanlı nesneler oluşturuluyor
   GAsm2 := TAsm2.Create;
   GMatematik := TMatematik.Create;
+
+  // daha önce kaydedilen program ayarlarını oku
+  GProgramAyarlari := GAsm2.ProgramAyarDosyasiniOku;
+
+  // eğer program ilk kez çalıştırıldıysa
+  if(GProgramAyarlari.PencereSol = -1) and (GProgramAyarlari.PencereUst = -1)
+    and (GProgramAyarlari.PencereGenislik = -1)
+    and (GProgramAyarlari.PencereYukseklik = -1) then
+  begin
+
+    GProgramAyarlari.PencereGenislik := 500;
+    GProgramAyarlari.PencereYukseklik := 500;
+    GProgramAyarlari.PencereSol := (Screen.Width - 500) div 2;
+    GProgramAyarlari.PencereUst := (Screen.Height - 500) div 2;
+  end;
 end;
 
 procedure TfrmAnaForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
+
+  // program ayarlarını ini dosyasına yaz
+  GProgramAyarlari.PencereSol := frmAnaForm.Left;
+  GProgramAyarlari.PencereUst := frmAnaForm.Top;
+  GProgramAyarlari.PencereGenislik := frmAnaForm.Width;
+  GProgramAyarlari.PencereYukseklik := frmAnaForm.Height;
+  GProgramAyarlari.PencereDurum := frmAnaForm.WindowState;
+
+  GAsm2.ProgramAyarDosyasinaYaz(GProgramAyarlari);
 
   // çalışma zamanlı oluşturulan nesneler yok ediliyor
   GMatematik.Destroy;
@@ -83,6 +107,12 @@ begin
   SynAssemblerSyn.KeyWords.Clear;
   for i := 0 to TOPLAM_YAZMAC - 1 do
     SynAssemblerSyn.KeyWords.Add(UpperCase(Yazmaclar[i].Ad));
+
+  frmAnaForm.Left := GProgramAyarlari.PencereSol;
+  frmAnaForm.Top := GProgramAyarlari.PencereUst;
+  frmAnaForm.Width := GProgramAyarlari.PencereGenislik;
+  frmAnaForm.Height := GProgramAyarlari.PencereYukseklik;
+  frmAnaForm.WindowState := GProgramAyarlari.PencereDurum;
 end;
 
 procedure TfrmAnaForm.miKodEtiketListesiClick(Sender: TObject);
@@ -183,7 +213,7 @@ begin
   if(ShellExecute(0, nil, PChar('notepad.exe'), PChar('assembler.txt'),
     nil, SW_SHOWNORMAL) < 33) then
   begin
-
+       self.WindowState := wsMaximized;
     ShowMessage('Yardım dosyası açılırken hata oluştu!');
   end;
 end;

@@ -4,7 +4,7 @@
 
   İşlev: genel sabit, değişken, yapı ve işlevleri içerir
 
-  Güncelleme Tarihi: 30/01/2018
+  Güncelleme Tarihi: 11/02/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -12,7 +12,7 @@ unit genel;
 
 interface
 
-uses Classes, SysUtils, etiket, matematik, asm2;
+uses Classes, SysUtils, Forms, etiket, matematik, asm2, ayarlar;
 
 type
   // her bir satırın veri tipi.
@@ -109,11 +109,12 @@ const
   );
 
 var
+  GAsm2: TAsm2;                             // derleyici ana nesnesi
+  GProgramAyarDizin: string;                // program ayar dizinini içerir
+  GProgramAyarlari: TProgramAyarlari;       // program ayar değerlerini içerir
   MevcutBellekAdresi: Integer;
   KodBellek: array[0..4095] of Byte;
   KodBellekU: Integer;
-
-  GAsm2: TAsm2;                              // derleyici ana nesnesi
   GMatematik: TMatematik;                   // tüm çoklu matematiksel / mantıksal işlemleri yönetir
   GAciklama,                                // her bir satır için tanımlanan açıklama
   GEtiket,                                  // her bir satır için tanımlanan etiket

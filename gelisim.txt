@@ -13,3 +13,4 @@
   çoklu aritmetik / parantez önceliği / mantıksal işlemler dahilinde yorumlanması
 - veri tanım (db, dw, ..) işlemleri
 - ikili formatta (binary file) dosya oluşturma işlemleri
+- windows pe dosya format çalışması

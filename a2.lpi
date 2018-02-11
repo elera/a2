@@ -79,29 +79,29 @@
         <IsPartOfProject Value="True"/>
       </Unit8>
       <Unit9>
-        <Filename Value="takip.pas"/>
+        <Filename Value="dosya.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit9>
       <Unit10>
-        <Filename Value="dosya.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit10>
-      <Unit11>
         <Filename Value="derlemebilgisiform.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmDerlemeBilgisi"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit11>
-      <Unit12>
+      </Unit10>
+      <Unit11>
         <Filename Value="etiketform.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmEtiketForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="asm2.pas"/>
+        <IsPartOfProject Value="True"/>
       </Unit12>
       <Unit13>
-        <Filename Value="asm2.pas"/>
+        <Filename Value="ayarlar.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit13>
     </Units>

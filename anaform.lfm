@@ -1,11 +1,11 @@
 object frmAnaForm: TfrmAnaForm
-  Left = 415
-  Height = 528
-  Top = 234
-  Width = 580
+  Left = 428
+  Height = 500
+  Top = 239
+  Width = 500
   Caption = 'Assembler 2 (a2)'
-  ClientHeight = 508
-  ClientWidth = 580
+  ClientHeight = 480
+  ClientWidth = 500
   Menu = mmAnaMenu
   OnClose = FormClose
   OnCreate = FormCreate
@@ -15,15 +15,15 @@ object frmAnaForm: TfrmAnaForm
   object sbDurum: TStatusBar
     Left = 0
     Height = 23
-    Top = 485
-    Width = 580
+    Top = 457
+    Width = 500
     Panels = <>
   end
   object tbAnaSayfa: TToolBar
     Left = 0
     Height = 29
     Top = 0
-    Width = 580
+    Width = 500
     ButtonHeight = 24
     ButtonWidth = 24
     Caption = 'tbAnaSayfa'
@@ -61,9 +61,9 @@ object frmAnaForm: TfrmAnaForm
   end
   inline seAssembler: TSynEdit
     Left = 0
-    Height = 456
+    Height = 428
     Top = 29
-    Width = 580
+    Width = 500
     Align = alClient
     Font.Height = -11
     Font.Name = 'Courier New'

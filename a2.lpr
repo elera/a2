@@ -7,12 +7,16 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, anaform, yorumla, donusum, matematik, takip, dosya, derlemebilgisiform,
-  etiketform, asm2;
+  Forms, anaform, yorumla, donusum, matematik, dosya, derlemebilgisiform,
+  etiketform, asm2, ayarlar, genel, LConvEncoding, sysutils;
 
 {$R *.res}
 
 begin
+
+  // işletim sisteminin ayarları kaydettiği dizini al
+  GProgramAyarDizin := CP1254ToUTF8(GetAppConfigDir(False));
+
   Application.Title:='Assembler 2 (a2)';
   RequireDerivedFormResource:=True;
   Application.Initialize;
