@@ -659,8 +659,9 @@ function GenelTanimlama(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip;
   Veri1: string; Veri2: QWord): Integer;
 var
   SayiTipi: TSayiTipi;
-  i, j: Integer;
+  VeriTip, i, j: Integer;
   SayisalVeri: QWord;
+  s: string;
 begin
 
   if(VeriKontrolTip = vktTanim) then
@@ -672,6 +673,56 @@ begin
       'dd': GSayiTipi := st4B;
       'dq': GSayiTipi := st8B;
     end;
+  end
+  else if(VeriKontrolTip = vktKarakterDizisi) then
+  begin
+
+    // karakter dizisinin uzunluğu db olması halinde veri uzunluğunu kontrol
+    // etmeye gerek yoktur. veri uzunluğu sınırsızdır
+    // aksi durumda uzunluk kontrolünün yapılması gerekmektedir
+    if(GSayiTipi = st1B) then
+
+      s := Veri1
+    else
+    begin
+
+      // tanımlanan veri uzunluğu
+      case GSayiTipi of
+        // st1B: VeriTip := -1;
+        st2B: VeriTip := 2;
+        st4B: VeriTip := 4;
+        st8B: VeriTip := 8;
+      end;
+
+      // programcı tarafından tanıma atanan veri uzunluğu
+      i := Length(Veri1);
+
+      // atanan veri, tanımlanan veri uzunluğundan büyükse hata kodu ile çıkış yap
+      if(i > VeriTip) then
+      begin
+
+        Result := HATA_HATALI_VERI_TIPI;
+        Exit;
+      end
+      // atanan veri, tanımlanan veri uzunluğundan küçükse, verinin sonunu 0 ile doldur
+      else if(i < VeriTip) then
+      begin
+
+        s := Veri1;
+        for j := 1 to VeriTip - i do s := s + #0;
+      end else s := Veri1;
+    end;
+
+    // hazırlanan veriyi hedef bellek bölgesine kopyala
+    j := Length(s);
+    for i := 1 to j do
+    begin
+
+      KodBellek[KodBellekU] := Byte(s[i]);
+      Inc(KodBellekU);
+    end;
+
+    Result := 0;
   end
   else if(VeriKontrolTip = vktSayi) then
   begin

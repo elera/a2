@@ -26,7 +26,9 @@ type
     ikaOlcek, ikaSabitDegerB, ikaSabitDeger);
   TIslemKodAyrinti = set of TIslemKodAyrintilar;
   TIKABVeriTipi = (vtYok, vtYazmac, vtBellek, vtSayisalDeger);
-  TVeriKontrolTip = (vktYok, vktKarakterDizisi, vktSayi, vktIslemKodu, vktTanim,
+  // vktKEKarakterDizisi = yazmaç, işlem kodu vb değerlerle kontrol edilecek karakter dizisi
+  // vktKarakterDizisi = kontrole gerek olmayan karakter dizisi
+  TVeriKontrolTip = (vktYok, vktKEKarakterDizisi, vktKarakterDizisi, vktSayi, vktIslemKodu, vktTanim,
     vktYazmac, vktBosluk, vktVirgul, vktArti, vktKPAc, vktKPKapat, vktOlcek, vktSon);
 
   // etiket kod ana ve alt bölümleri
@@ -45,7 +47,7 @@ type
 
 const
   // 0 numaralı hata kodu, HataKodunuAl işlevinin kendisi için tanımlanmıştır.
-  TOPLAM_HATA_BILGI_UYARI = 17;
+  TOPLAM_HATA_BILGI_UYARI = 18;
   HATA_YOK = 0;
   HATA_BILINMEYEN_HATA = 1;
   HATA_BILINMEYEN_KOMUT = 2;
@@ -64,6 +66,7 @@ const
   HATA_HATALI_KULLANIM = 15;
   HATA_BELLEKTEN_BELLEGE = 16;
   HATA_HATALI_SAYISAL_DEGER = 17;
+  HATA_HATALI_VERI_TIPI = 18;
 
   sHATA_BILINMEYEN_HATA = 'Bilinmeyen hata!';
   sHATA_BILINMEYEN_KOMUT = 'Bilinmeyen komut!';
@@ -82,6 +85,7 @@ const
   sHATA_HATALI_KULLANIM = 'İşlem kodu hatalı kullanılmakta!';
   sHATA_BELLEKTEN_BELLEGE = 'Bellek bölgesinde diğer bellek bölgesine atama yapamazsınız!';
   sHATA_HATALI_SAYISAL_DEGER = 'Hatalı sayısal değer!';
+  sHATA_HATALI_VERI_TIPI = 'Veri tipi hatalı!';
 
   BilgiDizisi: array[1..TOPLAM_HATA_BILGI_UYARI] of TBilgi = (
     (Tip: btHata;   Kod: HATA_BILINMEYEN_HATA;        Aciklama: sHATA_BILINMEYEN_HATA),
@@ -100,7 +104,8 @@ const
     (Tip: btHata;   Kod: HATA_OLCEK_DEGER_GEREKLI;    Aciklama: sHATA_OLCEK_DEGER_GEREKLI),
     (Tip: btHata;   Kod: HATA_HATALI_KULLANIM;        Aciklama: sHATA_HATALI_KULLANIM),
     (Tip: btHata;   Kod: HATA_BELLEKTEN_BELLEGE;      Aciklama: sHATA_BELLEKTEN_BELLEGE),
-    (Tip: btHata;   Kod: HATA_HATALI_SAYISAL_DEGER;   Aciklama: sHATA_HATALI_SAYISAL_DEGER)
+    (Tip: btHata;   Kod: HATA_HATALI_SAYISAL_DEGER;   Aciklama: sHATA_HATALI_SAYISAL_DEGER),
+    (Tip: btHata;   Kod: HATA_HATALI_VERI_TIPI;       Aciklama: sHATA_HATALI_VERI_TIPI)
   );
 
 var

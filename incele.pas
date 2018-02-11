@@ -55,6 +55,7 @@ var
   SatirSonu: Boolean;
   SayisalDeger: QWord;        // geçici deger değişkeni
   KPSayisi: Integer;          // köşeli parantezlerin takibini gerçekleştiren değişken
+  TekTirnakSayisi: Integer;   // karakter katarı (string) takibini gerçekleştiren değişken
   SayisalDegerMevcut,         // dizi içerisinde sayısal değer olup olmadığını takip eder
   SayisalIslemYapiliyor,
   OlcekDegerMevcut: Boolean;  // dizi içerisinde ölçek değer (scale) olup olmadığını takip eder
@@ -144,8 +145,16 @@ var
 
       Inc(ParcaNo);
     end
-    // vtKarakterDizisi tipinde olan verinin incelenmesi
+    // veri herhangi bir kontrole tabi tutulmadan ilgili işleve yönlendiriliyor
     else if(_AVeriKontrolTip = vktKarakterDizisi) then
+    begin
+
+      SonVeriKontrolTip := vktKarakterDizisi;
+      Result := iKomutYorumla(AParcaNo, SonVeriKontrolTip, AVeri1, 0);
+    end
+    // karakter dizisinin yazmaç, işlem kodu ve diğer tanımlama olup olmadığının
+    // kontrol edilmesi için işleme alındığı bölüm
+    else if(_AVeriKontrolTip = vktKEKarakterDizisi) then
     begin
 
       _Yazmac := YazmacBilgisiAl(AVeri1);
@@ -269,6 +278,7 @@ begin
   KodDizisiSira := 1;
   GHataKodu := HATA_YOK;
   KPSayisi := 0;
+  TekTirnakSayisi := 0;
   SayisalDegerMevcut := False;
   SayisalIslemYapiliyor := False;
   OlcekDegerMevcut := False;
@@ -298,7 +308,7 @@ begin
 
     // satır içeriğini kontrol edecek kontrol değer kahramanları
     if(IfadeDurum <> idAciklama) and
-      (C in [' ', ':', ',', '[', '(', ')', ']', ';', '+', '-', '*', '/']) then
+      (C in [' ', '''', ',', ':', ';', '(', ')', '[', ']', '+', '-', '*', '/']) then
     begin
 
       if(C = ',') and (GAnaBolumVeriTipi = abvtIslemKodu) then
@@ -313,25 +323,30 @@ begin
       else if(C = ',') and (GAnaBolumVeriTipi = abvtTanim) then
       begin
 
-        // eğer veri sayısal bir değer ise...
-        if(SayisalDegerMevcut) then
+        // tanım işleminde virgül öncesi veri var ise ...
+        if(KomutUz > 0) then
         begin
 
-          if(SayiyaCevir(Komut, SayisalDeger)) then
+          // eğer veri sayısal bir değer ise...
+          if(SayisalDegerMevcut) then
           begin
 
-            GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
-            if(GHataKodu = HATA_YOK) then
-              GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0)
-          end else GHataKodu := HATA_HATALI_SAYISAL_DEGER;
-        end
-        else
-        begin
+            if(SayiyaCevir(Komut, SayisalDeger)) then
+            begin
 
-          if(GAsm2.Etiketler.Bul(Komut, SayisalDeger)) then
-            GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger)
-          else GHataKodu := HATA_BILINMEYEN_HATA;
-        end;
+              GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
+              if(GHataKodu = HATA_YOK) then
+                GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0)
+            end else GHataKodu := HATA_HATALI_SAYISAL_DEGER;
+          end
+          else
+          begin
+
+            if(GAsm2.Etiketler.Bul(Komut, SayisalDeger)) then
+              GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger)
+            else GHataKodu := HATA_BILINMEYEN_HATA;
+          end;
+        end else Result := HATA_YOK;
       end
       else if(C = '[') or (C = ']') then
       begin
@@ -403,6 +418,28 @@ begin
           end;
         end;
       end
+      // tek tırnak kontrol işlemi
+      else if(C = '''') and (GAnaBolumVeriTipi = abvtTanim) then
+      begin
+
+        if(TekTirnakSayisi = 0) then
+        begin
+
+          if(KomutUz = 0) then Inc(TekTirnakSayisi);
+        end
+        else if(TekTirnakSayisi = 1) then
+        begin
+
+          if(KomutUz > 0) then
+          begin
+
+            GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);
+            TekTirnakSayisi := 0;
+            Komut := '';
+            KomutUz := 0;
+          end;
+        end;
+      end
       // etiket kontrol işlemi
       else if(C = ':') and (ParcaNo = 1) then
       begin
@@ -431,10 +468,18 @@ begin
         end;
       end
       // boşluk karakteri SADECE işlem kodunu almak için kullanılıyor
-      else if(C = ' ') and not(ikabIslemKodu in GIslemKodAnaBolum) and (KomutUz > 0) then
+      else if(C = ' ') then
       begin
 
-        GHataKodu := KomutYorumla(ParcaNo, vktBosluk, Komut, 0)
+        if(GAnaBolumVeriTipi = abvtBelirsiz) and (KomutUz > 0) then
+
+          GHataKodu := KomutYorumla(ParcaNo, vktBosluk, Komut, 0)
+        else if(GAnaBolumVeriTipi = abvtTanim) and (TekTirnakSayisi > 0) then
+        begin
+
+          Komut += C;
+          Inc(KomutUz);
+        end;
       end
       // açıklama durumunun haricinde tüm bu işleyicilerin çalışma durumu
       else if((IfadeDurum <> idAciklama) and ((C = '(') or (C = ')') or (C = '+') or
@@ -445,7 +490,7 @@ begin
         if(KPSayisi > 0) and (C = '*') and (KomutUz > 0) then
         begin
 
-          GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);
+          GHataKodu := KomutYorumla(ParcaNo, vktKEKarakterDizisi, Komut, 0);
           if(SonVeriKontrolTip = vktYazmac) then OlcekDegerMevcut := True;
         end
         else
@@ -489,7 +534,7 @@ begin
               if(KomutUz > 0) then
               begin
 
-                GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);
+                GHataKodu := KomutYorumla(ParcaNo, vktKEKarakterDizisi, Komut, 0);
                 if(GHataKodu = HATA_YOK) then
                   GHataKodu := KomutYorumla(ParcaNo, vktArti, '', 0);
               end;
@@ -506,7 +551,7 @@ begin
         if(KomutUz > 0) then
         begin
 
-          GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);
+          GHataKodu := KomutYorumla(ParcaNo, vktKEKarakterDizisi, Komut, 0);
         end;
 
         // eğer hata yok ise ifade durumunu AÇIKLAMA olarak belirle
@@ -539,29 +584,29 @@ begin
         Komut += C;
         Inc(KomutUz);
       end;
+    end;
 
-      if(SatirSonu) and (KomutUz > 0) then
+    if(SatirSonu) and (KomutUz > 0) then
+    begin
+
+      if(SayisalDegerMevcut) then
       begin
 
-        if(SayisalDegerMevcut) then
+        SayisalVeriyiIsle('');
+        if(GHataKodu = HATA_YOK) then
         begin
 
-          SayisalVeriyiIsle('');
+          GHataKodu := GMatematik.Sonuc(SayisalDeger);
           if(GHataKodu = HATA_YOK) then
-          begin
-
-            GHataKodu := GMatematik.Sonuc(SayisalDeger);
-            if(GHataKodu = HATA_YOK) then
-              GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger)
-          end;
-        end
-        else
-        begin
-
-          if(GAsm2.Etiketler.Bul(Komut, SayisalDeger)) then
             GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger)
-          else GHataKodu := HATA_BILINMEYEN_HATA;
         end;
+      end
+      else
+      begin
+
+        if(GAsm2.Etiketler.Bul(Komut, SayisalDeger)) then
+          GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger)
+        else GHataKodu := HATA_BILINMEYEN_HATA;
       end;
     end;
 

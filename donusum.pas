@@ -49,7 +49,7 @@ begin
   else if(SayiSistemi = 'h') or (SayiSistemi = 'H') then
   begin
 
-    s := Copy(Sistem10s, 2, VeriUz - 2);
+    s := Copy(Sistem10s, 1, VeriUz - 1);
     Result := Sistem16Sistem10(s, Sistem10i);
   end
   // onlu sayı sistemi -> onlu sayı sistemi sayısal değer
