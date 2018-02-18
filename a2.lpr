@@ -7,8 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, anaform, yorumla, donusum, matematik, dosya, derlemebilgisiform,
-  etiketform, asm2, ayarlar, genel, LConvEncoding, sysutils;
+  Forms, anaform, etiketform, derlemebilgisiform, LConvEncoding, sysutils,
+  genel, g01islev, oneriler, g02islev, komutlar;
 
 {$R *.res}
 

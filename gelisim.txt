@@ -11,6 +11,10 @@
 - tüm hatırlatıcı (mnemonic) kodların ayrıştırma ve yönlendirme işlevleri
 - derleyici tarafından yönetilen ikili / onlu / onaltılı sayı sistem karakter katarının
   çoklu aritmetik / parantez önceliği / mantıksal işlemler dahilinde yorumlanması
-- veri tanım (db, dw, ..) işlemleri
-- ikili formatta (binary file) dosya oluşturma işlemleri
-- windows pe dosya format çalışması
+- ikili kod verilerinin dosyaya aktarılmadan önce yerleştirildiği bellek (kodlama)
+  yönetimi işlevselleştirilecek
+- veri tanım (db, dw, ..) işlemleri tamamlanacak
+- ikili formatta (binary file) dosya oluşturma gerçekleştirilecek
+- windows pe dosya format çalışması tamamlanacak
+- sayısal ve katar veri tiplerinin etkin kullanımı sağlanacak
+- bildirim (derleyici çalışma bildirimleri) işlemlerine başlandı

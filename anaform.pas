@@ -4,7 +4,7 @@
 
   İşlev: program ana sayfası
 
-  Güncelleme Tarihi: 11/02/2018
+  Güncelleme Tarihi: 18/02/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -13,14 +13,15 @@ unit anaform;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, Forms, Controls,
-  Graphics, Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus;
+  Classes, SysUtils, FileUtil, SynEdit, SynHighlighterAny, SynCompletion, Forms,
+  Controls, Graphics, Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus, Types, LCLType;
 
 type
   TfrmAnaForm = class(TForm)
     ilAnaMenu16: TImageList;
+    miKodCalistir: TMenuItem;
     miKodEtiketListesi: TMenuItem;
-    MenuItem2: TMenuItem;
+    miAyrim0: TMenuItem;
     miYardim: TMenuItem;
     miYardimAssemblerBelge: TMenuItem;
     miKod: TMenuItem;
@@ -29,11 +30,14 @@ type
     sbDurum: TStatusBar;
     seAssembler: TSynEdit;
     SynAssemblerSyn: TSynAnySyn;
+    SynCompletion1: TSynCompletion;
     tbAnaSayfa: TToolBar;
     tbDerle: TToolButton;
     tbAyrim0: TToolButton;
     tbAssemblerBelge: TToolButton;
     tbEtiketListesi: TToolButton;
+    ToolButton1: TToolButton;
+    tbAyrim1: TToolButton;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -41,7 +45,13 @@ type
     procedure miYardimAssemblerBelgeClick(Sender: TObject);
     procedure miKodDerleClick(Sender: TObject);
     function FormuOrtala(GoruntulenecekForm: TForm; SonucuBekle: Boolean): Integer;
+    procedure miKodCalistirClick(Sender: TObject);
+    procedure seAssemblerClick(Sender: TObject);
+    procedure seAssemblerKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure SynCompletion1Execute(Sender: TObject);
   private
+    procedure ImleciGuncelle;
   public
   end;
 
@@ -52,8 +62,8 @@ implementation
 
 {$R *.lfm}
 
-uses incele, genel, yorumla, etiket, matematik, donusum, dosya, derlemebilgisiform,
-  etiketform, asm2, ayarlar, ShellApi, windows;
+uses incele, genel, etiket, matematik, dosya, derlemebilgisiform,
+  etiketform, asm2, ayarlar, yazmaclar, windows, process, oneriler, komutlar;
 
 procedure TfrmAnaForm.FormCreate(Sender: TObject);
 begin
@@ -100,13 +110,15 @@ var
   i: Integer;
 begin
 
+  sbDurum.Panels[2].Text := 'Sürüm: ' + ProgramSurum + ' - ' + SurumTarihi;
+
   SynAssemblerSyn.Objects.Clear;
   for i := 0 to TOPLAM_KOMUT - 1 do
-    SynAssemblerSyn.Objects.Add(UpperCase(Komutlar[i].Komut));
+    SynAssemblerSyn.Objects.Add(UpperCase(KomutListesi[i].Komut));
 
   SynAssemblerSyn.KeyWords.Clear;
   for i := 0 to TOPLAM_YAZMAC - 1 do
-    SynAssemblerSyn.KeyWords.Add(UpperCase(Yazmaclar[i].Ad));
+    SynAssemblerSyn.KeyWords.Add(UpperCase(YazmacListesi[i].Ad));
 
   frmAnaForm.Left := GProgramAyarlari.PencereSol;
   frmAnaForm.Top := GProgramAyarlari.PencereUst;
@@ -126,7 +138,7 @@ procedure TfrmAnaForm.miKodDerleClick(Sender: TObject);
 var
   MevcutSatirSayisi, ToplamSatirSayisi,
   IslenenSatirSayisi: Integer;
-  HamVeri: string;
+  Dosya, HamVeri: string;
   IslevSonuc: Integer;
 begin
 
@@ -141,6 +153,9 @@ begin
   MevcutSatirSayisi := 0;
   IslenenSatirSayisi := 0;
   IslevSonuc := HATA_YOK;
+
+  // derleme öncesinde, derlemenin durumu olumsuz olarak belirleniyor
+  GAsm2.DerlemeBasarili := False;
 
   // son satıra gelinmediği ve hata olmadığı müddetçe devam et
   while (MevcutSatirSayisi < ToplamSatirSayisi) and (IslevSonuc = HATA_YOK) do
@@ -167,6 +182,9 @@ begin
     Inc(MevcutSatirSayisi);
   end;
 
+  // derleme işleminin durumu, derleme sonrasında yeniden belirleniyor
+  GAsm2.DerlemeBasarili := (IslevSonuc = HATA_YOK);
+
   // kodların yorumlanması ve çevrilmesinde herhangi bir hata yoksa
   // ikili formatta (binary file) dosya oluştur
   { TODO : oluşturulacak dosya ilk aşamada saf assembler kodların makine dili karşılıklarıdır
@@ -177,10 +195,12 @@ begin
     if(ProgramDosyasiOlustur) then
     begin
 
+      Dosya := GAsm2.DosyaAdi + '.' + GAsm2.DosyaUzanti;
+      frmDerlemeBilgisi.DerlenenDosya := Dosya;
       frmDerlemeBilgisi.DerlenenSatirSayisi := IslenenSatirSayisi;
       frmDerlemeBilgisi.IkiliDosyaUzunluk := KodBellekU;
       FormuOrtala(frmDerlemeBilgisi, True);
-    end else ShowMessage('Hata: test.bin dosyası oluşturulamadı!')
+    end else ShowMessage('Hata: ' + Dosya + ' dosyası oluşturulamadı!')
   end
   else
   begin
@@ -207,15 +227,65 @@ begin
   else GoruntulenecekForm.Show;
 end;
 
+procedure TfrmAnaForm.miKodCalistirClick(Sender: TObject);
+var
+  Process: TProcess;
+begin
+
+  // program; exe olarak başarılı bir şekilde derlendiyse, çalıştır
+  if(GAsm2.DerlemeBasarili) and (GAsm2.DosyaUzanti = 'exe') then
+  begin
+
+    Process := TProcess.Create(nil);
+    try
+
+      Process.Executable := GAsm2.DosyaAdi + '.' + GAsm2.DosyaUzanti;
+      Process.Options := Process.Options + [poWaitOnExit];
+      Process.Execute;
+    except
+
+      ShowMessage('Hata: program çalıştırılamıyor!');
+    end;
+    FreeAndNil(Process);
+
+  end else ShowMessage('Lütfen ilk önce, programı çalıştırılabilir olarak derleyiniz!');
+end;
+
+procedure TfrmAnaForm.SynCompletion1Execute(Sender: TObject);
+begin
+
+  OnerileriListele(SynCompletion1.CurrentString, SynCompletion1.ItemList);
+end;
+
 procedure TfrmAnaForm.miYardimAssemblerBelgeClick(Sender: TObject);
 begin
 
   if(ShellExecute(0, nil, PChar('notepad.exe'), PChar('assembler.txt'),
     nil, SW_SHOWNORMAL) < 33) then
   begin
-       self.WindowState := wsMaximized;
-    ShowMessage('Yardım dosyası açılırken hata oluştu!');
+
+    ShowMessage('Hata: yardım dosyası açılamadı!');
   end;
+end;
+
+procedure TfrmAnaForm.seAssemblerClick(Sender: TObject);
+begin
+
+  ImleciGuncelle;
+end;
+
+procedure TfrmAnaForm.seAssemblerKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+
+  ImleciGuncelle;
+end;
+
+procedure TfrmAnaForm.ImleciGuncelle;
+begin
+
+  sbDurum.Panels[1].Text := 'Satır: ' + IntToStr(seAssembler.CaretY) + ' - Sütun: ' +
+    IntToStr(seAssembler.CaretX);
 end;
 
 end.

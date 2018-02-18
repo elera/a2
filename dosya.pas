@@ -4,7 +4,7 @@
 
   İşlev: dosya işlevlerini içerir
 
-  Güncelleme Tarihi: 07/02/2018
+  Güncelleme Tarihi: 18/02/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -29,7 +29,7 @@ var
 begin
 
   ProgramDizin := ExtractFilePath(Application.ExeName);
-  DosyaAdi := 'test.bin';
+  DosyaAdi := GAsm2.DosyaAdi + '.' + GAsm2.DosyaUzanti;
 
   TamYol := ProgramDizin + DosyaAdi;
 

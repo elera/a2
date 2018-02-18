@@ -104,13 +104,13 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
     Top = 30
     Width = 242
   end
-  object lblIkiliDosya: TLabel
+  object lblDerlenenDosya: TLabel
     Left = 118
     Height = 15
     Top = 96
     Width = 130
     AutoSize = False
-    Caption = 'test.bin'
+    Caption = 'xxx.xxx'
     Font.Style = [fsBold]
     ParentColor = False
     ParentFont = False

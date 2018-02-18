@@ -4,7 +4,7 @@
 
   İşlev: genel sabit, değişken, yapı ve işlevleri içerir
 
-  Güncelleme Tarihi: 11/02/2018
+  Güncelleme Tarihi: 18/02/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -14,22 +14,30 @@ interface
 
 uses Classes, SysUtils, Forms, etiket, matematik, asm2, ayarlar;
 
+const
+  ProgramAdi = 'Assembler 2 (a2)';
+  ProgramSurum = '0.0.8.2018';
+  SurumTarihi = '18.02.2018';
+
 type
   // her bir satırın veri tipi.
   // not: abvtBuyukYapi (makrolar) ileride tanımlanabilir - 03.02.2018
-  TAnaBolumVeriTipi = (abvtBelirsiz, abvtIslemKodu, abvtTanim{, abvtBuyukYapi});
+  TAnaBolumVeriTipi = (abvtBelirsiz, abvtIslemKodu, abvtTanim, abvtBildirim);
 
+  // alt satırdaki veriler TAnaBolumVeriTipi içerisinde yok edilecek
   // işlem kod ana ve alt bölümleri
-  TIslemKodAnaBolumler = (ikabEtiket, ikabIslemKodu, ikabAciklama);
+  TIslemKodAnaBolumler = (ikabEtiket, ikabAciklama);
   TIslemKodAnaBolum = set of TIslemKodAnaBolumler;
+
+
   TIslemKodAyrintilar = (ikaIslemKodY1, ikaIslemKodY2, ikaIslemKodB1, ikaIslemKodB2,
     ikaOlcek, ikaSabitDegerB, ikaSabitDeger);
   TIslemKodAyrinti = set of TIslemKodAyrintilar;
   TIKABVeriTipi = (vtYok, vtYazmac, vtBellek, vtSayisalDeger);
   // vktKEKarakterDizisi = yazmaç, işlem kodu vb değerlerle kontrol edilecek karakter dizisi
   // vktKarakterDizisi = kontrole gerek olmayan karakter dizisi
-  TVeriKontrolTip = (vktYok, vktKEKarakterDizisi, vktKarakterDizisi, vktSayi, vktIslemKodu, vktTanim,
-    vktYazmac, vktBosluk, vktVirgul, vktArti, vktKPAc, vktKPKapat, vktOlcek, vktSon);
+  TVeriKontrolTip = (vktYok, vktKEKarakterDizisi, vktKarakterDizisi, vktSayi, {vktIslemKodu, vktTanim,}
+    vktYazmac, vktBosluk, vktVirgul, vktEsittir, vktArti, vktKPAc, vktKPKapat, vktOlcek, vktIlk, vktSon);
 
   // etiket kod ana ve alt bölümleri
   TTanimAnaBolumler = (tabEtiket, tabEtiketAdi, tabAciklama);
@@ -47,65 +55,81 @@ type
 
 const
   // 0 numaralı hata kodu, HataKodunuAl işlevinin kendisi için tanımlanmıştır.
-  TOPLAM_HATA_BILGI_UYARI = 18;
+  TOPLAM_HATA_BILGI_UYARI = 23;
+
   HATA_YOK = 0;
   HATA_BILINMEYEN_HATA = 1;
   HATA_BILINMEYEN_KOMUT = 2;
-  HATA_BEKLENMEYEN_IFADE = 3;
-  HATA_SAYISAL_DEGER_GEREKLI = 4;
-  HATA_ETIKET_TANIMLANMIS = 5;
-  HATA_HATALI_ETIKET = 6;
-  HATA_BIRDEN_FAZLA_ETIKET = 7;
-  HATA_KAPATMA_PAR_GEREKLI = 8;
-  HATA_PAR_ONC_SAYISAL_DEGER = 9;
-  HATA_HATALI_ISL_KULLANIM = 10;
-  HATA_YAZMAC_GEREKLI = 11;
-  HATA_OLCEK_ZATEN_KULLANILMIS = 12;
-  HATA_HATALI_OLCEK_DEGER = 13;
-  HATA_OLCEK_DEGER_GEREKLI = 14;
-  HATA_HATALI_KULLANIM = 15;
-  HATA_BELLEKTEN_BELLEGE = 16;
-  HATA_HATALI_SAYISAL_DEGER = 17;
-  HATA_HATALI_VERI_TIPI = 18;
+  HATA_BILINMEYEN_BILDIRIM = 3;
+  HATA_BEKLENMEYEN_IFADE = 4;
+  HATA_SAYISAL_DEGER_GEREKLI = 5;
+  HATA_ETIKET_TANIMLANMIS = 6;
+  HATA_ETIKET_TANIM = 7;
+  HATA_BIRDEN_FAZLA_ETIKET = 8;
+  HATA_KAPATMA_PAR_GEREKLI = 9;
+  HATA_PAR_ONC_SAYISAL_DEGER = 10;
+  HATA_ISL_KULLANIM = 11;
+  HATA_YAZMAC_GEREKLI = 12;
+  HATA_OLCEK_ZATEN_KULLANILMIS = 13;
+  HATA_OLCEK_DEGER = 14;
+  HATA_OLCEK_DEGER_GEREKLI = 15;
+  HATA_ISL_KOD_KULLANIM = 16;
+  HATA_BELLEKTEN_BELLEGE = 17;
+  HATA_SAYISAL_DEGER = 18;
+  HATA_VERI_TIPI = 19;
+  HATA_BILINMEYEN_MIMARI = 20;
+  HATA_HATALI_MIMARI64 = 21;
+  HATA_BILDIRIM_KULLANIM = 22;
+  HATA_TANIMLAMA = 23;
 
-  sHATA_BILINMEYEN_HATA = 'Bilinmeyen hata!';
-  sHATA_BILINMEYEN_KOMUT = 'Bilinmeyen komut!';
-  sHATA_BEKLENMEYEN_IFADE = 'Beklenmeyen ifade!';
-  sHATA_SAYISAL_DEGER_GEREKLI = 'Sayısal değer gerekli!';
-  sHATA_ETIKET_TANIMLANMIS = 'Etiket daha önce tanımlanmış!';
-  sHATA_HATALI_ETIKET = 'Etiket, etiket tanımlama kurallarına uygun değil!';
-  sHATA_BIRDEN_FAZLA_ETIKET = 'Aynı satırda birden fazla etiket tanımlayamazsınız!';
-  sHATA_KAPATMA_PAR_GEREKLI = 'Kapatma '')'' parantezi gerekli!';
-  sHATA_PAR_ONC_SAYISAL_DEGER = 'Parantez öncesi sayısal değer hatası!';
-  sHATA_HATALI_ISL_KULLANIM = 'Hatalı işleyici kullanımı!';
-  sHATA_YAZMAC_GEREKLI = 'Yazmaç gerekli!';
-  sHATA_OLCEK_ZATEN_KULLANILMIS = 'Ölçek değer zaten kullanılmış!';
-  sHATA_HATALI_OLCEK_DEGER = 'Hatalı ölçek değer!';
-  sHATA_OLCEK_DEGER_GEREKLI = 'Ölçek değer gerekli!';
-  sHATA_HATALI_KULLANIM = 'İşlem kodu hatalı kullanılmakta!';
-  sHATA_BELLEKTEN_BELLEGE = 'Bellek bölgesinde diğer bellek bölgesine atama yapamazsınız!';
-  sHATA_HATALI_SAYISAL_DEGER = 'Hatalı sayısal değer!';
-  sHATA_HATALI_VERI_TIPI = 'Veri tipi hatalı!';
+  sHATA_BILINMEYEN_HATA = 'Bilinmeyen hata';
+  sHATA_BILINMEYEN_KOMUT = 'Bilinmeyen komut';
+  sHATA_BILINMEYEN_BILDIRIM = 'Bilinmeyen bildirim';
+  sHATA_BEKLENMEYEN_IFADE = 'Beklenmeyen ifade';
+  sHATA_SAYISAL_DEGER_GEREKLI = 'Sayısal değer gerekli';
+  sHATA_ETIKET_TANIMLANMIS = 'Etiket daha önce tanımlanmış';
+  sHATA_ETIKET_TANIM = 'Etiket, etiket tanımlama kurallarına uygun değil';
+  sHATA_BIRDEN_FAZLA_ETIKET = 'Aynı satırda birden fazla etiket tanımlayamazsınız';
+  sHATA_KAPATMA_PAR_GEREKLI = 'Kapatma '')'' parantezi gerekli';
+  sHATA_PAR_ONC_SAYISAL_DEGER = 'Parantez öncesi sayısal değer hatası';
+  sHATA_ISL_KULLANIM = 'Hatalı işleyici kullanımı';
+  sHATA_YAZMAC_GEREKLI = 'Yazmaç gerekli';
+  sHATA_OLCEK_ZATEN_KULLANILMIS = 'Ölçek değer zaten kullanılmış';
+  sHATA_OLCEK_DEGER = 'Hatalı ölçek değer';
+  sHATA_OLCEK_DEGER_GEREKLI = 'Ölçek değer gerekli';
+  sHATA_ISL_KOD_KULLANIM = 'İşlem kodu hatalı kullanılmakta';
+  sHATA_BELLEKTEN_BELLEGE = 'Bellek bölgesinde diğer bellek bölgesine atama yapamazsınız';
+  sHATA_SAYISAL_DEGER = 'Hatalı sayısal değer';
+  sHATA_VERI_TIPI = 'Veri tipi hatalı';
+  sHATA_BILINMEYEN_MIMARI = 'Bilinmeyen mimari';
+  sHATA_HATALI_MIMARI64 = 'Bu işlem kodunu 64 bitlik mimaride kullanamazsınız';
+  sHATA_BILDIRIM_KULLANIM = 'Hatalı bildirim kullanımı';
+  sHATA_TANIMLAMA = 'Hatalı tanımlama';
 
   BilgiDizisi: array[1..TOPLAM_HATA_BILGI_UYARI] of TBilgi = (
     (Tip: btHata;   Kod: HATA_BILINMEYEN_HATA;        Aciklama: sHATA_BILINMEYEN_HATA),
     (Tip: btHata;   Kod: HATA_BILINMEYEN_KOMUT;       Aciklama: sHATA_BILINMEYEN_KOMUT),
+    (Tip: btHata;   Kod: HATA_BILINMEYEN_BILDIRIM;    Aciklama: sHATA_BILINMEYEN_BILDIRIM),
     (Tip: btHata;   Kod: HATA_BEKLENMEYEN_IFADE;      Aciklama: sHATA_BEKLENMEYEN_IFADE),
     (Tip: btHata;   Kod: HATA_SAYISAL_DEGER_GEREKLI;  Aciklama: sHATA_SAYISAL_DEGER_GEREKLI),
     (Tip: btHata;   Kod: HATA_ETIKET_TANIMLANMIS;     Aciklama: sHATA_ETIKET_TANIMLANMIS),
-    (Tip: btHata;   Kod: HATA_HATALI_ETIKET;          Aciklama: sHATA_HATALI_ETIKET),
+    (Tip: btHata;   Kod: HATA_ETIKET_TANIM;           Aciklama: sHATA_ETIKET_TANIM),
     (Tip: btHata;   Kod: HATA_BIRDEN_FAZLA_ETIKET;    Aciklama: sHATA_BIRDEN_FAZLA_ETIKET),
     (Tip: btHata;   Kod: HATA_KAPATMA_PAR_GEREKLI;    Aciklama: sHATA_KAPATMA_PAR_GEREKLI),
     (Tip: btHata;   Kod: HATA_PAR_ONC_SAYISAL_DEGER;  Aciklama: sHATA_PAR_ONC_SAYISAL_DEGER),
-    (Tip: btHata;   Kod: HATA_HATALI_ISL_KULLANIM;    Aciklama: sHATA_HATALI_ISL_KULLANIM),
+    (Tip: btHata;   Kod: HATA_ISL_KULLANIM;           Aciklama: sHATA_ISL_KULLANIM),
     (Tip: btHata;   Kod: HATA_YAZMAC_GEREKLI;         Aciklama: sHATA_YAZMAC_GEREKLI),
     (Tip: btHata;   Kod: HATA_OLCEK_ZATEN_KULLANILMIS;Aciklama: sHATA_OLCEK_ZATEN_KULLANILMIS),
-    (Tip: btHata;   Kod: HATA_HATALI_OLCEK_DEGER;     Aciklama: sHATA_HATALI_OLCEK_DEGER),
+    (Tip: btHata;   Kod: HATA_OLCEK_DEGER;            Aciklama: sHATA_OLCEK_DEGER),
     (Tip: btHata;   Kod: HATA_OLCEK_DEGER_GEREKLI;    Aciklama: sHATA_OLCEK_DEGER_GEREKLI),
-    (Tip: btHata;   Kod: HATA_HATALI_KULLANIM;        Aciklama: sHATA_HATALI_KULLANIM),
+    (Tip: btHata;   Kod: HATA_ISL_KOD_KULLANIM;       Aciklama: sHATA_ISL_KOD_KULLANIM),
     (Tip: btHata;   Kod: HATA_BELLEKTEN_BELLEGE;      Aciklama: sHATA_BELLEKTEN_BELLEGE),
-    (Tip: btHata;   Kod: HATA_HATALI_SAYISAL_DEGER;   Aciklama: sHATA_HATALI_SAYISAL_DEGER),
-    (Tip: btHata;   Kod: HATA_HATALI_VERI_TIPI;       Aciklama: sHATA_HATALI_VERI_TIPI)
+    (Tip: btHata;   Kod: HATA_SAYISAL_DEGER;          Aciklama: sHATA_SAYISAL_DEGER),
+    (Tip: btHata;   Kod: HATA_VERI_TIPI;              Aciklama: sHATA_VERI_TIPI),
+    (Tip: btHata;   Kod: HATA_BILINMEYEN_MIMARI;      Aciklama: sHATA_BILINMEYEN_MIMARI),
+    (Tip: btHata;   Kod: HATA_HATALI_MIMARI64;        Aciklama: sHATA_HATALI_MIMARI64),
+    (Tip: btHata;   Kod: HATA_BILDIRIM_KULLANIM;      Aciklama: sHATA_BILDIRIM_KULLANIM),
+    (Tip: btHata;   Kod: HATA_TANIMLAMA;              Aciklama: sHATA_TANIMLAMA)
   );
 
 var

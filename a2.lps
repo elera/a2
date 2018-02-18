@@ -4,11 +4,12 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="22">
+    <Units Count="32">
       <Unit0>
         <Filename Value="a2.lpr"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
+        <CursorPos X="36" Y="14"/>
         <UsageCount Value="200"/>
       </Unit0>
       <Unit1>
@@ -17,7 +18,6 @@
         <ComponentName Value="frmAnaForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <CursorPos X="48" Y="87"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -25,179 +25,278 @@
       <Unit2>
         <Filename Value="genel.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="5"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
-        <Filename Value="yorumla.pas"/>
+        <Filename Value="incele.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="2"/>
-        <TopLine Value="36"/>
-        <CursorPos X="24" Y="743"/>
+        <EditorIndex Value="1"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
-        <Filename Value="incele.pas"/>
-        <IsPartOfProject Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="319"/>
-        <CursorPos X="40" Y="332"/>
-        <UsageCount Value="200"/>
-        <Loaded Value="True"/>
-      </Unit4>
-      <Unit5>
         <Filename Value="gelisim.txt"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <EditorIndex Value="5"/>
-        <CursorPos X="36" Y="16"/>
-        <UsageCount Value="169"/>
+        <EditorIndex Value="6"/>
+        <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit5>
-      <Unit6>
+      </Unit4>
+      <Unit5>
         <Filename Value="etiket.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="154"/>
-      </Unit6>
-      <Unit7>
+        <UsageCount Value="198"/>
+      </Unit5>
+      <Unit6>
         <Filename Value="donusum.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="3"/>
-        <TopLine Value="31"/>
-        <CursorPos X="33" Y="50"/>
-        <UsageCount Value="147"/>
-        <Loaded Value="True"/>
-      </Unit7>
-      <Unit8>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="191"/>
+      </Unit6>
+      <Unit7>
         <Filename Value="matematik.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="141"/>
-      </Unit8>
-      <Unit9>
-        <Filename Value="takip.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="101"/>
-        <CursorPos X="36" Y="136"/>
-        <UsageCount Value="87"/>
-      </Unit9>
-      <Unit10>
+        <UsageCount Value="185"/>
+      </Unit7>
+      <Unit8>
         <Filename Value="dosya.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="51"/>
-      </Unit10>
-      <Unit11>
+        <UsageCount Value="95"/>
+      </Unit8>
+      <Unit9>
         <Filename Value="derlemebilgisiform.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmDerlemeBilgisi"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="46"/>
-      </Unit11>
-      <Unit12>
+        <UsageCount Value="90"/>
+      </Unit9>
+      <Unit10>
         <Filename Value="etiketform.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="frmEtiketForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="43"/>
-      </Unit12>
-      <Unit13>
+        <UsageCount Value="87"/>
+      </Unit10>
+      <Unit11>
         <Filename Value="asm2.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="40"/>
+        <UsageCount Value="84"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="ayarlar.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="67"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="g11islev.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="54"/>
       </Unit13>
       <Unit14>
+        <Filename Value="kodlama.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="3"/>
+        <CursorPos Y="12"/>
+        <UsageCount Value="54"/>
+        <Loaded Value="True"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="g10islev.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="54"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="g12islev.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="4"/>
+        <UsageCount Value="54"/>
+        <Loaded Value="True"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="yazmaclar.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="49"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="g01islev.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="47"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="oneriler.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="32"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="g02islev.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="25"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="komutlar.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="2"/>
+        <UsageCount Value="25"/>
+        <Loaded Value="True"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="yorumla.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="18"/>
+        <UsageCount Value="200"/>
+      </Unit22>
+      <Unit23>
+        <Filename Value="ortak.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="9"/>
+        <UsageCount Value="33"/>
+      </Unit23>
+      <Unit24>
+        <Filename Value="takip.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="101"/>
+        <CursorPos X="36" Y="136"/>
+        <UsageCount Value="85"/>
+      </Unit24>
+      <Unit25>
         <Filename Value="notes.txt"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="50" Y="16"/>
-        <UsageCount Value="193"/>
+        <UsageCount Value="191"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit14>
-      <Unit15>
+      </Unit25>
+      <Unit26>
         <Filename Value="assembly.txt"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="16"/>
         <CursorPos X="8" Y="17"/>
-        <UsageCount Value="148"/>
+        <UsageCount Value="146"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit15>
-      <Unit16>
+      </Unit26>
+      <Unit27>
         <Filename Value="mark.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="9"/>
-        <UsageCount Value="120"/>
-      </Unit16>
-      <Unit17>
+        <UsageCount Value="118"/>
+      </Unit27>
+      <Unit28>
         <Filename Value="commands\cmd_inc.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="24" Y="14"/>
-        <UsageCount Value="22"/>
-      </Unit17>
-      <Unit18>
+        <UsageCount Value="20"/>
+      </Unit28>
+      <Unit29>
         <Filename Value="C:\lazarus64\fpc\3.0.4\source\rtl\objpas\sysutils\sysstrh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="95"/>
         <CursorPos X="10" Y="113"/>
-        <UsageCount Value="4"/>
-      </Unit18>
-      <Unit19>
+        <UsageCount Value="2"/>
+      </Unit29>
+      <Unit30>
         <Filename Value="..\iettplan-010c\linetemplate.pas"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="8"/>
-      </Unit19>
-      <Unit20>
-        <Filename Value="ayarlar.pas"/>
-        <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="23"/>
-      </Unit20>
-      <Unit21>
+        <UsageCount Value="6"/>
+      </Unit30>
+      <Unit31>
         <Filename Value="C:\lazarus\lcl\forms.pp"/>
         <UnitName Value="Forms"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="10"/>
-      </Unit21>
+        <UsageCount Value="8"/>
+      </Unit31>
     </Units>
-    <JumpHistory Count="8" HistoryIndex="7">
+    <JumpHistory Count="19" HistoryIndex="18">
       <Position1>
-        <Filename Value="genel.pas"/>
-        <Caret Line="18" Column="23"/>
+        <Filename Value="g12islev.pas"/>
+        <Caret Line="22" Column="16" TopLine="4"/>
       </Position1>
       <Position2>
-        <Filename Value="genel.pas"/>
-        <Caret Line="15" Column="64" TopLine="5"/>
+        <Filename Value="incele.pas"/>
+        <Caret Line="366" Column="13" TopLine="338"/>
       </Position2>
       <Position3>
-        <Filename Value="anaform.pas"/>
-        <Caret Line="62" Column="32" TopLine="44"/>
+        <Filename Value="genel.pas"/>
+        <Caret Line="29" Column="67"/>
       </Position3>
       <Position4>
         <Filename Value="genel.pas"/>
-        <Caret Line="112" Column="69" TopLine="96"/>
+        <Caret Line="7" Column="25"/>
       </Position4>
       <Position5>
-        <Filename Value="gelisim.txt"/>
+        <Filename Value="genel.pas"/>
+        <Caret Line="22" Column="41"/>
       </Position5>
       <Position6>
-        <Filename Value="gelisim.txt"/>
-        <Caret Line="16" Column="40"/>
+        <Filename Value="g12islev.pas"/>
+        <Caret Line="327" TopLine="296"/>
       </Position6>
       <Position7>
-        <Filename Value="gelisim.txt"/>
+        <Filename Value="anaform.pas"/>
+        <Caret Line="155" Column="57" TopLine="133"/>
       </Position7>
       <Position8>
-        <Filename Value="gelisim.txt"/>
-        <Caret Line="18" Column="51"/>
+        <Filename Value="anaform.pas"/>
+        <Caret Line="7" Column="25"/>
       </Position8>
+      <Position9>
+        <Filename Value="incele.pas"/>
+        <Caret Line="558" Column="13" TopLine="524"/>
+      </Position9>
+      <Position10>
+        <Filename Value="incele.pas"/>
+      </Position10>
+      <Position11>
+        <Filename Value="incele.pas"/>
+        <Caret Line="602" Column="5" TopLine="568"/>
+      </Position11>
+      <Position12>
+        <Filename Value="incele.pas"/>
+        <Caret Line="8" Column="28"/>
+      </Position12>
+      <Position13>
+        <Filename Value="komutlar.pas"/>
+        <Caret Line="339" Column="50" TopLine="304"/>
+      </Position13>
+      <Position14>
+        <Filename Value="kodlama.pas"/>
+        <Caret Line="28" Column="17"/>
+      </Position14>
+      <Position15>
+        <Filename Value="komutlar.pas"/>
+      </Position15>
+      <Position16>
+        <Filename Value="komutlar.pas"/>
+        <Caret Line="249" Column="36" TopLine="223"/>
+      </Position16>
+      <Position17>
+        <Filename Value="komutlar.pas"/>
+        <Caret Line="7" Column="25"/>
+      </Position17>
+      <Position18>
+        <Filename Value="komutlar.pas"/>
+        <Caret Line="347" TopLine="312"/>
+      </Position18>
+      <Position19>
+        <Filename Value="gelisim.txt"/>
+        <Caret Line="20" Column="42"/>
+      </Position19>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

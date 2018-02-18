@@ -50,7 +50,7 @@ type
 
 implementation
 
-uses genel, donusum, yorumla;
+uses genel, donusum, yazmaclar, komutlar;
 
 constructor TEtiket.Create(ACollection: TCollection);
 begin
@@ -87,7 +87,7 @@ begin
   if(s[1] in ['0'..'9']) then
   begin
 
-    Result := HATA_HATALI_ETIKET;
+    Result := HATA_ETIKET_TANIM;
     Exit;
   end;
 
@@ -97,7 +97,7 @@ begin
   if(Komut.SiraNo >= 0) or (Yazmac.Sonuc >= 0) then
   begin
 
-    Result := HATA_HATALI_ETIKET;
+    Result := HATA_ETIKET_TANIM;
     Exit;
   end;
 
