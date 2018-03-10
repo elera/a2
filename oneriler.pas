@@ -5,7 +5,7 @@
   İşlev: derleyici içerisinde kullanılan bildirimlerle ilgili öneriler sunarak
     programcının kod yazmasını kolaylaştıran öneri dizilerini içerir
 
-  Güncelleme Tarihi: 17/02/2018
+  Güncelleme Tarihi: 06/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -16,13 +16,15 @@ interface
 uses Classes;
 
 const
-  TOPLAM_ONERI = 5;
+  TOPLAM_ONERI = 7;
   OneriDizisi: array[0..TOPLAM_ONERI - 1] of string = (
+    'dosya.ad = ''dosya''',
+    'dosya.uzantı = ''exe''',
+    'kod.adres = 400000h',
     'kod.mimari = ''16Bit''',
     'kod.mimari = ''32Bit''',
     'kod.mimari = ''64Bit''',
-    'dosya.adı = ''dosya''',
-    'dosya.uzantı = ''exe'''
+    'kod.tabaka = 4'
   );
 
 procedure OnerileriListele(MevcutKelime: string; sl: TStrings);

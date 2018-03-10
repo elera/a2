@@ -5,7 +5,7 @@
   İşlev: oluşturulan kodları geçici belleğe yazma ve format oluşturma
     işlevlerini gerçekleştirir
 
-  Güncelleme Tarihi: 14/02/2018
+  Güncelleme Tarihi: 06/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -24,11 +24,14 @@ uses genel;
 procedure KodEkle(Kod: Byte);
 begin
 
+  // oluşturulan kodu bellek bölgesine yaz ve işaretçiyi bir artır
   KodBellek[KodBellekU] := Kod;
   Inc(KodBellekU);
 
   // bellek 4K bloklara ayrılarak kodların bellek bloklarına yerleşimi burada
   // yönetilecek
+
+  // MevcutBellekAdresi, adresleme işlemlerini yönetir
   Inc(MevcutBellekAdresi);
 end;
 

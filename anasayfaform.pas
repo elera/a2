@@ -1,14 +1,14 @@
 {-------------------------------------------------------------------------------
 
-  Dosya: anasayfa.pas
+  Dosya: anasayfaform.pas
 
   İşlev: program ana sayfası
 
-  Güncelleme Tarihi: 18/02/2018
+  Güncelleme Tarihi: 07/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
-unit anaform;
+unit anasayfaform;
 
 interface
 
@@ -17,7 +17,10 @@ uses
   Controls, Graphics, Dialogs, StdCtrls, ComCtrls, ExtCtrls, Menus, Types, LCLType;
 
 type
-  TfrmAnaForm = class(TForm)
+
+  { TfrmAnaSayfa }
+
+  TfrmAnaSayfa = class(TForm)
     ilAnaMenu16: TImageList;
     miKodCalistir: TMenuItem;
     miKodEtiketListesi: TMenuItem;
@@ -56,21 +59,21 @@ type
   end;
 
 var
-  frmAnaForm: TfrmAnaForm;
+  frmAnaSayfa: TfrmAnaSayfa;
 
 implementation
 
 {$R *.lfm}
 
-uses incele, genel, etiket, matematik, dosya, derlemebilgisiform,
-  etiketform, asm2, ayarlar, yazmaclar, windows, process, oneriler, komutlar;
+uses incele, genel, atamalar, dosya, derlemebilgisiform, atamalarform, asm2,
+  ayarlar, yazmaclar, windows, process, oneriler, komutlar, dbugintf,
+  paylasim, donusum;
 
-procedure TfrmAnaForm.FormCreate(Sender: TObject);
+procedure TfrmAnaSayfa.FormCreate(Sender: TObject);
 begin
 
   // çalışma zamanlı nesneler oluşturuluyor
   GAsm2 := TAsm2.Create;
-  GMatematik := TMatematik.Create;
 
   // daha önce kaydedilen program ayarlarını oku
   GProgramAyarlari := GAsm2.ProgramAyarDosyasiniOku;
@@ -88,24 +91,23 @@ begin
   end;
 end;
 
-procedure TfrmAnaForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+procedure TfrmAnaSayfa.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
 
   // program ayarlarını ini dosyasına yaz
-  GProgramAyarlari.PencereSol := frmAnaForm.Left;
-  GProgramAyarlari.PencereUst := frmAnaForm.Top;
-  GProgramAyarlari.PencereGenislik := frmAnaForm.Width;
-  GProgramAyarlari.PencereYukseklik := frmAnaForm.Height;
-  GProgramAyarlari.PencereDurum := frmAnaForm.WindowState;
+  GProgramAyarlari.PencereSol := frmAnaSayfa.Left;
+  GProgramAyarlari.PencereUst := frmAnaSayfa.Top;
+  GProgramAyarlari.PencereGenislik := frmAnaSayfa.Width;
+  GProgramAyarlari.PencereYukseklik := frmAnaSayfa.Height;
+  GProgramAyarlari.PencereDurum := frmAnaSayfa.WindowState;
 
   GAsm2.ProgramAyarDosyasinaYaz(GProgramAyarlari);
 
   // çalışma zamanlı oluşturulan nesneler yok ediliyor
-  GMatematik.Destroy;
   GAsm2.Destroy;
 end;
 
-procedure TfrmAnaForm.FormShow(Sender: TObject);
+procedure TfrmAnaSayfa.FormShow(Sender: TObject);
 var
   i: Integer;
 begin
@@ -120,76 +122,101 @@ begin
   for i := 0 to TOPLAM_YAZMAC - 1 do
     SynAssemblerSyn.KeyWords.Add(UpperCase(YazmacListesi[i].Ad));
 
-  frmAnaForm.Left := GProgramAyarlari.PencereSol;
-  frmAnaForm.Top := GProgramAyarlari.PencereUst;
-  frmAnaForm.Width := GProgramAyarlari.PencereGenislik;
-  frmAnaForm.Height := GProgramAyarlari.PencereYukseklik;
-  frmAnaForm.WindowState := GProgramAyarlari.PencereDurum;
+  frmAnaSayfa.Left := GProgramAyarlari.PencereSol;
+  frmAnaSayfa.Top := GProgramAyarlari.PencereUst;
+  frmAnaSayfa.Width := GProgramAyarlari.PencereGenislik;
+  frmAnaSayfa.Height := GProgramAyarlari.PencereYukseklik;
+  frmAnaSayfa.WindowState := GProgramAyarlari.PencereDurum;
 end;
 
-procedure TfrmAnaForm.miKodEtiketListesiClick(Sender: TObject);
+procedure TfrmAnaSayfa.miKodEtiketListesiClick(Sender: TObject);
 begin
 
-  FormuOrtala(frmEtiketForm, True);
+  FormuOrtala(frmAtamalar, True);
 end;
 
 // kod derleme menüsü
-procedure TfrmAnaForm.miKodDerleClick(Sender: TObject);
+procedure TfrmAnaSayfa.miKodDerleClick(Sender: TObject);
 var
   MevcutSatirSayisi, ToplamSatirSayisi,
   IslenenSatirSayisi: Integer;
   Dosya, HamVeri: string;
   IslevSonuc: Integer;
+  DerlemeCevrimindenCik: Boolean;
 begin
 
-  MevcutBellekAdresi := 0;
-  KodBellekU := 0;
+  DerlemeCevrimindenCik := False;
 
   // mevcut etiketleri temizle
-  GAsm2.Etiketler.Temizle;
+  GAsm2.AtamaListesi.Temizle;
 
   // ilk değer atamaları
-  ToplamSatirSayisi := seAssembler.Lines.Count;
-  MevcutSatirSayisi := 0;
-  IslenenSatirSayisi := 0;
-  IslevSonuc := HATA_YOK;
+  GAsm2.DerlemeCevrimSayisi := 1;
 
-  // derleme öncesinde, derlemenin durumu olumsuz olarak belirleniyor
-  GAsm2.DerlemeBasarili := False;
-
-  // son satıra gelinmediği ve hata olmadığı müddetçe devam et
-  while (MevcutSatirSayisi < ToplamSatirSayisi) and (IslevSonuc = HATA_YOK) do
+  while (DerlemeCevrimindenCik = False) do
   begin
 
-    HamVeri := seAssembler.Lines[MevcutSatirSayisi];
-    if(Length(Trim(HamVeri)) > 0) then
+    IslevSonuc := HATA_YOK;
+
+    GEtiketHataSayisi := 0;
+
+    KodBellekU := 0;
+    MevcutBellekAdresi := 0;
+
+    ToplamSatirSayisi := seAssembler.Lines.Count;
+    MevcutSatirSayisi := 0;
+    IslenenSatirSayisi := 0;
+
+    // son satıra gelinmediği ve hata olmadığı müddetçe devam et
+    while (MevcutSatirSayisi < ToplamSatirSayisi) and (IslevSonuc = HATA_YOK) do
     begin
 
-      // her 2 değişken tipi de burada yok olarak belirtiliyor
-      GAnaBolumVeriTipi := abvtBelirsiz;
-      GIslemKodAnaBolum := [];
-      GIKABVeriTipi1 := vtYok;
-      GIKABVeriTipi2 := vtYok;
+      HamVeri := seAssembler.Lines[MevcutSatirSayisi];
 
-      // ilgili satırın incelendiği / kodların üretildiği ana çağrı
-      IslevSonuc := KodUret(HamVeri);
+      if(Length(Trim(HamVeri)) > 0) then
+      begin
 
-      // işlenen satır sayısını artır
-      Inc(IslenenSatirSayisi);
+        // her 2 değişken tipi de burada yok olarak belirtiliyor
+        GAnaBolumVeriTipi := abvtBelirsiz;
+        GIslemKodAnaBolum := [];
+        GIKABVeriTipi1 := vtYok;
+        GIKABVeriTipi2 := vtYok;
+
+        // ilgili satırın incelendiği / kodların üretildiği ana çağrı
+        IslevSonuc := KodUret(MevcutSatirSayisi, HamVeri);
+
+        // işlenen satır sayısını artır
+        Inc(IslenenSatirSayisi);
+      end;
+
+      // bir sonraki satıra geçiş yap
+      Inc(MevcutSatirSayisi);
+      Application.ProcessMessages;
     end;
 
-    // bir sonraki satıra geçiş yap
-    Inc(MevcutSatirSayisi);
+    // hata olduğu için çıkış yap
+    if(IslevSonuc > HATA_YOK) then
+
+      DerlemeCevrimindenCik := True
+
+    // derleme başarılı olduğu için çıkış yap
+    else if(IslevSonuc = HATA_YOK) and (GAsm2.AtamaListesi.Temizle2 = 0) then
+
+      DerlemeCevrimindenCik := True
+
+    else GAsm2.DerlemeCevrimSayisi := GAsm2.DerlemeCevrimSayisi + 1;
+
+    Application.ProcessMessages;
   end;
 
-  // derleme işleminin durumu, derleme sonrasında yeniden belirleniyor
+  // derleme işleminin durumu, derleme sonrasında belirleniyor
   GAsm2.DerlemeBasarili := (IslevSonuc = HATA_YOK);
 
   // kodların yorumlanması ve çevrilmesinde herhangi bir hata yoksa
   // ikili formatta (binary file) dosya oluştur
   { TODO : oluşturulacak dosya ilk aşamada saf assembler kodların makine dili karşılıklarıdır
     ileride PE / COFF ve diğer formatlarda program dosyaları oluşturulacaktır  }
-  if(IslevSonuc = HATA_YOK) then
+  if(GAsm2.DerlemeBasarili) then
   begin
 
     if(ProgramDosyasiOlustur) then
@@ -199,6 +226,7 @@ begin
       frmDerlemeBilgisi.DerlenenDosya := Dosya;
       frmDerlemeBilgisi.DerlenenSatirSayisi := IslenenSatirSayisi;
       frmDerlemeBilgisi.IkiliDosyaUzunluk := KodBellekU;
+      frmDerlemeBilgisi.DerlemeCevrimSayisi := GAsm2.DerlemeCevrimSayisi;
       FormuOrtala(frmDerlemeBilgisi, True);
     end else ShowMessage('Hata: ' + Dosya + ' dosyası oluşturulamadı!')
   end
@@ -211,23 +239,23 @@ begin
   end;
 end;
 
-function TfrmAnaForm.FormuOrtala(GoruntulenecekForm: TForm; SonucuBekle:
+function TfrmAnaSayfa.FormuOrtala(GoruntulenecekForm: TForm; SonucuBekle:
   Boolean): Integer;
 var
   X, Y: Integer;
 begin
 
-  X := (frmAnaForm.Width - GoruntulenecekForm.Width) div 2;
-  Y := (frmAnaForm.Height - GoruntulenecekForm.Height) div 2;
-  GoruntulenecekForm.Left := frmAnaForm.Left + X;
-  GoruntulenecekForm.Top := frmAnaForm.Top + Y;
+  X := (frmAnaSayfa.Width - GoruntulenecekForm.Width) div 2;
+  Y := (frmAnaSayfa.Height - GoruntulenecekForm.Height) div 2;
+  GoruntulenecekForm.Left := frmAnaSayfa.Left + X;
+  GoruntulenecekForm.Top := frmAnaSayfa.Top + Y;
 
   if(SonucuBekle) then
     Result := GoruntulenecekForm.ShowModal
   else GoruntulenecekForm.Show;
 end;
 
-procedure TfrmAnaForm.miKodCalistirClick(Sender: TObject);
+procedure TfrmAnaSayfa.miKodCalistirClick(Sender: TObject);
 var
   Process: TProcess;
 begin
@@ -251,13 +279,13 @@ begin
   end else ShowMessage('Lütfen ilk önce, programı çalıştırılabilir olarak derleyiniz!');
 end;
 
-procedure TfrmAnaForm.SynCompletion1Execute(Sender: TObject);
+procedure TfrmAnaSayfa.SynCompletion1Execute(Sender: TObject);
 begin
 
   OnerileriListele(SynCompletion1.CurrentString, SynCompletion1.ItemList);
 end;
 
-procedure TfrmAnaForm.miYardimAssemblerBelgeClick(Sender: TObject);
+procedure TfrmAnaSayfa.miYardimAssemblerBelgeClick(Sender: TObject);
 begin
 
   if(ShellExecute(0, nil, PChar('notepad.exe'), PChar('assembler.txt'),
@@ -268,20 +296,20 @@ begin
   end;
 end;
 
-procedure TfrmAnaForm.seAssemblerClick(Sender: TObject);
+procedure TfrmAnaSayfa.seAssemblerClick(Sender: TObject);
 begin
 
   ImleciGuncelle;
 end;
 
-procedure TfrmAnaForm.seAssemblerKeyDown(Sender: TObject; var Key: Word;
+procedure TfrmAnaSayfa.seAssemblerKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 
   ImleciGuncelle;
 end;
 
-procedure TfrmAnaForm.ImleciGuncelle;
+procedure TfrmAnaSayfa.ImleciGuncelle;
 begin
 
   sbDurum.Panels[1].Text := 'Satır: ' + IntToStr(seAssembler.CaretY) + ' - Sütun: ' +

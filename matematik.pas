@@ -6,12 +6,14 @@
     mantıksal işlem ve parentez öncelikli işlevlerin çalıştırılarak
     sonuç değeri döndüren nesnesel yapı
 
-  Güncelleme Tarihi: 21/01/2018
+  Güncelleme Tarihi: 26/02/2018
 
   Bilgilendirme:
     1. işlemler; önce işaret, sonra sayı olarak yapılmaktadır. ör: + 1 - 1 * 1 / 1
     2. her bir açma parantezi bir alt kademe işlem sahası açarken,
     3. her bir kapama parantezi bir üst kademede kalan işlemi tamamlamaktadır
+    4. IslemYapiliyor değişkeni, ilk işlem ile aktif olurken; Sonuc değerinin
+      alınmasıyla aktifliğini yitirir
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -36,6 +38,7 @@ type
     FSayiToplami: QWord;
     FSayiMevcut: Boolean;     // parantez öncesi sayı olup olmadığını belirtir
     FAktifIslem: TIslem;      // en son yapılan işlem
+    FIslemYapiliyor: Boolean; // o anda matematiksel işlemin yapılığ yapılmadığını gösterir
     FIslemDizi: array of TIslem;
   public
     constructor Create;
@@ -46,6 +49,7 @@ type
     function Sonuc(var SonucDeger: QWord): Integer;
     procedure Temizle;
   published
+    property IslemYapiliyor: Boolean read FIslemYapiliyor;
   end;
 
 implementation
@@ -54,6 +58,8 @@ uses genel;
 
 constructor TMatematik.Create;
 begin
+
+  FIslemYapiliyor := False;
 
   // ilk değer atamaları
   FElemanSayisi := 0;
@@ -77,6 +83,9 @@ end;
 // AIslem değişkeni, ileriye yönelik mantıksal değerleri yönetmek için tasarlanmıştır
 procedure TMatematik.SayiEkle(AIslem: string; ADegerMevcut: Boolean; ADeger: QWord);
 begin
+
+  // eğer işlem yapılıyor aktif değil ise, aktifleştir
+  if not(FIslemYapiliyor) then FIslemYapiliyor := True;
 
   // değerin mevcut olmaması halinde mevcut değerin işareti değiştirilir
   // ör: (3 + 1) - (3 + 1) işleminde - işareti solundaki değeri - olarak belirler
@@ -108,6 +117,9 @@ end;
 function TMatematik.ParantezEkle(Parantez: Char; DegerMevcut: Boolean;
   ADeger: QWord): Integer;
 begin
+
+  // eğer işlem yapılıyor aktif değil ise, aktifleştir
+  if not(FIslemYapiliyor) then FIslemYapiliyor := True;
 
   if(Parantez = '(') then
   begin
@@ -204,6 +216,9 @@ begin
     SonucDeger := FSayiToplami;
     Result := 0;
   end;
+
+  // işlem yapılıyor değişkenini güncelleştir
+  FIslemYapiliyor := False;
 end;
 
 // tüm değerleri öndeğerlere ayarla
@@ -216,6 +231,9 @@ begin
 
   FAktifIslem.Isaret := '+';
   FAktifIslem.Deger := 0;
+
+  // işlem yapılıyor değişkenini güncelleştir
+  FIslemYapiliyor := False;
 end;
 
 end.

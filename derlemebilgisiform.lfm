@@ -1,12 +1,12 @@
 object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   Left = 447
-  Height = 188
+  Height = 207
   Top = 305
   Width = 255
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'Derleme Bilgisi'
-  ClientHeight = 188
+  ClientHeight = 207
   ClientWidth = 255
   OnShow = FormShow
   LCLVersion = '1.8.0.6'
@@ -31,7 +31,7 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   object btnTamam: TBitBtn
     Left = 163
     Height = 26
-    Top = 155
+    Top = 174
     Width = 87
     Anchors = [akRight, akBottom]
     Cancel = True
@@ -84,7 +84,7 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   object shpCizgi: TShape
     Left = 8
     Height = 1
-    Top = 144
+    Top = 164
     Width = 242
   end
   object lblProjeDosyasiB1: TLabel
@@ -127,7 +127,7 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   object lblIkiliUzunlukB: TLabel
     Left = 8
     Height = 15
-    Top = 120
+    Top = 140
     Width = 80
     Caption = 'Uzunluk (Byte):'
     ParentColor = False
@@ -136,7 +136,7 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   object lblIkiliUzunluk: TLabel
     Left = 118
     Height = 15
-    Top = 120
+    Top = 140
     Width = 130
     AutoSize = False
     Caption = '0'
@@ -149,5 +149,25 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
     Height = 1
     Top = 88
     Width = 219
+  end
+  object lblDerlemeCevrimSayisiC: TLabel
+    Left = 8
+    Height = 15
+    Top = 118
+    Width = 73
+    Caption = 'Çevrim Sayısı:'
+    ParentColor = False
+    ParentFont = False
+  end
+  object lblDerlemeCevrimSayisi: TLabel
+    Left = 118
+    Height = 15
+    Top = 118
+    Width = 130
+    AutoSize = False
+    Caption = '1'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
   end
 end

@@ -4,7 +4,7 @@
 
   İşlev: sayısal / karaktersel çevrim ile ilgili işlevleri içerir
 
-  Güncelleme Tarihi: 07/02/2018
+  Güncelleme Tarihi: 09/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -12,17 +12,18 @@ unit donusum;
 
 interface
 
-uses Classes, SysUtils, genel;
+uses Classes, SysUtils, paylasim;
 
 function SayiyaCevir(Sistem10s: string; var Sistem10i: QWord): Boolean;
 function Sistem2Sistem10(Sistem2: string; var Sistem10: QWord): Boolean;
 function Sistem16Sistem10(Sistem16: string; var Sistem10: QWord): Boolean;
 function KucukHarfeCevir(s: string): string;
+function YeniUTF8AnsiTR(s: string): string;
 function SayiTipiniAl(SayisalDeger: QWord): TSayiTipi;
 
 implementation
 
-uses LazUTF8, strutils, anaform;
+uses LazUTF8;
 
 // ikili / onlu / onaltılı sayısal karakter katarının (string) sayısal (int)
 // değere dönüştürme işlemini gerçekleştirir
@@ -164,6 +165,61 @@ begin
         s2 += 'ç'
       else s2 += s3;
     end;
+  end;
+
+  Result := s2;
+end;
+
+// Utf8ToAnsi vb diğer işlevler istenen sonucu vermediğinden dolayı
+// çözüm olarak yeni işlev kodlanmıştır - 09.03.2018
+function YeniUTF8AnsiTR(s: string): string;
+var
+  i: Integer;
+  s2, s3: string;
+begin
+
+  if(UTF8Length(s) = 0) then
+  begin
+
+    Result := '';
+    Exit;
+  end;
+
+  s2 := '';
+  for i := 1 to UTF8Length(s) do
+  begin
+
+    s3 := UTF8Copy(s, i, 1);
+
+    if(s3 = 'ç') then
+      s2 += #231
+    else if(s3 = 'Ç') then
+      s2 += #199
+    else if(s3 = 'ğ') then
+      s2 += #240
+    else if(s3 = 'Ğ') then
+      s2 += #208
+    else if(s3 = 'ı') then
+      s2 += #253
+    {else if(s3 = 'I') then   // ascii kod tablosu içerisinde olduğundan
+      s2 += #73}              // yeniden tanımlanmasına gerek yoktur
+    {else if(s3 = 'i') then   // ascii kod tablosu içerisinde olduğundan
+      s2 += #105}             // yeniden tanımlanmasına gerek yoktur
+    else if(s3 = 'İ') then
+      s2 += #221
+    else if(s3 = 'ö') then
+      s2 += #246
+    else if(s3 = 'Ö') then
+      s2 += #214
+    else if(s3 = 'ş') then
+      s2 += #254
+    else if(s3 = 'Ş') then
+      s2 += #222
+    else if(s3 = 'ü') then
+      s2 += #252
+    else if(s3 = 'Ü') then
+      s2 += #220
+    else s2 += s3;
   end;
 
   Result := s2;

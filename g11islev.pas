@@ -1,12 +1,12 @@
 {-------------------------------------------------------------------------------
 
-  Dosya: g02islev.pas
+  Dosya: g11islev.pas
 
   İşlev: 11. grup kodlama işlevlerini gerçekleştirir
 
   11. grup kodlama işlevi, işlem kodu ve byte tipine sahip değeri içerir
 
-  Güncelleme Tarihi: 18/02/2018
+  Güncelleme Tarihi: 07/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -14,10 +14,10 @@ unit g11islev;
 
 interface
 
-uses Classes, SysUtils, genel;
+uses Classes, SysUtils, genel, paylasim;
 
-function Grup11Islev(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: QWord): Integer;
+function Grup11Islev(SatirNo: Integer; ParcaNo: Integer;
+  VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
 
 implementation
 
@@ -28,8 +28,8 @@ var
   SabitDegerAtandi: Boolean;
   SabitDeger: Byte;
 
-function Grup11Islev(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: QWord): Integer;
+function Grup11Islev(SatirNo: Integer; ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip;
+  Veri1: string; Veri2: QWord): Integer;
 var
   SayiTipi: TSayiTipi;
 begin

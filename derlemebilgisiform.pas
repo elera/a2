@@ -4,7 +4,7 @@
 
   İşlev: derleme sonrası bilgi verme işlemi
 
-  Güncelleme Tarihi: 17/02/2018
+  Güncelleme Tarihi: 22/02/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -17,10 +17,15 @@ uses
   Buttons, ExtCtrls;
 
 type
+
+  { TfrmDerlemeBilgisi }
+
   TfrmDerlemeBilgisi = class(TForm)
     btnTamam: TBitBtn;
     lblDerlenenDosya: TLabel;
     lblIkiliUzunluk: TLabel;
+    lblDerlemeCevrimSayisi: TLabel;
+    lblDerlemeCevrimSayisiC: TLabel;
     lblProjeDosyasiB1: TLabel;
     lblIkiliDosyaB: TLabel;
     lblIkiliUzunlukB: TLabel;
@@ -37,7 +42,8 @@ type
   private
   public
     DerlenenSatirSayisi,
-    IkiliDosyaUzunluk: Integer;
+    IkiliDosyaUzunluk,
+    DerlemeCevrimSayisi: Integer;
     DerlenenDosya: string;
   end;
 
@@ -53,6 +59,7 @@ begin
 
   lblDerlenenDosya.Caption := DerlenenDosya;
   lblSatirSayisi.Caption := IntToStr(DerlenenSatirSayisi);
+  lblDerlemeCevrimSayisi.Caption := IntToStr(DerlemeCevrimSayisi);
   lblIkiliUzunluk.Caption := IntToStr(IkiliDosyaUzunluk);
 end;
 

@@ -13,8 +13,15 @@
   çoklu aritmetik / parantez önceliği / mantıksal işlemler dahilinde yorumlanması
 - ikili kod verilerinin dosyaya aktarılmadan önce yerleştirildiği bellek (kodlama)
   yönetimi işlevselleştirilecek
-- veri tanım (db, dw, ..) işlemleri tamamlanacak
-- ikili formatta (binary file) dosya oluşturma gerçekleştirilecek
 - windows pe dosya format çalışması tamamlanacak
-- sayısal ve katar veri tiplerinin etkin kullanımı sağlanacak
-- bildirim (derleyici çalışma bildirimleri) işlemlerine başlandı
+- veritipi ve diğer ana bölümlerin tutarlılığı sağlanacak
+- karaktersel etiketler kontrol edilecek
+- sayısal olmayan (etiket) değerlerin çevriminde kullanılan öndeğer mutlaka incelenecek, gerekirse değiştirilecek
+- öncelikle sayısal (etiket + tanım) daha sonra ise karaktersel ortak çalışmalar gerçekleştirilecek
+- STI gibi küçük harfe çevrildiğinde içerisinde türkçe karakter barındıran işlem kodları (opcode) ingilizce karakter olarak muhafaza edilecek
+
+// program içerisindeki kavram ve kullanımları
+00 - tanım      16BitDeger = 1B + 2B + 3B   - değişken tanımlamalar. tanımlamaları değişkendir, sabit değildir
+01 - bildirim   kod.mimari = '16bit'        - SADECE derleyiciyi yöneten bildirimleri içerir. tanımlamaları sabittir, değişmez
+02 - değişken   degisken dd 1000h           - kod / data
+

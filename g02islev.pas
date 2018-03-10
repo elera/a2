@@ -4,9 +4,9 @@
 
   İşlev: 2. grup kodlama işlevlerini gerçekleştirir
 
-  2. grup kodlama işlevi, veri tanımlayıcı ifadelerin yönetimidir
+  2. grup kodlama işlevi, DEĞİŞKEN ifadelerini yönetir
 
-  Güncelleme Tarihi: 18/02/2018
+  Güncelleme Tarihi: 07/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -14,10 +14,10 @@ unit g02islev;
 
 interface
 
-uses Classes, SysUtils, genel;
+uses Classes, SysUtils, genel, paylasim;
 
-function Grup02Bildirim(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip;
-  Veri1: string; Veri2: QWord): Integer;
+function Grup02Degisken(SatirNo: Integer; ParcaNo: Integer;
+  VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
 
 implementation
 
@@ -28,13 +28,13 @@ var
   VeriGenisligi: Integer;
   VirgulKullanildi: Boolean;
 
-function Grup02Bildirim(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip;
-  Veri1: string; Veri2: QWord): Integer;
+function Grup02Degisken(SatirNo: Integer; ParcaNo: Integer;
+  VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
 var
   _SayiTipi: TSayiTipi;
   i, j: Integer;
   SayisalVeri: QWord;
-  s: string;
+  s, s2: string;
 begin
 
   // ilk veri - Veri2 komut sıra numarasını verir
@@ -63,17 +63,20 @@ begin
     else
     begin
 
+      // pascal derleyici tarafından utf-8 olarak kodlanan veri ansi karaktere çevriliyor
+      s2 := YeniUTF8AnsiTR(Veri1);
+
       // karakter dizisinin uzunluğu db olması halinde veri uzunluğunu kontrol
       // etmeye gerek yoktur. veri uzunluğu sınırsızdır
       // aksi durumda uzunluk kontrolünün yapılması gerekmektedir
       if(SayiTipi = st1B) then
 
-        s := Veri1
+        s := s2
       else
       begin
 
         // programcı tarafından tanıma atanan veri uzunluğu
-        i := Length(Veri1);
+        i := Length(s2);
 
         // atanan veri, tanımlanan veri uzunluğundan büyükse hata kodu ile çıkış yap
         if(i > VeriGenisligi) then
@@ -86,9 +89,9 @@ begin
         else if(i < VeriGenisligi) then
         begin
 
-          s := Veri1;
+          s := s2;
           for j := 1 to VeriGenisligi - i do s := s + #0;
-        end else s := Veri1;
+        end else s := s2;
       end;
 
       // hazırlanan veriyi hedef bellek bölgesine kopyala
@@ -131,6 +134,7 @@ begin
   end else if(VeriKontrolTip = vktVirgul) then
   begin
 
+    // üstüste virgül kontrol değerinin gelmesi durumunda hata oluştur
     if(VirgulKullanildi) then
 
       Result := HATA_TANIMLAMA

@@ -13,7 +13,7 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <RevisionNr Value="8"/>
+      <RevisionNr Value="9"/>
       <BuildNr Value="2018"/>
       <Language Value="041F"/>
       <CharSet Value="04E6"/>
@@ -41,15 +41,15 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="22">
+    <Units Count="24">
       <Unit0>
         <Filename Value="a2.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="anaform.pas"/>
+        <Filename Value="anasayfaform.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="frmAnaForm"/>
+        <ComponentName Value="frmAnaSayfa"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit1>
@@ -66,7 +66,7 @@
         <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
-        <Filename Value="etiket.pas"/>
+        <Filename Value="atamalar.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit5>
       <Unit6>
@@ -89,9 +89,9 @@
         <ResourceBaseClass Value="Form"/>
       </Unit9>
       <Unit10>
-        <Filename Value="etiketform.pas"/>
+        <Filename Value="atamalarform.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="frmEtiketForm"/>
+        <ComponentName Value="frmAtamalar"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit10>
@@ -139,6 +139,14 @@
         <Filename Value="komutlar.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit21>
+      <Unit22>
+        <Filename Value="g00islev.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit22>
+      <Unit23>
+        <Filename Value="paylasim.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit23>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

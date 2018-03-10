@@ -12,10 +12,10 @@ unit g12islev;
 
 interface
 
-uses Classes, SysUtils, genel;
+uses Classes, SysUtils, genel, paylasim;
 
-function Grup12Islev(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: QWord): Integer;
+function Grup12Islev(SatirNo: Integer; ParcaNo: Integer;
+  VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
 
 implementation
 
@@ -28,8 +28,8 @@ var
   KoseliParantezSayisi: Integer;
 
 // mov komutu ve diğer ilgili en karmaşık komutların prototipi
-function Grup12Islev(ParcaNo: Integer; VeriKontrolTip: TVeriKontrolTip; Veri1: string;
-  Veri2: QWord): Integer;
+function Grup12Islev(SatirNo: Integer; ParcaNo: Integer;
+  VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
 begin
 
   {frmAnaSayfa.mmDurumBilgisi.Lines.Add('Parça No: ' + IntToStr(ParcaNo));
