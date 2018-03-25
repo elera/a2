@@ -4,7 +4,7 @@
 
   İşlev: genel sabit, değişken, yapı ve işlevleri içerir
 
-  Güncelleme Tarihi: 07/03/2018
+  Güncelleme Tarihi: 25/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -16,8 +16,8 @@ uses Classes, SysUtils, Forms, matematik, asm2, ayarlar, paylasim;
 
 const
   ProgramAdi = 'Assembler 2 (a2)';
-  ProgramSurum = '0.0.9.2018';
-  SurumTarihi = '10.03.2018';
+  ProgramSurum = '0.0.10.2018';
+  SurumTarihi = '25.03.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -29,7 +29,7 @@ type
 
 const
   // 0 numaralı hata kodu, HataKodunuAl işlevinin kendisi için tanımlanmıştır.
-  TOPLAM_HATA_BILGI_UYARI = 25;
+  TOPLAM_HATA_BILGI_UYARI = 26;
 
   HATA_YOK = 0;
   HATA_BILINMEYEN_HATA            = HATA_YOK + 1;
@@ -54,9 +54,11 @@ const
   HATA_VERI_TIPI                  = HATA_SAYISAL_DEGER + 1;
   HATA_BILINMEYEN_MIMARI          = HATA_VERI_TIPI + 1;
   HATA_HATALI_MIMARI64            = HATA_BILINMEYEN_MIMARI + 1;
-  HATA_BILD_KULLANIM              = HATA_HATALI_MIMARI64 + 1;
+  HATA_64BIT_MIMARI_GEREKLI       = HATA_HATALI_MIMARI64 + 1;
+  HATA_BILD_KULLANIM              = HATA_64BIT_MIMARI_GEREKLI + 1;
   HATA_TANIM_KULLANIM             = HATA_BILD_KULLANIM + 1;
   HATA_TANIMLAMA                  = HATA_TANIM_KULLANIM + 1;
+  HATA_DEVAM_EDEN_CALISMA         = HATA_TANIMLAMA + 1;
 
   sHATA_BILINMEYEN_HATA           = 'Bilinmeyen hata';
   sHATA_BILINMEYEN_KOMUT          = 'Bilinmeyen komut';
@@ -80,9 +82,11 @@ const
   sHATA_VERI_TIPI                 = 'Veri tipi hatalı';
   sHATA_BILINMEYEN_MIMARI         = 'Bilinmeyen mimari';
   sHATA_HATALI_MIMARI64           = 'Bu işlem kodunu 64 bitlik mimaride kullanamazsınız';
+  sHATA_64BIT_MIMARI_GEREKLI      = 'Bu komut SADECE 64 bitlik mimaride kullanılabilir';
   sHATA_BILD_KULLANIM             = 'Hatalı bildirim kullanımı';
   sHATA_TANIM_KULLANIM            = 'Hatalı tanım kullanımı';
   sHATA_TANIMLAMA                 = 'Hatalı tanımlama';
+  sHATA_DEVAM_EDEN_CALISMA        = 'Çalışmalar devam etmekte...';
 
 const
   BilgiDizisi: array[1..TOPLAM_HATA_BILGI_UYARI] of TBilgi = (
@@ -108,6 +112,7 @@ const
     (Tip: btHata;   Kod: HATA_VERI_TIPI;              Aciklama: sHATA_VERI_TIPI),
     (Tip: btHata;   Kod: HATA_BILINMEYEN_MIMARI;      Aciklama: sHATA_BILINMEYEN_MIMARI),
     (Tip: btHata;   Kod: HATA_HATALI_MIMARI64;        Aciklama: sHATA_HATALI_MIMARI64),
+    (Tip: btHata;   Kod: HATA_64BIT_MIMARI_GEREKLI;   Aciklama: sHATA_64BIT_MIMARI_GEREKLI),
     (Tip: btHata;   Kod: HATA_BILD_KULLANIM;          Aciklama: sHATA_BILD_KULLANIM),
     (Tip: btHata;   Kod: HATA_TANIM_KULLANIM;         Aciklama: sHATA_TANIM_KULLANIM),
     (Tip: btHata;   Kod: HATA_TANIMLAMA;              Aciklama: sHATA_TANIMLAMA)
@@ -116,6 +121,7 @@ const
 var
   GAsm2: TAsm2;                             // derleyici ana nesnesi
   GProgramAyarDizin: string;                // program ayar dizinini içerir
+  GProgramCalismaDizin: string;             // programın çalıştığı dizin
   GProgramAyarlari: TProgramAyarlari;       // program ayar değerlerini içerir
   MevcutBellekAdresi: Integer;
   KodBellek: array[0..4095] of Byte;
@@ -125,11 +131,11 @@ var
   // ("bellek db 10" örneğinde bellek değeri) değişken ilk değeri veya
   // ("bellek = 10" örneğinde bellek değeri) tanım ilk değeri
   GTanimlanacakVeri: string;
-  GAnaBolumVeriTipi: TAnaBolumVeriTipi;     // her bir satırın veri tipi
-  GIslemKodAnaBolum: TIslemKodAnaBolum;     // her bir işlem kodunun ana bölümleri
-  GIslemKodAyrinti: TIslemKodAyrinti;       // her bir işlem kod içerisinde tanımlı diğer ayrıntılar
   GHataKodu: Integer;
   GHataAciklama: string;
+
+  // tüm satır verilerini içerecek ana değer
+  SatirIcerik: TSatirIcerik;
 
   // GENEL BİLGİ:
   // 1. her bir kod satırı, 2 öndeğeri (parametre) işleyecek şekilde yapılandırılmıştır
@@ -137,14 +143,12 @@ var
   // 2. her bir komut satırının (opcode) GIslemKodu değişkeni ile ifade edilen sıra numarası vardır
   // 3. her 2 öndeğerin yazmaç olması halinde GYazmac1 ve GYazmac2 değişkenleri kullanılırken;
   //   adresleme işleminin olması durumunda GYazmac1, GYazmacB1 ve GYazmacB2 kullanımaktadır
-  GIKABVeriTipi1: TIKABVeriTipi;            // işlem kodunun birinci parametre tipi
-  GIKABVeriTipi2: TIKABVeriTipi;            // işlem kodunun ikinci parametre tipi
-  GIslemKodu,                               // işlem kodunun (opcode) sıra değer karşılığı
   GYazmac1,                                 // birinci yazmaç değeri
   GYazmac2,                                 // ikinci yazmaç değeri
   GYazmacB1,                                // birinci bellek yazmaç değeri
   GYazmacB2,                                // ikinci bellek yazmaç değeri
   GOlcek,                                   // bellek adreslemede kullanılan ölçek değer
+  GBellekSabitDeger,                        // bellek adresleme sabit değeri (yeni, ilgili kısımlara uygulansın)
   GSabitDeger: Integer;                     // bellek / yazmaç için sayısal değer
   GYazmacB1OlcekM, GYazmacB2OlcekM: Boolean;// bellek yazmaçlarının ölçek değerleri var mı?
 

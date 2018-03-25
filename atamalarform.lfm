@@ -1,7 +1,7 @@
 object frmAtamalar: TfrmAtamalar
-  Left = 657
+  Left = 292
   Height = 439
-  Top = 341
+  Top = 148
   Width = 509
   Align = alBottom
   BorderStyle = bsSizeToolWin
@@ -61,10 +61,10 @@ object frmAtamalar: TfrmAtamalar
       item
         Alignment = taCenter
         Caption = 'Veri'
-        Width = 110
+        Width = 100
       end    
       item
-        Width = 35
+        Width = 45
       end>
     GridLines = True
     ReadOnly = True

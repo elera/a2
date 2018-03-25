@@ -6,7 +6,7 @@
 
   1. grup kodlama işlevi, BİLDİRİM ifadelerini yönetir
 
-  Güncelleme Tarihi: 07/03/2018
+  Güncelleme Tarihi: 25/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -106,7 +106,7 @@ begin
       else if(Tanimlanan = GRUP01_DOS_UZN) then
       begin
 
-        GAsm2.DosyaUzanti := sTanim;
+        GAsm2.CikisDosyaUzanti := sTanim;
         Result := HATA_YOK;
       end
       // * adresleme tanımlaması

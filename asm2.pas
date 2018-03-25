@@ -4,7 +4,7 @@
 
   İşlev: derleyici içerisinde kullanılan tüm sınıfları yönetecek ana sınıf
 
-  Güncelleme Tarihi: 25/02/2018
+  Güncelleme Tarihi: 25/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -21,7 +21,7 @@ type
   TAsm2 = class
   private
     FMimari: TMimari;
-    FDosyaAdi, FDosyaUzanti: string;
+    FProjeDizin, FDosyaAdi, FProjeDosyaUzanti, FCikisDosyaUzanti: string;
     FDerlemeBasarili: Boolean;
   public
     AtamaListesi: TAtamaListesi;
@@ -29,12 +29,15 @@ type
     FDerlemeCevrimSayisi: Integer;
     constructor Create;
     destructor Destroy; override;
+    procedure Ilklendir;
     function ProgramAyarDosyasiniOku: TProgramAyarlari;
     procedure ProgramAyarDosyasinaYaz(ProgramAyarlari: TProgramAyarlari);
   published
     property Mimari: TMimari read FMimari write FMimari;
+    property ProjeDizin: string read FProjeDizin write FProjeDizin;
     property DosyaAdi: string read FDosyaAdi write FDosyaAdi;
-    property DosyaUzanti: string read FDosyaUzanti write FDosyaUzanti;
+    property ProjeDosyaUzanti: string read FProjeDosyaUzanti write FProjeDosyaUzanti;
+    property CikisDosyaUzanti: string read FCikisDosyaUzanti write FCikisDosyaUzanti;
     property DerlemeBasarili: Boolean read FDerlemeBasarili write FDerlemeBasarili;
     property DerlemeCevrimSayisi: Integer read FDerlemeCevrimSayisi
       write FDerlemeCevrimSayisi;
@@ -42,15 +45,30 @@ type
 
 implementation
 
+uses genel;
+
 constructor TAsm2.Create;
 begin
 
   AtamaListesi := TAtamaListesi.Create;
   Matematik := TMatematik.Create;
 
+  Ilklendir;
+end;
+
+procedure TAsm2.Ilklendir;
+begin
+
+  // bu 2 değer fazla gibi gözükebilir ama fazla değildir
+  // her yeni dosya açma işleminde bu işlem çağrılmaktadır
+  AtamaListesi.Temizle;
+  Matematik.Temizle;
+
   FMimari := mim16Bit;
-  FDosyaAdi := 'test';
-  FDosyaUzanti := 'bin';
+  FProjeDizin := GProgramCalismaDizin;
+  FDosyaAdi := '';
+  FProjeDosyaUzanti := '';
+  FCikisDosyaUzanti := '';
   FDerlemeBasarili := False;
 
   FDerlemeCevrimSayisi := 0;

@@ -59,7 +59,9 @@ var
   TekTirnakSayisi: Integer;   // karakter katarı (string) takibini gerçekleştiren değişken
   OlcekDegerMevcut: Boolean;  // dizi içerisinde ölçek değer (scale) olup olmadığını takip eder
   SonKullanilanIsleyici: Char;
-  VeriTipi: TTemelVeriTipi;  // dizi içerisinde veri tiplerini tanımlamak için
+  VeriTipi: TTemelVeriTipi;   // dizi içerisinde veri tiplerini tanımlamak için
+  YazmacDurum: TYazmacDurum;
+  Yazmac: TYazmacDurum;
 
   // her bir komutun yorumlanarak ilgili işleve yönlendirilmesini sağlar
   // ParcaNo değişkeninin artırma işlemini SADECE bu işlev gerçekleştirmektedir
@@ -113,7 +115,7 @@ var
           else if(ParcaNo = 2) and (AVeriKontrolTip = vktEsittir) then
           begin
 
-            GAnaBolumVeriTipi := abvtTanim;
+            SatirIcerik.Komut.KomutTipi := ktTanim;
             SonVeriKontrolTip := vktIlk;
 
             iKomutYorumla := @Grup00Islev;
@@ -135,20 +137,20 @@ var
         begin
 
           // işlem kodu işlevine ilk çağrı yapılıyor
-          if(_KomutDurum.ABVT = abvtIslemKodu) then
+          if(_KomutDurum.KomutTipi = ktIslemKodu) then
           begin
 
-            GAnaBolumVeriTipi := abvtIslemKodu;
+            SatirIcerik.Komut.KomutTipi := ktIslemKodu;
             SonVeriKontrolTip := vktIlk;
             iKomutYorumla := KomutListe[_KomutDurum.SiraNo];
             Result := iKomutYorumla(SatirNo, AParcaNo, vktIlk, AVeri1, _KomutDurum.SiraNo);
           end
           // bildirim işlevine ilk çağrı yapılıyor
-          else if(_KomutDurum.ABVT = abvtBildirim) then
+          else if(_KomutDurum.KomutTipi = ktBildirim) then
           begin
 
             //SendDebug('Bildirim: ' + IntToStr(_KomutDurum.SiraNo));
-            GAnaBolumVeriTipi := abvtBildirim;
+            SatirIcerik.Komut.KomutTipi := ktBildirim;
             SonVeriKontrolTip := vktIlk;
             iKomutYorumla := KomutListe[_KomutDurum.SiraNo];
             Result := iKomutYorumla(SatirNo, AParcaNo, vktIlk, AVeri1, _KomutDurum.SiraNo);
@@ -167,7 +169,7 @@ var
           else
           begin
 
-            GAnaBolumVeriTipi := abvtDegisken;
+            SatirIcerik.Komut.KomutTipi := ktDegisken;
             SonVeriKontrolTip := vktIlk;
 
             _Komut := KomutListesi[_KomutDurum.SiraNo];
@@ -183,6 +185,7 @@ var
             Result := HATA_YOK;
 
             // 1. tanım etiketini listeye ekle
+            // { TODO : tvtTanimsiz incelensin }
             if(ParcaNo = 2) then Result := GAsm2.AtamaListesi.Ekle(SatirNo, GTanimlanacakVeri,
               etEtiket, MevcutBellekAdresi, tvtTanimsiz, _VeriUzunlugu, '', 0);
 
@@ -207,7 +210,7 @@ var
     else if(_AVeriKontrolTip = vktDegisken) then
     begin
 
-      if(GAnaBolumVeriTipi = abvtTanim) then
+      if(SatirIcerik.Komut.KomutTipi = ktTanim) then
       begin
 
         SonVeriKontrolTip := vktDegisken;
@@ -223,6 +226,7 @@ var
           _i := _Yazmac.Sonuc;
         end;
 
+        { TODO : yazmaç değeri alt kısımlara eklenecek. buradan çıkarılacak }
         SonVeriKontrolTip := vktYazmac;
         Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', _i);
       end;
@@ -231,12 +235,24 @@ var
     else if(_AVeriKontrolTip = vktOlcek) or (_AVeriKontrolTip = vktSayi) then
     begin
 
+      {if(SatirIcerik.Komut.KomutTipi = ktDegisken) then
+        SendDebug('VirgülX: ' + IntToStr(AVeri2));}
+
       SonVeriKontrolTip := _AVeriKontrolTip;
       Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', AVeri2);
     end
+    else if(_AVeriKontrolTip = vktVirgul) then
+    begin
+
+      SonVeriKontrolTip := vktVirgul;
+      Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', 0);
+
+      Inc(ParcaNo);
+
+      Result := HATA_YOK;
+    end
     else if(_AVeriKontrolTip = vktArti) or (_AVeriKontrolTip = vktKPAc) or
-      (_AVeriKontrolTip = vktKPKapat) or (_AVeriKontrolTip = vktVirgul) or
-      (_AVeriKontrolTip = vktEsittir) then
+      (_AVeriKontrolTip = vktKPKapat) or (_AVeriKontrolTip = vktEsittir) then
     begin
 
       // öntanımlı değer
@@ -277,8 +293,16 @@ var
       end;
 
       // virgül olması durumunda ParcaNo değişkenini 1 artır
-      if(GAnaBolumVeriTipi = abvtIslemKodu) and (_AVeriKontrolTip = vktVirgul) then
+      if(SatirIcerik.Komut.KomutTipi = ktIslemKodu) and (_AVeriKontrolTip = vktVirgul) then
         Inc(ParcaNo);
+    end
+    else if(_AVeriKontrolTip = vktYazmac) then
+    begin
+
+      SendDebug('Yazmaç Kod: ' + IntToStr(AVeri2));
+
+      SonVeriKontrolTip := vktYazmac;
+      Result := iKomutYorumla(SatirNo, ParcaNo, SonVeriKontrolTip, '', AVeri2);
     end
     else if(_AVeriKontrolTip = vktSon) then
     begin
@@ -290,6 +314,11 @@ var
     // işlenen değişkenlerin ilk değer atamalarını gerçekleştir
     Komut := '';
     KomutUz := 0;
+
+    // VeriTipi'nin tvtTanimsiz olarak tanımlandığı;
+    // 1. nokta işlevin ana başlangıcı
+    // 2. nokta SayisalVeriyiIsle işlevi
+    // 3. ve son nokta ise burasıdır
     VeriTipi := tvtTanimsiz;
   end;
 
@@ -361,7 +390,7 @@ var
             SayisalDeger := $FFFFFF0;    // etiketin bulunamaması durumunda öndeğer alacak
             GEtiketHatasiMevcut := True;
             Inc(GEtiketHataSayisi);
-            SendDebug('Satır No: ' + IntToStr(SatirNo));
+            //SendDebug('Satır No: ' + IntToStr(SatirNo));
 
             if(Length(AIsleyici) > 0) then
             begin
@@ -431,6 +460,11 @@ var
     // işlenen değişkenlerin ilk değer atamalarını gerçekleştir
     Komut := '';
     KomutUz := 0;
+
+    // VeriTipi'nin tvtTanimsiz olarak tanımlandığı;
+    // 1. nokta işlevin ana başlangıcı
+    // 2. nokta KomutYorumla işlevi
+    // 3. nokta ise burasıdır
     VeriTipi := tvtTanimsiz;
   end;
 begin
@@ -448,6 +482,10 @@ begin
   OlcekDegerMevcut := False;
   SatirSonu := False;
 
+  // VeriTipi'nin tvtTanimsiz olarak tanımlandığı;
+  // 1. nokta KomutYorumla işlevi
+  // 2. nokta SayisalVeriyiIsle işlevi
+  // 3. nokta ise burasıdır
   VeriTipi := tvtTanimsiz;
 
   Komut := '';
@@ -480,20 +518,45 @@ begin
         '*', '/', #9]) then
     begin
 
+      {
+        Virgül işlevi ->
+      }
       if(C = ',') then
       begin
 
-        if(GAnaBolumVeriTipi = abvtIslemKodu) then
+        if(SatirIcerik.Komut.KomutTipi = ktIslemKodu) then
         begin
 
+          //SendDebug('Virgül1: ' + IntToStr(ParcaNo));
+          //SendDebug('Virgül2: ' + Komut);
           if(ParcaNo = 1) then
           begin
 
-            //SendDebug('Virgül: ' + Komut);
+            SendDebug('Virgül: Hatalı kullanım');
             GHataKodu := HATA_ISL_KULLANIM;
-          end else GHataKodu := KomutYorumla(ParcaNo, vktVirgul, Komut, 0);
+          end
+          else
+          begin
+
+            if(KomutUz > 0) then
+            begin
+
+              Yazmac := YazmacBilgisiAl(Komut);
+              if(Yazmac.Sonuc > -1) then
+              begin
+
+                i := Yazmac.Sonuc;
+                SonVeriKontrolTip := vktYazmac;
+                GHataKodu := KomutYorumla(ParcaNo, vktYazmac, '', i);
+              end;
+            end;
+
+            if(GHataKodu = HATA_YOK) then
+              GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0);
+          end;
         end
-        else if(GAnaBolumVeriTipi = abvtDegisken) then
+        // ktDegisken değerini gerekliliği kontrol edilsin
+        else if(SatirIcerik.Komut.KomutTipi = ktDegisken) or (SatirIcerik.Komut.KomutTipi = ktTanim) then
         begin
 
           // tanım işleminde virgül öncesi veri var ise ...
@@ -558,22 +621,52 @@ begin
                 //GHataKodu := HATA_BILINMEYEN_HATA; SendDebug('Test: ' + Komut); end;
               end;}
 
-              GHataKodu := SayisalVeriyiIsle('');
-
-              if(GHataKodu = HATA_YOK) then
+              if(SatirIcerik.Komut.KomutTipi = ktTanim) then
               begin
 
-                GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
+                GHataKodu := SayisalVeriyiIsle('');
 
                 if(GHataKodu = HATA_YOK) then
-                  GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
+                begin
 
-                // tüm satırın işlendiğine dair sonlandırma mesajı gönder
-                if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0);
+                  GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
 
-                GAsm2.Matematik.Temizle;
-              end //else GHataKodu := HATA_YOK;
+                  if(GHataKodu = HATA_YOK) then
+                    GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
 
+                  // tüm satırın işlendiğine dair sonlandırma mesajı gönder
+                  if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0);
+
+                  GAsm2.Matematik.Temizle;
+
+                  //Inc(ParcaNo);
+                end //else GHataKodu := HATA_YOK;
+              end
+              else
+              // niçin yazıldığı açıklansın
+              begin
+
+                GAsm2.Matematik.Sonuc(SayisalDeger);
+                SendDebug('Virgül1: ' + IntToStr(ParcaNo));
+                SendDebug('Virgül2: ' + Komut);
+                SendDebug('Virgül3: ' + IntToStr(SayisalDeger));
+
+                GHataKodu := SayisalVeriyiIsle('');
+
+                if(GHataKodu = HATA_YOK) then
+                begin
+
+                  GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
+
+                  if(GHataKodu = HATA_YOK) then
+                    GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
+
+                  // tüm satırın işlendiğine dair sonlandırma mesajı gönder
+                  if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0);
+
+                  GAsm2.Matematik.Temizle;
+                end //else GHataKodu := HATA_YOK;
+              end;
             end;
           end
           else
@@ -583,11 +676,11 @@ begin
           end;
         end;
       end
+      {
+        <- Virgül işlevi
+      }
       else if(C = '=') then
       begin
-
-        // bu veri tipi geçici olarak eklendi. daha sonra iptal edilecek - 28022018
-        VeriTipi := tvtTanimsiz;
 
         // abvtBildirim ve abvtTanim işlevlerinin bu işleyiciyi yorumlamasını sağla
         GHataKodu := KomutYorumla(ParcaNo, vktEsittir, Komut, 0);
@@ -645,11 +738,31 @@ begin
                     if(GHataKodu = HATA_YOK) then
                     begin
 
-                      VeriTipi := tvtTanimsiz;
+                      //VeriTipi := tvtTanimsiz; // işlevini yitirmiştir
+                      GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
+                    end;
+                  end;
+                end
+                // { TODO : tvtTanimsiz verisi tekrar incelensin }
+                else if(VeriTipi = tvtTanimsiz) then
+                begin
+
+                  SendDebug('ValX: ' + Komut);
+
+                  if(KomutUz > 0) then GHataKodu := SayisalVeriyiIsle('');
+                  if(GHataKodu = HATA_YOK) then
+                  begin
+
+                    GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
+                    if(GHataKodu = HATA_YOK) then
+                    begin
+
+                      //VeriTipi := tvtTanimsiz; işlevini yitirmiştir
                       GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
                     end;
                   end;
                 end;
+
 
                 if(GHataKodu = HATA_YOK) then
                 begin
@@ -686,6 +799,9 @@ begin
             TekTirnakSayisi := 0;
             Komut := '';
             KomutUz := 0;
+
+            // VeriTipi := tvtTanimsiz 3 yerde tanımlanmıştır.
+            // burada tanımlanmasının veya nasıl tanımlanmasının gerekliliği incelensin
             VeriTipi := tvtTanimsiz;
 
             // vktSon bir burada bir de aşağıda tanımlanmıştır. ortak noktada birleşebilir
@@ -701,13 +817,13 @@ begin
         if(KomutUz > 0) then
         begin
 
-          if(ikabEtiket in GIslemKodAnaBolum) then
+          if(dvEtiket in SatirIcerik.DigerVeri) then
 
             GHataKodu := HATA_BIRDEN_FAZLA_ETIKET
           else
           begin
 
-            GIslemKodAnaBolum += [ikabEtiket];
+            SatirIcerik.DigerVeri += [dvEtiket];
 
             //SendDebug('Bellek Adresi1: ' + IntToStr(GMevcutBellekAdresi));
 
@@ -732,16 +848,16 @@ begin
       else if(C = ' ') or (C = #9) then
       begin
 
-        if(GAnaBolumVeriTipi = abvtTanim) and (KomutUz > 0) then
+        if(SatirIcerik.Komut.KomutTipi = ktTanim) and (KomutUz > 0) then
         begin
 
           GHataKodu := SayisalVeriyiIsle('');
         end
-        else if((GAnaBolumVeriTipi = abvtBelirsiz) or (GAnaBolumVeriTipi = abvtBildirim))
+        else if((SatirIcerik.Komut.KomutTipi = ktBelirsiz) or (SatirIcerik.Komut.KomutTipi = ktBildirim))
           and (KomutUz > 0) then
 
           GHataKodu := KomutYorumla(ParcaNo, vktBosluk, Komut, 0)
-        else if(GAnaBolumVeriTipi = abvtDegisken) and (TekTirnakSayisi > 0) then
+        else if(SatirIcerik.Komut.KomutTipi = ktDegisken) and (TekTirnakSayisi > 0) then
         begin
 
           Komut += C;
@@ -792,10 +908,10 @@ begin
           begin
 
             // açıklama haline getirilen satırlar bağlam noktasında anlamsızdır
-            if(VeriTipi = tvtSayi) or (VeriTipi = tvtDiger) then
+            if(VeriTipi = tvtSayi) or (VeriTipi = tvtTanimsiz) then
             begin
 
-              //SendDebug('DD +: ' + Komut);
+              SendDebug('DD +: ' + Komut);
               GHataKodu := SayisalVeriyiIsle(C);
             end
             else
@@ -834,7 +950,7 @@ begin
         if(GHataKodu = HATA_YOK) then
         begin
 
-          GIslemKodAnaBolum += [ikabAciklama];
+          SatirIcerik.DigerVeri += [dvAciklama];
           GAciklama := '';
           IfadeDurum := idAciklama;
         end;
@@ -857,10 +973,7 @@ begin
           if(VeriTipi = tvtTanimsiz) then
           begin
 
-            if(C in ['0'..'9']) then
-
-              VeriTipi := tvtSayi
-            else VeriTipi := tvtDiger;
+            if(C in ['0'..'9']) then VeriTipi := tvtSayi;
           end;
         end;
 
@@ -876,7 +989,7 @@ begin
       begin
 
         // tek kelimelik komut tiplerinin olması durumunda. cld, cli gibi
-        if(GAnaBolumVeriTipi = abvtBelirsiz) then
+        if(SatirIcerik.Komut.KomutTipi = ktBelirsiz) then
         begin
 
           GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);
@@ -892,13 +1005,14 @@ begin
 
             GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);
           end
-          else if(VeriTipi = tvtSayi) or (VeriTipi = tvtDiger) then
+          else if(VeriTipi = tvtSayi) then
           begin
 
             // SayisalVeriyiIsle işlevinden dönen değer SADECE bu işlevi bilgilendirmek
             // içindir. SayisalVeriyiIsle işlevi her zaman öndeğerli değerleri işler
             GHataKodu := SayisalVeriyiIsle('');
 
+            SendDebug('Sayısal Değer: ' + Komut);
             //SendDebug('Etiket Kodu: ' + Komut);
             if(GHataKodu = HATA_YOK) then
             begin
@@ -912,27 +1026,40 @@ begin
               if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
             end //else GHataKodu := HATA_YOK;
           end
-          {else if(VeriTipi = tvtDiger) then
+          // diğer veri tipi ya bir değişken ya da bir yazmaçtır
+          else if(VeriTipi = tvtTanimsiz) then
           begin
 
-            Etiket := GAsm2.Etiketler.Bul(Komut);
-            if(Etiket <> nil) then
+            YazmacDurum := YazmacBilgisiAl(Komut);
+
+            // değişken veri
+            if(YazmacDurum.Sonuc = -1) then
             begin
 
-              if(Etiket.VeriTipi = tvtSayi) then
+              GHataKodu := SayisalVeriyiIsle('');
+
+              //SendDebug('Etiket Kodu: ' + Komut);
+              if(GHataKodu = HATA_YOK) then
               begin
 
-                SayisalDeger := Etiket.iDeger;
-                GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger)
-              end
-              {else
-              begin
+                GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
 
-                SayisalDeger := Etiket.BellekAdresi;
-                GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger)
-              end}
-            end; // else begin GHataKodu := HATA_BILINMEYEN_HATA; SendDebug('Test2: ' + Komut); end;
-          end;}
+                if(GHataKodu = HATA_YOK) then
+                  GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
+
+                // tüm satırın işlendiğine dair sonlandırma mesajı gönder
+                if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
+              end; //else GHataKodu := HATA_YOK;
+            end
+            else
+            begin
+
+              GHataKodu := KomutYorumla(ParcaNo, vktYazmac, '', YazmacDurum.Sonuc);
+
+              // tüm satırın işlendiğine dair sonlandırma mesajı gönder
+              if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
+            end;
+          end;
         end;
       end;
     end;

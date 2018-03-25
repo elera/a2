@@ -13,7 +13,7 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <RevisionNr Value="9"/>
+      <RevisionNr Value="10"/>
       <BuildNr Value="2018"/>
       <Language Value="041F"/>
       <CharSet Value="04E6"/>
@@ -104,47 +104,47 @@
         <IsPartOfProject Value="True"/>
       </Unit12>
       <Unit13>
-        <Filename Value="g11islev.pas"/>
+        <Filename Value="kodlama.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit13>
       <Unit14>
-        <Filename Value="kodlama.pas"/>
+        <Filename Value="g10islev.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit14>
       <Unit15>
-        <Filename Value="g10islev.pas"/>
+        <Filename Value="g12islev.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit15>
       <Unit16>
-        <Filename Value="g12islev.pas"/>
+        <Filename Value="yazmaclar.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit16>
       <Unit17>
-        <Filename Value="yazmaclar.pas"/>
+        <Filename Value="g01islev.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit17>
       <Unit18>
-        <Filename Value="g01islev.pas"/>
+        <Filename Value="oneriler.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit18>
       <Unit19>
-        <Filename Value="oneriler.pas"/>
+        <Filename Value="g02islev.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit19>
       <Unit20>
-        <Filename Value="g02islev.pas"/>
+        <Filename Value="komutlar.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit20>
       <Unit21>
-        <Filename Value="komutlar.pas"/>
+        <Filename Value="g00islev.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit21>
       <Unit22>
-        <Filename Value="g00islev.pas"/>
+        <Filename Value="paylasim.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit22>
       <Unit23>
-        <Filename Value="paylasim.pas"/>
+        <Filename Value="g11islev.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit23>
     </Units>

@@ -6,7 +6,7 @@
 
   10. grup kodlama işlevi, SADECE işlem kodunun (opcode) işlendiği komutlardır
 
-  Güncelleme Tarihi: 08/03/2018
+  Güncelleme Tarihi: 24/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -61,6 +61,19 @@ function Grup10Islev(SatirNo: Integer; ParcaNo: Integer;
     Result := HATA_YOK;
   end;
 
+  // bu işlev, SADECE 64 bitlik mimarilerde çalıştırılacak iki byte'lık kodları üretir
+  function KodOlustur22(Kod1, Kod2: Byte): Integer;
+  begin
+
+    if(GAsm2.Mimari = mim64Bit) then
+    begin
+
+      KodEkle(Kod1);
+      KodEkle(Kod2);
+      Result := HATA_YOK;
+    end else Result := HATA_64BIT_MIMARI_GEREKLI;
+  end;
+
   // bu işlev, tüm mimarilerde çalıştırılacak üç byte'lık kodları üretir
   function KodOlustur3(Kod1, Kod2, Kod3: Byte): Integer;
   begin
@@ -83,15 +96,47 @@ begin
 
     case KomutListesi[IslemKod].GrupNo of
       GRUP10_AAA:         Result := KodOlustur11($37);
+      GRUP10_AAS:         Result := KodOlustur11($3F);
       GRUP10_CLC:         Result := KodOlustur1($F8);
       GRUP10_CLD:         Result := KodOlustur1($FC);
       GRUP10_CLI:         Result := KodOlustur1($FA);
       GRUP10_CMC:         Result := KodOlustur1($F5);
+      GRUP10_CPUID:       Result := KodOlustur2($0F, $A2);
       GRUP10_DAA:         Result := KodOlustur11($27);
       GRUP10_DAS:         Result := KodOlustur11($2F);
+      GRUP10_EMMS:        Result := KodOlustur2($0F, $77);
+      GRUP10_F2XM1:       Result := KodOlustur2($D9, $F0);
+      GRUP10_FABS:        Result := KodOlustur2($D9, $E1);
+      GRUP10_FCHS:        Result := KodOlustur2($D9, $E0);
+      GRUP10_FCLEX:       Result := KodOlustur3($9B, $DB, $E2);
       GRUP10_FCOS:        Result := KodOlustur2($D9, $FF);
+      GRUP10_FDECSTP:     Result := KodOlustur2($D9, $F6);
+      GRUP10_FINCSTP:     Result := KodOlustur2($D9, $F7);
+      GRUP10_FINIT:       Result := KodOlustur3($9B, $DB, $E3);
+      GRUP10_FLD1:        Result := KodOlustur2($D9, $E8);
+      GRUP10_FLDL2E:      Result := KodOlustur2($D9, $EA);
+      GRUP10_FLDL2T:      Result := KodOlustur2($D9, $E9);
+      GRUP10_FLDLG2:      Result := KodOlustur2($D9, $EC);
+      GRUP10_FLDLN2:      Result := KodOlustur2($D9, $ED);
+      GRUP10_FLDPI:       Result := KodOlustur2($D9, $EB);
+      GRUP10_FLDZ:        Result := KodOlustur2($D9, $EE);
+      GRUP10_FNCLEX:      Result := KodOlustur2($DB, $E2);
+      GRUP10_FNINIT:      Result := KodOlustur2($DB, $E3);
+      GRUP10_FNOP:        Result := KodOlustur2($D9, $D0);
+      GRUP10_FPATAN:      Result := KodOlustur2($D9, $F3);
+      GRUP10_FPREM:       Result := KodOlustur2($D9, $F8);
+      GRUP10_FPREM1:      Result := KodOlustur2($D9, $F5);
+      GRUP10_FPTAN:       Result := KodOlustur2($D9, $F2);
+      GRUP10_FRNDINT:     Result := KodOlustur2($D9, $FC);
+      GRUP10_FSCALE:      Result := KodOlustur2($D9, $FD);
       GRUP10_FSIN:        Result := KodOlustur2($D9, $FE);
       GRUP10_FSINCOS:     Result := KodOlustur2($D9, $FB);
+      GRUP10_FSQRT:       Result := KodOlustur2($D9, $FA);
+      GRUP10_FTST:        Result := KodOlustur2($D9, $E4);
+      GRUP10_FYL2X:       Result := KodOlustur2($D9, $F1);
+      GRUP10_FYL2XP1:     Result := KodOlustur2($D9, $F9);
+      GRUP10_FXAM:        Result := KodOlustur2($D9, $E5);
+      GRUP10_FXTRACT:     Result := KodOlustur2($D9, $F4);
       GRUP10_HLT:         Result := KodOlustur1($F4);
       GRUP10_LAHF:        Result := KodOlustur11($9F);
       GRUP10_LEAVE:       Result := KodOlustur1($C9);
@@ -108,46 +153,16 @@ begin
       GRUP10_PUSHFQ:      Result := KodOlustur1($9C);
       GRUP10_RDTSC:       Result := KodOlustur2($0F, $31);
       GRUP10_RDTSCP:      Result := KodOlustur3($0F, $01, $F9);
-      GRUP10_STI:         Result := KodOlustur1($FB);
       GRUP10_STC:         Result := KodOlustur1($F9);
-      GRUP10_WBINVD:      Result := KodOlustur2($0F, 09);
+      GRUP10_STI:         Result := KodOlustur1($FB);
+      GRUP10_SYSCALL:     Result := KodOlustur22($0F, $05);
+      GRUP10_SYSENTER:    Result := KodOlustur2($0F, $34);
+      GRUP10_WBINVD:      Result := KodOlustur2($0F, $09);
     end;
       {GRUP01_AAS: KodEkle($3F);
       GRUP01_CBW: KodEkle($98);
       GRUP01_CDQ: KodEkle($98);    // REX. incelenecek
-      GRUP01_CPUID: begin KodEkle($0F); KodEkle($A2); end;
       GRUP01_CWD: KodEkle($98);    // REX. incelenecek
-
-      GRUP01_EMMS: begin KodEkle($0F); KodEkle($77); end;
-      GRUP01_FABS: begin KodEkle($D9); KodEkle($E1); end;
-      GRUP01_FCHS: begin KodEkle($D9); KodEkle($E0); end;
-      GRUP01_FCLEX: begin KodEkle($9B); KodEkle($DB); KodEkle($E2); end;
-      GRUP01_FDECSTP: begin KodEkle($D9); KodEkle($F6); end;
-      GRUP01_FINCSTP: begin KodEkle($D9); KodEkle($F7); end;
-      GRUP01_FINIT: begin KodEkle($9B); KodEkle($DB); KodEkle($E3); end;
-      GRUP01_FLDLG2: begin KodEkle($D9); KodEkle($EC); end;
-      GRUP01_FLDLN2: begin KodEkle($D9); KodEkle($ED); end;
-      GRUP01_FLDPI: begin KodEkle($D9); KodEkle($EB); end;
-      GRUP01_FLDZ: begin KodEkle($D9); KodEkle($EE); end;
-      GRUP01_FLDL2E: begin KodEkle($D9); KodEkle($EA); end;
-      GRUP01_FLDL2T: begin KodEkle($D9); KodEkle($E9); end;
-      GRUP01_FLD1: begin KodEkle($D9); KodEkle($E8); end;
-      GRUP01_FNCLEX: KodBellek[KodBellekU] := Byte(0);
-      GRUP01_FNINIT: KodBellek[KodBellekU] := Byte(0);
-      GRUP01_FNOP: KodBellek[KodBellekU] := Byte(0);
-      GRUP01_FPATAN: begin KodEkle($D9); KodEkle($F3); end;
-      GRUP01_FPREM: begin KodEkle($D9); KodEkle($F8); end;
-      GRUP01_FPREM1: begin KodEkle($D9); KodEkle($F5); end;
-      GRUP01_FPTAN: begin KodEkle($D9); KodEkle($F2); end;
-      GRUP01_FRNDINT: begin KodEkle($D9); KodEkle($FC); end;
-      GRUP01_FSCALE: begin KodEkle($D9); KodEkle($FD); end;
-      GRUP01_FSQRT: begin KodEkle($D9); KodEkle($FA); end;
-      GRUP01_FTST: begin KodEkle($D9); KodEkle($E4); end;
-      GRUP01_FYL2X: begin KodEkle($D9); KodEkle($F1); end;
-      GRUP01_FYL2XP1: begin KodEkle($D9); KodEkle($F9); end;
-      GRUP01_FXAM: begin KodEkle($D9); KodEkle($E5); end;
-      GRUP01_FXTRACT: begin KodEkle($D9); KodEkle($F4); end;
-      GRUP01_F2XM1: begin KodEkle($D9); KodEkle($F0); end;
       GRUP01_IRET: KodEkle($CF);
       GRUP01_IRETD: KodEkle($CF); }  // 16 bit olması haline 66 eki alır
   end

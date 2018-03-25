@@ -14,11 +14,20 @@
 - ikili kod verilerinin dosyaya aktarılmadan önce yerleştirildiği bellek (kodlama)
   yönetimi işlevselleştirilecek
 - windows pe dosya format çalışması tamamlanacak
+- 32-64 bit exe ve 32-64 bit dll windows / linux dosya biçim çalışmaları başladı
 - veritipi ve diğer ana bölümlerin tutarlılığı sağlanacak
+  - 1. ParcaNo kontrol, 2. Sayısal işlem, 3. komut yorumlama birlikteliği sağlanacak
+- linux çalıştırılabilir dosya biçim çalışmalarına başlandı
 - karaktersel etiketler kontrol edilecek
 - sayısal olmayan (etiket) değerlerin çevriminde kullanılan öndeğer mutlaka incelenecek, gerekirse değiştirilecek
 - öncelikle sayısal (etiket + tanım) daha sonra ise karaktersel ortak çalışmalar gerçekleştirilecek
 - STI gibi küçük harfe çevrildiğinde içerisinde türkçe karakter barındıran işlem kodları (opcode) ingilizce karakter olarak muhafaza edilecek
+- [] tanımlı değerlerin incele kısmındaki çözümü sağlanacak
+- dosya açma işlemi gerçekleştirilirken mevcut dosyanın kaydedilip kaydeilmediği test edilecek
+- dosya açılmadan önce bir önceki açık projenin mutlaka kapatılması gerekmektedir
+- tvtTanimsiz verileri tekrar incelenerek yazmaç ve karakterdizisi olarak ayrılacak
+- vktYazmac tanımlarının problemleri giderildikten sonra vktKarakterDizisi veri yapısı tamamlanacak
+- ParcaNo değerleri , veya diğer kontrollerden önce mi yoksa mı artırılacak, ortak bir nokta belirlensin
 
 // program içerisindeki kavram ve kullanımları
 00 - tanım      16BitDeger = 1B + 2B + 3B   - değişken tanımlamalar. tanımlamaları değişkendir, sabit değildir

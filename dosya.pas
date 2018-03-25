@@ -4,7 +4,7 @@
 
   İşlev: dosya işlevlerini içerir
 
-  Güncelleme Tarihi: 06/03/2018
+  Güncelleme Tarihi: 25/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -14,26 +14,20 @@ interface
 
 uses Classes, SysUtils;
 
-function ProgramDosyasiOlustur: Boolean;
+function ProgramDosyasiOlustur(DosyaAdi: string): Boolean;
 
 implementation
 
 uses genel, Forms;
 
 // ikili dosya biçiminde (binary file format) dosya oluştur
-function ProgramDosyasiOlustur: Boolean;
+function ProgramDosyasiOlustur(DosyaAdi: string): Boolean;
 var
   F: file of Byte;
-  ProgramDizin, DosyaAdi, TamYol: string;
   i: Integer;
 begin
 
-  ProgramDizin := ExtractFilePath(Application.ExeName);
-  DosyaAdi := GAsm2.DosyaAdi + '.' + GAsm2.DosyaUzanti;
-
-  TamYol := ProgramDizin + DosyaAdi;
-
-  AssignFile(F, TamYol);
+  AssignFile(F, DosyaAdi);
   {$I-} Rewrite(F); {$I+}
 
   if(IOResult = 0) then

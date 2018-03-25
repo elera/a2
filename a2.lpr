@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, anasayfaform, atamalarform, derlemebilgisiform, LConvEncoding, sysutils,
-  genel, paylasim;
+  genel, paylasim, g11islev;
 
 {$R *.res}
 
@@ -16,6 +16,9 @@ begin
 
   // işletim sisteminin ayarları kaydettiği dizini al
   GProgramAyarDizin := CP1254ToUTF8(GetAppConfigDir(False));
+
+  // programın çalıştığı dizini al
+  GProgramCalismaDizin := CP1254ToUTF8(ExtractFileDir(Application.ExeName));
 
   Application.Title:='Assembler 2 (a2)';
   RequireDerivedFormResource:=True;
