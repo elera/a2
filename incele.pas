@@ -299,7 +299,7 @@ var
     else if(_AVeriKontrolTip = vktYazmac) then
     begin
 
-      SendDebug('Yazmaç Kod: ' + IntToStr(AVeri2));
+      //SendDebug('Yazmaç Kod: ' + IntToStr(AVeri2));
 
       SonVeriKontrolTip := vktYazmac;
       Result := iKomutYorumla(SatirNo, ParcaNo, SonVeriKontrolTip, '', AVeri2);
@@ -747,18 +747,30 @@ begin
                 else if(VeriTipi = tvtTanimsiz) then
                 begin
 
-                  SendDebug('ValX: ' + Komut);
-
-                  if(KomutUz > 0) then GHataKodu := SayisalVeriyiIsle('');
-                  if(GHataKodu = HATA_YOK) then
+                  {YazmacDurum := YazmacBilgisiAl(Komut);
+                  if(YazmacDurum.Sonuc > -1) then
                   begin
 
-                    GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
+                    VeriTipi := tvtYazmac;
+                    SendDebug('Yazmaç: ' + YazmacListesi[YazmacDurum.Sonuc].Ad);
+                    GHataKodu := KomutYorumla(ParcaNo, vktYazmac, '', SayisalDeger);
+                  end
+                  else}
+                  begin
+
+                    //SendDebug('ValX: ' + Komut);
+
+                    if(KomutUz > 0) then GHataKodu := SayisalVeriyiIsle('');
                     if(GHataKodu = HATA_YOK) then
                     begin
 
-                      //VeriTipi := tvtTanimsiz; işlevini yitirmiştir
-                      GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
+                      GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
+                      if(GHataKodu = HATA_YOK) then
+                      begin
+
+                        //VeriTipi := tvtTanimsiz; işlevini yitirmiştir
+                        GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
+                      end;
                     end;
                   end;
                 end;
@@ -770,6 +782,9 @@ begin
                   Dec(KPSayisi);
                   GHataKodu := KomutYorumla(ParcaNo, vktKPKapat, Komut, 0);
                 end;
+
+                // bu satır normalde en alt satırda olacak
+                if(SatirSonu) and (GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
               end;
             end;
           end;
@@ -1012,7 +1027,7 @@ begin
             // içindir. SayisalVeriyiIsle işlevi her zaman öndeğerli değerleri işler
             GHataKodu := SayisalVeriyiIsle('');
 
-            SendDebug('Sayısal Değer: ' + Komut);
+            //SendDebug('Sayısal Değer: ' + Komut);
             //SendDebug('Etiket Kodu: ' + Komut);
             if(GHataKodu = HATA_YOK) then
             begin

@@ -139,10 +139,10 @@ bölüm1_başlangıç:
 
 ; grafiksel arabirim kodları
 ;----------------------------------------------------------------
-        call    MerhabaDLLİşlevi
+        call    [MerhabaDLLİşlevi]
 
         push    0
-        call    ExitProcessİşlevi
+        call    [ExitProcessİşlevi]
 
 PencereBaşlık:	db	'Assembler 2 (a2)', 0
 PencereMesaj:	db	'0000000000', 0

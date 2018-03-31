@@ -75,8 +75,6 @@ begin
   begin
 
     SendDebug('G13: vktKPAc');
-    SendDebug('G13: vktKPAc: ' + SatirIcerik.Komut.Komut);
-    SendDebug('G13: vktKPAc: ' + IntToStr(SatirNo));
 
     // daha önce köşeli parantez kullanılmışsa
     if(KoseliParantezSayisi > 0) then
@@ -95,8 +93,6 @@ begin
   begin
 
     SendDebug('G13: vktKPKapat');
-    SendDebug('G13: vktKPKapat: ' + SatirIcerik.Komut.Komut);
-    SendDebug('G13: vktKPAc: ' + IntToStr(SatirNo));
 
     // açılan parantez sayısı kadar parantez kapatılmalıdır
     if(KoseliParantezSayisi < 1) then
@@ -225,22 +221,24 @@ begin
       KodEkle($FF);
       KodEkle($0 + $10 + $5);
 
-      if(baBellekSabitDeger in SatirIcerik.BolumTip1.BolumAyrinti) then
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
       begin
 
-        SendDebug('G13_Z1: ' + IntToStr(GBellekSabitDeger));
-
-        for i := 1 to 4 do
+        if(baBellekSabitDeger in SatirIcerik.BolumTip1.BolumAyrinti) then
         begin
 
-          KodEkle(Byte(GBellekSabitDeger));
-          GBellekSabitDeger := GBellekSabitDeger shr 8;
+          for i := 1 to 4 do
+          begin
+
+            KodEkle(Byte(GBellekSabitDeger));
+            GBellekSabitDeger := GBellekSabitDeger shr 8;
+          end;
         end;
       end
       else
       begin
 
-        SendDebug('G13_Z2: ' + IntToStr(GSabitDeger));
+        //SendDebug('G13_Z2: ' + IntToStr(GSabitDeger));
 
         for i := 1 to 4 do
         begin

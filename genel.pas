@@ -4,7 +4,7 @@
 
   İşlev: genel sabit, değişken, yapı ve işlevleri içerir
 
-  Güncelleme Tarihi: 25/03/2018
+  Güncelleme Tarihi: 31/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -12,12 +12,12 @@ unit genel;
 
 interface
 
-uses Classes, SysUtils, Forms, matematik, asm2, ayarlar, paylasim;
+uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim;
 
 const
   ProgramAdi = 'Assembler 2 (a2)';
-  ProgramSurum = '0.0.10.2018';
-  SurumTarihi = '25.03.2018';
+  ProgramSurum = '0.0.11.2018';
+  SurumTarihi = '31.03.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -165,6 +165,8 @@ var
 function HataKodunuAl(HataKodu: Integer): string;
 
 implementation
+
+uses kodlama;
 
 // hata kodunun karakter dizi karşılığını geri döndürür
 function HataKodunuAl(HataKodu: Integer): string;

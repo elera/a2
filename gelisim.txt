@@ -23,11 +23,10 @@
 - öncelikle sayısal (etiket + tanım) daha sonra ise karaktersel ortak çalışmalar gerçekleştirilecek
 - STI gibi küçük harfe çevrildiğinde içerisinde türkçe karakter barındıran işlem kodları (opcode) ingilizce karakter olarak muhafaza edilecek
 - [] tanımlı değerlerin incele kısmındaki çözümü sağlanacak
-- dosya açma işlemi gerçekleştirilirken mevcut dosyanın kaydedilip kaydeilmediği test edilecek
-- dosya açılmadan önce bir önceki açık projenin mutlaka kapatılması gerekmektedir
+- program çıkışı veya mevcut / yeni dosya açılması sırasında mevcut dosyanın kaydedilip kaydedilmeyeceği kontrol edilecek
 - tvtTanimsiz verileri tekrar incelenerek yazmaç ve karakterdizisi olarak ayrılacak
 - vktYazmac tanımlarının problemleri giderildikten sonra vktKarakterDizisi veri yapısı tamamlanacak
-- ParcaNo değerleri , veya diğer kontrollerden önce mi yoksa mı artırılacak, ortak bir nokta belirlensin
+- ParcaNo değerinin diğer kontrollerden önce ya da sonra artırılması düzenlenecek
 
 // program içerisindeki kavram ve kullanımları
 00 - tanım      16BitDeger = 1B + 2B + 3B   - değişken tanımlamalar. tanımlamaları değişkendir, sabit değildir

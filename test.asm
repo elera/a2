@@ -32,7 +32,8 @@ kod.mimari = '16Bit'
 
 	dw	10Bh
 
-MSDosMesaj      db      'WG.Gerekli.', 0Dh, 0Ah, '$'
+MSDosMesaj:
+        db      'WG.Gerekli.', 0Dh, 0Ah, '$'
 
 	dd	1000h
 	dd	0
@@ -138,8 +139,11 @@ bölüm1_başlangıç:
 ; grafiksel arabirim kodları
 ;----------------------------------------------------------------
 
+        mov     eax,700
+        mov     ebx,14
+        add     eax,ebx
+
         mov     edi,PencereMesaj+9
-        mov     eax,714
         mov     ebx,3
         mov     ecx,4
 
@@ -148,19 +152,14 @@ sonraki_basamak:
         xor     edx,edx
         mov     ebx,10
         div     ebx
-
-        ; add     dl,'0'
-        db      80h, 0C2h, 30h,
+        add     dl,48
 
         ; mov     [edi],dl
         db      88h, 17h
 
         inc     ecx
         dec     edi
-
-        ; cmp     eax,0
-        db      83h, 0F8h, 00h
-
+        cmp     eax,0
         jnz     sonraki_basamak
 
         push    0
@@ -169,10 +168,10 @@ sonraki_basamak:
         push    0
 
         ; her iki çağrı da [] arasında değerlendirilecek
-        call    MessageBoxAİşlevi
+        call    [MessageBoxAİşlevi]
 
         push    0
-        call    ExitProcessİşlevi
+        call    [ExitProcessİşlevi]
 
 PencereBaşlık:	db	'Assembler 2 (a2)', 0
 PencereMesaj:	db	'0000000000', 0

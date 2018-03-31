@@ -4,7 +4,7 @@
 
   İşlev: program ana sayfası
 
-  Güncelleme Tarihi: 25/03/2018
+  Güncelleme Tarihi: 31/03/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -15,7 +15,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, UTF8Process, SynEdit, SynHighlighterAny,
   SynCompletion, Forms, Controls, Graphics, Dialogs, StdCtrls, ComCtrls,
-  ExtCtrls, Menus, Types, LCLType;
+  ExtCtrls, Menus, LCLType;
 
 type
 
@@ -23,13 +23,21 @@ type
 
   TfrmAnaSayfa = class(TForm)
     ilAnaMenu16: TImageList;
+    miDosyaAyrim0: TMenuItem;
+    miDosyaAyrim1: TMenuItem;
+    miDosyaCikis: TMenuItem;
+    miDosyaSonKullanilanDosya5Ac: TMenuItem;
+    miDosyaSonKullanilanDosya4Ac: TMenuItem;
+    miDosyaSonKullanilanDosya3Ac: TMenuItem;
+    miDosyaSonKullanilanDosya2Ac: TMenuItem;
+    miDosyaSonKullanilanDosya1Ac: TMenuItem;
     miDosyaYeni: TMenuItem;
     miDosyaKaydet: TMenuItem;
     miDosya: TMenuItem;
     miDosyaAc: TMenuItem;
     miKodCalistir: TMenuItem;
     miKodEtiketListesi: TMenuItem;
-    miAyrim0: TMenuItem;
+    miKodAyrim0: TMenuItem;
     miYardim: TMenuItem;
     miYardimAssemblerBelge: TMenuItem;
     miKod: TMenuItem;
@@ -43,6 +51,7 @@ type
     SynCompletion1: TSynCompletion;
     tbAnaSayfa: TToolBar;
     tbAyrim2: TToolButton;
+    tbAyrim3: TToolButton;
     tbKodDerle: TToolButton;
     tbAyrim0: TToolButton;
     tbYardimAssemblerBelge: TToolButton;
@@ -52,12 +61,15 @@ type
     tbDosyaAc: TToolButton;
     tbDosyaKaydet: TToolButton;
     tbDosyaYeni: TToolButton;
+    tbDosyaCikis: TToolButton;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDropFiles(Sender: TObject; const FileNames: array of String);
     procedure FormShow(Sender: TObject);
     procedure miDosyaAcClick(Sender: TObject);
+    procedure miDosyaCikisClick(Sender: TObject);
     procedure miDosyaKaydetClick(Sender: TObject);
+    procedure miDosyaSonKullanilanDosyayiAcClick(Sender: TObject);
     procedure miDosyaYeniClick(Sender: TObject);
     procedure miKodEtiketListesiClick(Sender: TObject);
     procedure miYardimAssemblerBelgeClick(Sender: TObject);
@@ -72,6 +84,8 @@ type
     procedure DurumCubugunuGuncelle;
     procedure ProjeDosyasiAc(ADosyaAdi: string);
     procedure ProjeDosyasiKaydet(ADosyaAdi: string);
+    procedure SonKullanilanlarListesineEkle(Dosya: string);
+    procedure MenuSonKullanilanlarListesiniGuncelle;
   public
   end;
 
@@ -106,6 +120,9 @@ begin
     GProgramAyarlari.PencereSol := (Screen.Width - 500) div 2;
     GProgramAyarlari.PencereUst := (Screen.Height - 500) div 2;
   end;
+
+  // ana menünün "Son Kullanılanlar Listesi"ni güncelle
+  MenuSonKullanilanlarListesiniGuncelle;
 
   // dosyaların sürüklenip bırakılmasına izin ver
   Self.AllowDropFiles := True;
@@ -188,6 +205,12 @@ begin
   if(OpenDialog1.Execute) then ProjeDosyasiAc(OpenDialog1.Filename);
 end;
 
+procedure TfrmAnaSayfa.miDosyaCikisClick(Sender: TObject);
+begin
+
+  Close;
+end;
+
 procedure TfrmAnaSayfa.miDosyaKaydetClick(Sender: TObject);
 begin
 
@@ -212,6 +235,15 @@ begin
       ProjeDosyasiKaydet(SaveDialog1.Filename);
     end;
   end;
+end;
+
+procedure TfrmAnaSayfa.miDosyaSonKullanilanDosyayiAcClick(Sender: TObject);
+var
+  DosyaSira: Integer;
+begin
+
+  DosyaSira := (Sender as TMenuItem).Tag;
+  ProjeDosyasiAc(GProgramAyarlari.SonKullanilanDosyalar[DosyaSira]);
 end;
 
 // kod derleme menüsü
@@ -471,6 +503,7 @@ begin
     GAsm2.DosyaAdi := DosyaAdi;
     GAsm2.ProjeDosyaUzanti := DosyaUzanti;
 
+    SonKullanilanlarListesineEkle(ProjeDizin + '\' + DosyaAdi + '.' + DosyaUzanti);
     seAssembler.Lines.LoadFromFile(ProjeDizin + '\' + DosyaAdi + '.' + DosyaUzanti);
 
     seAssembler.CaretX := 1;
@@ -512,6 +545,143 @@ begin
   seAssembler.CaretX := 1;
   seAssembler.CaretY := 1;
   DurumCubugunuGuncelle;
+end;
+
+// son açılan dosyayı "Son Kullanılanlar Listesi"ne ekler
+procedure TfrmAnaSayfa.SonKullanilanlarListesineEkle(Dosya: string);
+var
+  i, BulunanSira: Integer;
+  k: string;
+begin
+
+  // eklenecek dosya "son kullanılanlar listesi"nde var mı?
+  BulunanSira := -1;
+  for i := 0 to 4 do
+  begin
+
+    k := GProgramAyarlari.SonKullanilanDosyalar[i];
+    if(k = Dosya) then
+    begin
+
+      BulunanSira := i;
+      Break;
+    end;
+  end;
+
+  // eğer listenin en üst sırasında ise, listeleye eklemeye gerek yok; çık.
+  if(BulunanSira = 0) then Exit;
+
+  // listede olmaması durumunda, tüm listeyi bir alt satıra kaydır
+  if(BulunanSira = -1) then
+  begin
+
+    for i := 4 downto 1 do
+    begin
+
+      k := GProgramAyarlari.SonKullanilanDosyalar[i - 1];
+      GProgramAyarlari.SonKullanilanDosyalar[i] := k;
+    end;
+  end
+  else
+  // listede bulunması halinde, bulunan elemandan itibaren diğer elemanları
+  // bir satır aşağıya kaydır
+  begin
+
+    for i := BulunanSira downto 1 do
+    begin
+
+      k := GProgramAyarlari.SonKullanilanDosyalar[i - 1];
+      GProgramAyarlari.SonKullanilanDosyalar[i] := k;
+    end;
+  end;
+
+  // dosyayı listenin en üstüne ekle
+  GProgramAyarlari.SonKullanilanDosyalar[0] := Dosya;
+
+  // menü listesini güncelle
+  MenuSonKullanilanlarListesiniGuncelle;
+end;
+
+// ana menünün "Son Kullanılanlar Listesi"ni güncelle
+procedure TfrmAnaSayfa.MenuSonKullanilanlarListesiniGuncelle;
+var
+  i, SonKullanilanlarListesi: Integer;
+  k: string;
+begin
+
+  // listeye eklenmiş olan eleman sayısı
+  // ayıracın açılıp açılmamasının kontrolü için
+  SonKullanilanlarListesi := 0;
+
+  // 1. "son kullanılanlar listesi"ni ana menüye ekle
+  // 2. ilgili menü elemanının görünürlüğünü kontrol et
+  // 3. ayıracın eklenip eklenmeyeceğini kontrol et
+  for i := 0 to 4 do
+  begin
+
+    k := GProgramAyarlari.SonKullanilanDosyalar[i];
+
+    case i of
+      0:
+      begin
+
+        miDosyaSonKullanilanDosya1Ac.Caption := k;
+        if(Length(k) > 0) then
+        begin
+
+          miDosyaSonKullanilanDosya1Ac.Visible := True;
+          Inc(SonKullanilanlarListesi);
+        end else miDosyaSonKullanilanDosya1Ac.Visible := False;
+      end;
+      1:
+      begin
+
+        miDosyaSonKullanilanDosya2Ac.Caption := k;
+        if(Length(k) > 0) then
+        begin
+
+          miDosyaSonKullanilanDosya2Ac.Visible := True;
+          Inc(SonKullanilanlarListesi);
+        end else miDosyaSonKullanilanDosya2Ac.Visible := False;
+      end;
+      2:
+      begin
+
+        miDosyaSonKullanilanDosya3Ac.Caption := k;
+        if(Length(k) > 0) then
+        begin
+
+          miDosyaSonKullanilanDosya3Ac.Visible := True;
+          Inc(SonKullanilanlarListesi);
+        end else miDosyaSonKullanilanDosya3Ac.Visible := False;
+      end;
+      3:
+      begin
+
+        miDosyaSonKullanilanDosya4Ac.Caption := k;
+        if(Length(k) > 0) then
+        begin
+
+          miDosyaSonKullanilanDosya4Ac.Visible := True;
+          Inc(SonKullanilanlarListesi);
+        end else miDosyaSonKullanilanDosya4Ac.Visible := False;
+      end;
+      4:
+      begin
+
+        miDosyaSonKullanilanDosya5Ac.Caption := k;
+        if(Length(k) > 0) then
+        begin
+
+          miDosyaSonKullanilanDosya5Ac.Visible := True;
+          Inc(SonKullanilanlarListesi);
+        end else miDosyaSonKullanilanDosya5Ac.Visible := False;
+      end;
+    end;
+  end;
+
+  // en az bir eleman var ise, ayıracı aktifleştir
+  if(SonKullanilanlarListesi > 0) then miDosyaAyrim0.Visible := True;
 end;
 
 end.
