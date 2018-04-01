@@ -355,13 +355,8 @@ text_başlangıç:
 DLLBaşlangıçİşlevi:
 
         push    ebp
-
-        ; mov ebp,esp
-        db	089h
-        db	0E5h
-
+        mov     ebp,esp
         mov     eax,1
-
         leave
 
         ; retn 000ch

@@ -1,30 +1,29 @@
 object frmAtamalar: TfrmAtamalar
   Left = 292
-  Height = 439
+  Height = 343
   Top = 148
-  Width = 509
+  Width = 492
   Align = alBottom
   BorderStyle = bsSizeToolWin
   Caption = 'Etiket ve Tanım Listesi'
-  ClientHeight = 439
-  ClientWidth = 509
+  ClientHeight = 343
+  ClientWidth = 492
   OnShow = FormShow
   LCLVersion = '1.8.2.0'
   object sbDurum: TStatusBar
     Left = 0
     Height = 23
-    Top = 416
-    Width = 509
+    Top = 320
+    Width = 492
     Panels = <>
     SimpleText = 'Toplam Etiket Sayısı: 0'
   end
   object lvEtiketler: TListView
     Left = 0
-    Height = 416
+    Height = 320
     Top = 0
-    Width = 509
+    Width = 492
     Align = alClient
-    AutoWidthLastColumn = True
     Columns = <    
       item
         Width = 30
@@ -61,10 +60,7 @@ object frmAtamalar: TfrmAtamalar
       item
         Alignment = taCenter
         Caption = 'Veri'
-        Width = 100
-      end    
-      item
-        Width = 45
+        Width = 90
       end>
     GridLines = True
     ReadOnly = True

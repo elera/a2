@@ -218,7 +218,7 @@ begin
   if(Length(GAsm2.DosyaAdi) > 0) then
   begin
 
-    seAssembler.Lines.SaveToFile(GAsm2.ProjeDizin + '\' +
+    seAssembler.Lines.SaveToFile(GAsm2.ProjeDizin + DirectorySeparator +
       GAsm2.DosyaAdi + '.' + GAsm2.ProjeDosyaUzanti);
   end
   else
@@ -343,7 +343,7 @@ begin
         Dosya := GAsm2.DosyaAdi + '.' + GAsm2.CikisDosyaUzanti
       else Dosya := GAsm2.DosyaAdi;
 
-      if(ProgramDosyasiOlustur(GAsm2.ProjeDizin + '\' + Dosya)) then
+      if(ProgramDosyasiOlustur(GAsm2.ProjeDizin + DirectorySeparator + Dosya)) then
       begin
 
         frmDerlemeBilgisi.DerlenenDosya := Dosya;
@@ -499,12 +499,15 @@ begin
   else
   begin
 
+    // tüm dahili değişkenleri ilk değerlerle yükle
+    GAsm2.Ilklendir;
+
     GAsm2.ProjeDizin := ProjeDizin;
     GAsm2.DosyaAdi := DosyaAdi;
     GAsm2.ProjeDosyaUzanti := DosyaUzanti;
 
-    SonKullanilanlarListesineEkle(ProjeDizin + '\' + DosyaAdi + '.' + DosyaUzanti);
-    seAssembler.Lines.LoadFromFile(ProjeDizin + '\' + DosyaAdi + '.' + DosyaUzanti);
+    SonKullanilanlarListesineEkle(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
+    seAssembler.Lines.LoadFromFile(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
 
     seAssembler.CaretX := 1;
     seAssembler.CaretY := 1;
@@ -540,7 +543,9 @@ begin
   GAsm2.DosyaAdi := DosyaAdi;
   GAsm2.ProjeDosyaUzanti := DosyaUzanti;
 
-  seAssembler.Lines.SaveToFile(ProjeDizin + '\' + DosyaAdi + '.' + DosyaUzanti);
+  ShowMessage(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
+
+  seAssembler.Lines.SaveToFile(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
 
   seAssembler.CaretX := 1;
   seAssembler.CaretY := 1;

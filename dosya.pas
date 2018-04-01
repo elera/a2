@@ -4,7 +4,7 @@
 
   İşlev: dosya işlevlerini içerir
 
-  Güncelleme Tarihi: 25/03/2018
+  Güncelleme Tarihi: 01/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -18,13 +18,14 @@ function ProgramDosyasiOlustur(DosyaAdi: string): Boolean;
 
 implementation
 
-uses genel, Forms;
+uses genel, Forms, process;
 
 // ikili dosya biçiminde (binary file format) dosya oluştur
 function ProgramDosyasiOlustur(DosyaAdi: string): Boolean;
 var
   F: file of Byte;
   i: Integer;
+  s: string;
 begin
 
   AssignFile(F, DosyaAdi);
@@ -47,6 +48,10 @@ begin
     CloseFile(F);
     Result := True;
   end else Result := False;
+
+  {$IFDEF Linux}
+  RunCommand('chmod +x ' + DosyaAdi, s);
+  {$ENDIF}
 end;
 
 end.

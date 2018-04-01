@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="10"/>
     <BuildModes Active="Default"/>
-    <Units Count="37">
+    <Units Count="38">
       <Unit0>
         <Filename Value="a2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -17,7 +17,9 @@
         <ComponentName Value="frmAnaSayfa"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <CursorPos X="50" Y="8"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="322"/>
+        <CursorPos X="35" Y="342"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -26,7 +28,7 @@
         <Filename Value="genel.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="8"/>
-        <CursorPos X="35" Y="22"/>
+        <CursorPos X="40" Y="18"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit2>
@@ -34,7 +36,7 @@
         <Filename Value="incele.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="732"/>
+        <TopLine Value="717"/>
         <CursorPos X="26" Y="758"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
@@ -42,9 +44,8 @@
       <Unit4>
         <Filename Value="gelisim.txt"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="9"/>
-        <CursorPos X="66" Y="6"/>
+        <CursorPos X="20" Y="11"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="None"/>
@@ -95,6 +96,7 @@
         <Filename Value="asm2.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
+        <CursorPos X="14" Y="39"/>
         <UsageCount Value="200"/>
       </Unit11>
       <Unit12>
@@ -119,6 +121,8 @@
         <Filename Value="g12islev.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="5"/>
+        <TopLine Value="355"/>
+        <CursorPos X="69" Y="367"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit15>
@@ -177,7 +181,7 @@
         <Filename Value="g11islev.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="4"/>
-        <UsageCount Value="142"/>
+        <UsageCount Value="146"/>
         <Loaded Value="True"/>
       </Unit23>
       <Unit24>
@@ -267,114 +271,102 @@
         <CursorPos X="15" Y="554"/>
         <UsageCount Value="8"/>
       </Unit36>
+      <Unit37>
+        <Filename Value="..\..\..\..\usr\share\fpcsrc\3.0.4\rtl\unix\sysunixh.inc"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="20" Y="30"/>
+        <UsageCount Value="10"/>
+      </Unit37>
     </Units>
-    <JumpHistory Count="27" HistoryIndex="26">
+    <JumpHistory Count="22" HistoryIndex="21">
       <Position1>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="84" Column="15" TopLine="70"/>
+        <Caret Line="498" Column="31" TopLine="491"/>
       </Position1>
       <Position2>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="540" Column="53" TopLine="528"/>
+        <Caret Line="399" Column="3" TopLine="397"/>
       </Position2>
       <Position3>
         <Filename Value="anasayfaform.pas"/>
+        <Caret Line="412" Column="32" TopLine="397"/>
       </Position3>
       <Position4>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="84" Column="44" TopLine="60"/>
+        <Caret Line="199" Column="3" TopLine="197"/>
       </Position4>
       <Position5>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="495" Column="34" TopLine="471"/>
+        <Caret Line="85" Column="15" TopLine="65"/>
       </Position5>
       <Position6>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="562" Column="50" TopLine="540"/>
+        <Caret Line="509" Column="15" TopLine="482"/>
       </Position6>
       <Position7>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="237" TopLine="225"/>
+        <Caret Line="511" Column="67" TopLine="482"/>
       </Position7>
       <Position8>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="235" Column="3" TopLine="228"/>
+        <Caret Line="501" Column="20" TopLine="488"/>
       </Position8>
       <Position9>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="82" Column="15" TopLine="68"/>
+        <Caret Line="258" Column="3" TopLine="249"/>
       </Position9>
       <Position10>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="84" Column="15" TopLine="70"/>
+        <Caret Line="199" Column="3" TopLine="197"/>
       </Position10>
       <Position11>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="577" Column="38" TopLine="566"/>
+        <Caret Line="85" Column="15" TopLine="65"/>
       </Position11>
       <Position12>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="578" Column="38" TopLine="567"/>
+        <Caret Line="509" Column="66" TopLine="482"/>
       </Position12>
       <Position13>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="585" Column="38" TopLine="574"/>
+        <Caret Line="216" Column="3" TopLine="214"/>
       </Position13>
       <Position14>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="211" Column="24" TopLine="208"/>
+        <Caret Line="86" Column="15" TopLine="66"/>
       </Position14>
       <Position15>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="678" Column="67" TopLine="658"/>
+        <Caret Line="546" Column="63" TopLine="518"/>
       </Position15>
       <Position16>
         <Filename Value="anasayfaform.pas"/>
+        <Caret Line="355" Column="29" TopLine="334"/>
       </Position16>
       <Position17>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="155" Column="3" TopLine="153"/>
+        <Caret Line="216" Column="3" TopLine="214"/>
       </Position17>
       <Position18>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="214" Column="27" TopLine="208"/>
+        <Caret Line="86" Column="15" TopLine="66"/>
       </Position18>
       <Position19>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="211" Column="24" TopLine="196"/>
+        <Caret Line="535" Column="12" TopLine="512"/>
       </Position19>
       <Position20>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="155" Column="22" TopLine="153"/>
+        <Caret Line="542" Column="12" TopLine="512"/>
       </Position20>
       <Position21>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="205" Column="34" TopLine="190"/>
+        <Caret Line="237" Column="28" TopLine="214"/>
       </Position21>
       <Position22>
         <Filename Value="anasayfaform.pas"/>
-        <Caret Line="210" Column="3" TopLine="208"/>
+        <Caret Line="258" Column="3" TopLine="321"/>
       </Position22>
-      <Position23>
-        <Filename Value="g12islev.pas"/>
-        <Caret Line="10" Column="33"/>
-      </Position23>
-      <Position24>
-        <Filename Value="gelisim.txt"/>
-        <Caret Line="26"/>
-      </Position24>
-      <Position25>
-        <Filename Value="genel.pas"/>
-        <Caret Line="7" Column="25"/>
-      </Position25>
-      <Position26>
-        <Filename Value="komutlar.pas"/>
-        <Caret Line="70" Column="64" TopLine="51"/>
-      </Position26>
-      <Position27>
-        <Filename Value="anasayfaform.pas"/>
-        <Caret Line="19" Column="21"/>
-      </Position27>
     </JumpHistory>
   </ProjectSession>
 </CONFIG>

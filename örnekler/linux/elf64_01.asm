@@ -11,7 +11,6 @@ VERİ_ADRES = TEMEL_ADRES + 1000h
 MAKİNE_TİP_I386 = 14Ch
 MAKİNE_TİP_X64 = 8664h
 
-dosya.uzantı = ''
 kod.mimari = '16Bit'
 
         db      7fh, 45h, 4ch, 46h
@@ -66,7 +65,7 @@ kod_başlangıç:
         db      48h, 0c7h, 0c6h, 0dah, 10h, 40h, 00h
 
         ;mov rdx,0dh - mesaj uzunluk
-        db      48h, 0c7h, 0c2h, 0dh, 00h, 00h, 00h
+        db      48h, 0c7h, 0c2h, 11h, 00h, 00h, 00h
 
         ;syscall
         db      0fh, 05h
@@ -81,7 +80,7 @@ kod_başlangıç:
         db      0fh, 05h
 
 veri_başlangıç:
-        db      'Fatih KILIC.', 0Ah
+        db      'Assembler 2 (a2)', 0Ah
 
 program_son:
 ;---------------------------------------------------------------------

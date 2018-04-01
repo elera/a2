@@ -2,7 +2,7 @@
 
 ## Önemli ##
 
-Program geliştirme aşamasındadır. Hemen hemen 15 günde bir yeniliklerin eklenerek güncellendiği çalışma, 09.12.2018 tarihi itibariyle tamamlanması planlanmaktadır.
+Program, geliştirme aşamasındadır. Yaklaşık 15 günde bir yeniliklerin eklenerek güncellendiği çalışmanın, 09.12.2018 tarihi itibariyle tamamlanması planlanmaktadır.
 
 ## Proje ##
 
@@ -19,3 +19,5 @@ Fatih KILIÇ
 <img src="https://github.com/elera/a2/blob/master/resim2.png" />
 
 <img src="https://github.com/elera/a2/blob/master/resim3.png" />
+
+<img src="https://github.com/elera/a2/blob/master/resim4.png" />

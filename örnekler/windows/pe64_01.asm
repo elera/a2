@@ -80,7 +80,8 @@ db 48h, 8Dh, 15h
 dd      MsgBoxText-0E5h
 
         ; 1. argument: rcx = hWnd = NULL
-        xor     ecx,ecx
+;        xor     ecx,ecx
+db 31h, 0C9h
 
 ;    call [MessageBoxAİşlevi]
 db 0FFh, 15h

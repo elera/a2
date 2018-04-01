@@ -139,8 +139,11 @@ bölüm1_başlangıç:
 ; grafiksel arabirim kodları
 ;----------------------------------------------------------------
 
+        mov     eax,700
+        mov     ebx,14
+        add     eax,ebx
+
         mov     edi,PencereMesaj+9
-        mov     eax,714
         mov     ebx,3
         mov     ecx,4
 
@@ -159,20 +162,19 @@ sonraki_basamak:
         cmp     eax,0
         jnz     sonraki_basamak
 
+        ; mesaj kutusunu görüntüle
         push    0
         push    PencereBaşlık
         push    PencereMesaj
         push    0
-
-        ; her iki çağrı da [] arasında değerlendirilecek
         call    [MessageBoxAİşlevi]
 
+        ; programdan çık
         push    0
         call    [ExitProcessİşlevi]
 
 PencereBaşlık:	db	'Assembler 2 (a2)', 0
 PencereMesaj:	db	'0000000000', 0
-SayisalDeger    dd      12345
 
 kod.tabaka = 4
 
