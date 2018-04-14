@@ -26,7 +26,6 @@ kod.mimari = '16Bit'
 	dd	0FFF0013Ch
 	dd	78h
 	dd	0
-
 	dw	0E0h
 	dw	10Fh
 
@@ -81,60 +80,28 @@ int_kullanım2:
 	dq	0, 0, 0, 0, 0, 0
 
 ; bölümler (Bölüm1) - sections
-	dq	'Bölüm1'
-	dd	400h
+	dq	'.kod'
+	dd	200h
 	dd	1000h
-	dd	bölüm1_son-bölüm1_başlangıç
+	dd	bölüm1_son-kod_başlangıç
 	dd	200h
 	dd	0, 0, 0
 	dd	0E0000060h
 
-	dq	'.idata'
-	dd	400h
-	dd	1000h
-	dd	bölüm1_son-bölüm1_başlangıç
+	dq	'.veri'
 	dd	200h
+	dd	1000h
+	dd	bölüm1_son-kod_başlangıç
+	dd	400h
 	dd	0, 0, 0
 	dd	0E0000060h
 
-	dq	0
-	dd	0
-	dd	0
-	dd	0
-	dd	0
-	dd	0, 0, 0
-	dd	0
-
-	dq	0
-	dd	0
-	dd	0
-	dd	0
-	dd	0
-	dd	0, 0, 0
-	dd	0
-
-	dq	0
-	dd	0
-	dd	0
-	dd	0
-	dd	0
-	dd	0, 0, 0
-	dd	0
-
-	dq	0
-	dd	0
-	dd	0
-	dd	0
-	dd	0
-	dd	0, 0, 0
-	dd	0
-
-        dd      0, 0, 0
+kod.tabaka = 200h
 
 kod.mimari = '32Bit'
 kod.adres = 401000h
 
-bölüm1_başlangıç:
+kod_başlangıç:
 
 ; grafiksel arabirim kodları
 ;----------------------------------------------------------------
@@ -173,13 +140,15 @@ sonraki_basamak:
         push    0
         call    [ExitProcessİşlevi]
 
+kod.tabaka = 200h
+
+veri_başlangıç:
 PencereBaşlık:	db	'Assembler 2 (a2)', 0
 PencereMesaj:	db	'0000000000', 0
 
-kod.tabaka = 4
-
 ; program içerisinde kullanılacak sistem işlevleri (import table)
 ;---------------------------------------------------------------------
+kod.tabaka = 4
 girdiler_başlangıç:
 	dd	0, 0, 0, kernel32_dll - TEMEL_ADRES, ExitProcessİşlevi - TEMEL_ADRES
 	dd	0, 0, 0, user32_dll - TEMEL_ADRES, MessageBoxAİşlevi - TEMEL_ADRES

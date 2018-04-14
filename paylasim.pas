@@ -24,8 +24,8 @@ type
 
   // alt satırdaki veriler TAnaBolumVeriTipi içerisinde yok edilecek
   // işlem kod ana ve alt bölümleri
-  TVeriKontrolTip = (vktYok, vktDegisken, vktKarakterDizisi, vktSayi,
-    vktYazmac, vktBosluk, vktVirgul, vktEsittir, vktArti,
+  TVeriKontrolTip = (vktYok, vktDegisken, vktKarakterDizisi, vktSayi, vktYazmac,
+    vktOnEk, vktBosluk, vktVirgul, vktEsittir, vktArti,
     vktKPAc, vktKPKapat, vktOlcek, vktIlk, vktSon);
 
 /////////////////////////

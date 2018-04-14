@@ -8,7 +8,6 @@
 ================================================================================
   Çalışma Listesine Alınan ve / veya Devam Eden Çalışmalar
 ================================================================================
-- tüm hatırlatıcı (mnemonic) kodların ayrıştırma ve yönlendirme işlevleri
 - derleyici tarafından yönetilen ikili / onlu / onaltılı sayı sistem karakter katarının
   çoklu aritmetik / parantez önceliği / mantıksal işlemler dahilinde yorumlanması
 - ikili kod verilerinin dosyaya aktarılmadan önce yerleştirildiği bellek (kodlama)
@@ -27,6 +26,49 @@
 - tvtTanimsiz verileri tekrar incelenerek yazmaç ve karakterdizisi olarak ayrılacak
 - vktYazmac tanımlarının problemleri giderildikten sonra vktKarakterDizisi veri yapısı tamamlanacak
 - ParcaNo değerinin diğer kontrollerden önce ya da sonra artırılması düzenlenecek
+- Tab kontrol üzerine birden fazla dosya açılması, her bir tab üzerindeki dosyanın derlenebilme özelliği eklenecek
+
++-------------------------------------------------------------+-------------+
+|                     Çalışma Alanı                           | Tamamlanma  |
+|                                                             |  Oranı (%)  |
++-------------------------------------------------------------+-------------+
+|  çoklu bölüm / çoklu dosya destekli grafiksel               |      60     |
+|  arabirim çalışmaları                                       |             |
++-------------------------------------------------------------+-------------+
+|  16 bit genel kod çevrim çalışmaları                        |      35     |
++-------------------------------------------------------------+-------------+
+|  32 bit genel kod çevrim çalışmaları                        |      40     |
++-------------------------------------------------------------+-------------+
+|  64 bit genel kod çevrim çalışmaları                        |      10     |
++-------------------------------------------------------------+-------------+
+|  derleyici içerisinde kullanılan veri tip çalışmaları       |      55     |
++-------------------------------------------------------------+-------------+
+|  8/16/32/64 bit ve kayan sayı (float, double) sayısal       |      40     |
+|  sistem çalışmaları                                         |             |
++-------------------------------------------------------------+-------------+
+|  kod. dosya. vb  kod içerisinde kullanılan düzenleyici      |      45     |
+|  ifade çalışması                                            |             |
++-------------------------------------------------------------+-------------+
+|  mmx / xmm / ymm vb. genel kod haricindeki                  |      10     |
+|  işlem kod çalışmaları                                      |             |
++-------------------------------------------------------------+-------------+
+|  32 / 64 bit windows çalıştırılabilir (exe)                 |      30     |
+|  dosya biçim çalışmaları                                    |             |
++-------------------------------------------------------------+-------------+
+|  32 / 64 bit windows kütüphane (dll library)                |      30     |
+|  dosya biçim çalışmaları                                    |             |
++-------------------------------------------------------------+-------------+
+|  32 / 64 bit linux çalıştırılabilir                         |      20     |
+|  dosya biçim çalışmaları                                    |             |
++-------------------------------------------------------------+-------------+
+|  32 / 64 bit linux kütüphane (so library)                   |       -     |
+|  dosya biçim çalışmaları                                    |             |
++-------------------------------------------------------------+-------------+
+|  32 / 64 bit ELERA işletim sistemi çekirdek ve              |      10     |
+|  program çalışmaları                                        |             |
++-------------------------------------------------------------+-------------+
+|  iOS çalıştırılabilir / kütüphane dosya biçim çalışmaları   |       -     |
++-------------------------------------------------------------+-------------+
 
 // program içerisindeki kavram ve kullanımları
 00 - tanım      16BitDeger = 1B + 2B + 3B   - değişken tanımlamalar. tanımlamaları değişkendir, sabit değildir

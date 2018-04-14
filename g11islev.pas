@@ -36,6 +36,7 @@ var
   SayiTipi: TSayiTipi;
   SayisalVeri, VeriGenisligi, i: Integer;
   ii: Byte;
+  i4: Integer;
 begin
 
   // ilk parça = işlem kodu verisidir. (opcode)
@@ -216,13 +217,12 @@ begin
     else if(SatirIcerik.Komut.GrupNo = GRUP11_CALL) then
     begin
 
-      //SendDebug('G13_Z0: ' + IntToStr(GBellekSabitDeger));
-
-      KodEkle($FF);
-      KodEkle($0 + $10 + $5);
-
+      // call [bellek_adresi] ; bellek adresine çağrı
       if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
       begin
+
+        KodEkle($FF);
+        KodEkle($0 + $10 + $5);
 
         if(baBellekSabitDeger in SatirIcerik.BolumTip1.BolumAyrinti) then
         begin
@@ -236,15 +236,20 @@ begin
         end;
       end
       else
+      // call bellek_adresi  ; komut sonrasından itibaren ilgili noktaya çağrı
       begin
 
-        //SendDebug('G13_Z2: ' + IntToStr(GSabitDeger));
+        KodEkle($FF);
+        KodEkle($15);
+
+        i4 := GSabitDeger - MevcutBellekAdresi;
+        i4 := i4 - 6 + 2;
 
         for i := 1 to 4 do
         begin
 
-          KodEkle(Byte(GSabitDeger));
-          GSabitDeger := GSabitDeger shr 8;
+          KodEkle(Byte(i4));
+          i4 := i4 shr 8;
         end;
       end;
 
@@ -264,7 +269,7 @@ begin
         if(VeriGenisligi = 8) then
 
           Result := 1
-        // 32 sayıyı 16 bitlik mimari desteklememektedir
+        // 32 bitlik sayıyı 16 bitlik mimari desteklememektedir
         else if(VeriGenisligi = 4) and (GAsm2.Mimari = mim16Bit) then
 
           Result := 1
@@ -301,7 +306,7 @@ begin
         if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
         begin
 
-          KodEkle($50 + YazmacListesi[GYazmac1].Deger);
+          KodEkle($50 + (YazmacListesi[GYazmac1].Deger and 7));
           Result := HATA_YOK;
         end else Result := HATA_DEVAM_EDEN_CALISMA;
       end;
@@ -318,7 +323,7 @@ begin
 
           SendDebug('G13_Yazmaç: ' + YazmacListesi[GYazmac1].Ad);
 
-          KodEkle($40 + YazmacListesi[GYazmac1].Deger);
+          KodEkle($40 + (YazmacListesi[GYazmac1].Deger and 7));
           Result := HATA_YOK;
         end
         else if(SatirIcerik.Komut.GrupNo = GRUP11_DEC) then
@@ -326,7 +331,7 @@ begin
 
           //SendDebug('G13_Yazmaç: ' + YazmacListesi[GYazmac1].Ad);
 
-          KodEkle($48 + YazmacListesi[GYazmac1].Deger);
+          KodEkle($48 + (YazmacListesi[GYazmac1].Deger and 7));
           Result := HATA_YOK;
         end
         // div komutu
@@ -338,7 +343,7 @@ begin
           //SendDebug('G13_Yazmaç: ' + YazmacListesi[GYazmac1].Ad);
 
           KodEkle($F7);
-          KodEkle($C0 + $30 + YazmacListesi[GYazmac1].Deger);
+          KodEkle($C0 + $30 + (YazmacListesi[GYazmac1].Deger and 7));
           Result := HATA_YOK;
         end;
       end;

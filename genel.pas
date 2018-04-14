@@ -4,7 +4,7 @@
 
   İşlev: genel sabit, değişken, yapı ve işlevleri içerir
 
-  Güncelleme Tarihi: 31/03/2018
+  Güncelleme Tarihi: 14/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -12,12 +12,12 @@ unit genel;
 
 interface
 
-uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim;
+uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler;
 
 const
   ProgramAdi = 'Assembler 2 (a2)';
-  ProgramSurum = '0.0.11.2018';
-  SurumTarihi = '31.03.2018';
+  ProgramSurum = '0.0.12.2018';
+  SurumTarihi = '14.04.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -148,8 +148,10 @@ var
   GYazmacB1,                                // birinci bellek yazmaç değeri
   GYazmacB2,                                // ikinci bellek yazmaç değeri
   GOlcek,                                   // bellek adreslemede kullanılan ölçek değer
-  GBellekSabitDeger,                        // bellek adresleme sabit değeri (yeni, ilgili kısımlara uygulansın)
+  GBellekSabitDeger: Integer;               // bellek adresleme sabit değeri (yeni, ilgili kısımlara uygulansın)
+  GBellekSabitDegerVG: TVeriGenisligi;
   GSabitDeger: Integer;                     // bellek / yazmaç için sayısal değer
+  GSabitDegerVG: TVeriGenisligi;
   GYazmacB1OlcekM, GYazmacB2OlcekM: Boolean;// bellek yazmaçlarının ölçek değerleri var mı?
 
   // -------------------------------------------------------------------------->

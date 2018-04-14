@@ -4,7 +4,7 @@
 
   İşlev: program ana sayfası
 
-  Güncelleme Tarihi: 31/03/2018
+  Güncelleme Tarihi: 06/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -23,6 +23,8 @@ type
 
   TfrmAnaSayfa = class(TForm)
     ilAnaMenu16: TImageList;
+    miDosyaAyarlar: TMenuItem;
+    miDosyaAyrim2: TMenuItem;
     miDosyaAyrim0: TMenuItem;
     miDosyaAyrim1: TMenuItem;
     miDosyaCikis: TMenuItem;
@@ -44,11 +46,15 @@ type
     miKodDerle: TMenuItem;
     mmAnaMenu: TMainMenu;
     OpenDialog1: TOpenDialog;
+    pcDosyalar: TPageControl;
     SaveDialog1: TSaveDialog;
     sbDurum: TStatusBar;
-    seAssembler: TSynEdit;
+    seDosya1: TSynEdit;
     SynAssemblerSyn: TSynAnySyn;
     SynCompletion1: TSynCompletion;
+    tbAyrim4: TToolButton;
+    tbDosyaAyarlar: TToolButton;
+    tsDosya1: TTabSheet;
     tbAnaSayfa: TToolBar;
     tbAyrim2: TToolButton;
     tbAyrim3: TToolButton;
@@ -67,6 +73,7 @@ type
     procedure FormDropFiles(Sender: TObject; const FileNames: array of String);
     procedure FormShow(Sender: TObject);
     procedure miDosyaAcClick(Sender: TObject);
+    procedure miDosyaAyarlarClick(Sender: TObject);
     procedure miDosyaCikisClick(Sender: TObject);
     procedure miDosyaKaydetClick(Sender: TObject);
     procedure miDosyaSonKullanilanDosyayiAcClick(Sender: TObject);
@@ -76,8 +83,8 @@ type
     procedure miKodDerleClick(Sender: TObject);
     function FormuOrtala(GoruntulenecekForm: TForm; SonucuBekle: Boolean): Integer;
     procedure miKodCalistirClick(Sender: TObject);
-    procedure seAssemblerClick(Sender: TObject);
-    procedure seAssemblerKeyDown(Sender: TObject; var Key: Word;
+    procedure seDosya1Click(Sender: TObject);
+    procedure seDosya1KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure SynCompletion1Execute(Sender: TObject);
   private
@@ -98,13 +105,16 @@ implementation
 
 uses incele, genel, atamalar, dosya, derlemebilgisiform, atamalarform, asm2,
   ayarlar, yazmaclar, {$IFDEF Windows} windows, {$ENDIF} process, oneriler, komutlar, dbugintf,
-  paylasim, donusum, LConvEncoding;
+  paylasim, donusum, LConvEncoding, ayarlarform;
 
 procedure TfrmAnaSayfa.FormCreate(Sender: TObject);
 begin
 
   // çalışma zamanlı nesneler oluşturuluyor
   GAsm2 := TAsm2.Create;
+
+  // dosyaların sürüklenip bırakılmasına izin ver
+  Self.AllowDropFiles := True;
 
   // daha önce kaydedilen program ayarlarını oku
   GProgramAyarlari := GAsm2.ProgramAyarDosyasiniOku;
@@ -123,9 +133,6 @@ begin
 
   // ana menünün "Son Kullanılanlar Listesi"ni güncelle
   MenuSonKullanilanlarListesiniGuncelle;
-
-  // dosyaların sürüklenip bırakılmasına izin ver
-  Self.AllowDropFiles := True;
 end;
 
 procedure TfrmAnaSayfa.FormShow(Sender: TObject);
@@ -133,7 +140,7 @@ var
   i: Integer;
 begin
 
-  sbDurum.Panels[2].Text := 'Sürüm: ' + ProgramSurum + ' - ' + SurumTarihi;
+  sbDurum.Panels[1].Text := 'Sürüm: ' + ProgramSurum + ' - ' + SurumTarihi;
 
   SynAssemblerSyn.Objects.Clear;
   for i := 0 to TOPLAM_KOMUT - 1 do
@@ -148,6 +155,15 @@ begin
   frmAnaSayfa.Width := GProgramAyarlari.PencereGenislik;
   frmAnaSayfa.Height := GProgramAyarlari.PencereYukseklik;
   frmAnaSayfa.WindowState := GProgramAyarlari.PencereDurum;
+
+  // ayarlarda, program açılışında son kullanılan dosyanın açılması varsa, aç
+  if(GProgramAyarlari.SonKullanilanDosyayiAc) then
+  begin
+
+    // son kullanılan dosyaya atama yapılıp yapılmadığını kontrol et
+    if(Length(GProgramAyarlari.SonKullanilanDosyalar[0]) > 0) then
+      ProjeDosyasiAc(GProgramAyarlari.SonKullanilanDosyalar[0]);
+  end;
 end;
 
 procedure TfrmAnaSayfa.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -185,7 +201,7 @@ procedure TfrmAnaSayfa.miDosyaYeniClick(Sender: TObject);
 begin
 
   // kod sayfasını temizle
-  seAssembler.Clear;
+  seDosya1.Clear;
 
   // ana nesneyi ilklendir
   GAsm2.Ilklendir;
@@ -205,6 +221,12 @@ begin
   if(OpenDialog1.Execute) then ProjeDosyasiAc(OpenDialog1.Filename);
 end;
 
+procedure TfrmAnaSayfa.miDosyaAyarlarClick(Sender: TObject);
+begin
+
+  FormuOrtala(frmAyarlar, True);
+end;
+
 procedure TfrmAnaSayfa.miDosyaCikisClick(Sender: TObject);
 begin
 
@@ -218,7 +240,7 @@ begin
   if(Length(GAsm2.DosyaAdi) > 0) then
   begin
 
-    seAssembler.Lines.SaveToFile(GAsm2.ProjeDizin + DirectorySeparator +
+    seDosya1.Lines.SaveToFile(GAsm2.ProjeDizin + DirectorySeparator +
       GAsm2.DosyaAdi + '.' + GAsm2.ProjeDosyaUzanti);
   end
   else
@@ -274,7 +296,7 @@ begin
     KodBellekU := 0;
     MevcutBellekAdresi := 0;
 
-    ToplamSatirSayisi := seAssembler.Lines.Count;
+    ToplamSatirSayisi := seDosya1.Lines.Count;
     MevcutSatirSayisi := 0;
     IslenenSatirSayisi := 0;
 
@@ -282,7 +304,7 @@ begin
     while (MevcutSatirSayisi < ToplamSatirSayisi) and (IslevSonuc = HATA_YOK) do
     begin
 
-      HamVeri := seAssembler.Lines[MevcutSatirSayisi];
+      HamVeri := seDosya1.Lines[MevcutSatirSayisi];
 
       if(Length(Trim(HamVeri)) > 0) then
       begin
@@ -364,8 +386,8 @@ begin
   begin
 
     ShowMessage('Hata: ' + HataKodunuAl(IslevSonuc)); // + ' - ' + GHataAciklama);
-    seAssembler.CaretX := 1;
-    seAssembler.CaretY := MevcutSatirSayisi;
+    seDosya1.CaretX := 1;
+    seDosya1.CaretY := MevcutSatirSayisi;
   end;
 end;
 
@@ -435,13 +457,13 @@ begin
   OnerileriListele(SynCompletion1.CurrentString, SynCompletion1.ItemList);
 end;
 
-procedure TfrmAnaSayfa.seAssemblerClick(Sender: TObject);
+procedure TfrmAnaSayfa.seDosya1Click(Sender: TObject);
 begin
 
   DurumCubugunuGuncelle;
 end;
 
-procedure TfrmAnaSayfa.seAssemblerKeyDown(Sender: TObject; var Key: Word;
+procedure TfrmAnaSayfa.seDosya1KeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 
@@ -461,12 +483,12 @@ begin
       DosyaAdiVeUzanti := GAsm2.DosyaAdi + '.' + GAsm2.ProjeDosyaUzanti
     else DosyaAdiVeUzanti := GAsm2.DosyaAdi;
 
-    sbDurum.Panels[0].Text := 'Proje Dosyası: ' + DosyaAdiVeUzanti;
-  end else sbDurum.Panels[0].Text := 'Proje Dosyası: -';
+    pcDosyalar.Pages[0].Caption := DosyaAdiVeUzanti;
+  end else pcDosyalar.Pages[0].Caption := '-';
 
   // klavye göstergesini (cursor) güncelle
-  sbDurum.Panels[1].Text := 'Satır: ' + IntToStr(seAssembler.CaretY) + ' - Sütun: ' +
-    IntToStr(seAssembler.CaretX);
+  sbDurum.Panels[0].Text := 'Satır: ' + IntToStr(seDosya1.CaretY) + ' - Sütun: ' +
+    IntToStr(seDosya1.CaretX);
 end;
 
 procedure TfrmAnaSayfa.ProjeDosyasiAc(ADosyaAdi: string);
@@ -507,10 +529,10 @@ begin
     GAsm2.ProjeDosyaUzanti := DosyaUzanti;
 
     SonKullanilanlarListesineEkle(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
-    seAssembler.Lines.LoadFromFile(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
+    seDosya1.Lines.LoadFromFile(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
 
-    seAssembler.CaretX := 1;
-    seAssembler.CaretY := 1;
+    seDosya1.CaretX := 1;
+    seDosya1.CaretY := 1;
     DurumCubugunuGuncelle;
   end;
 end;
@@ -545,10 +567,10 @@ begin
 
   ShowMessage(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
 
-  seAssembler.Lines.SaveToFile(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
+  seDosya1.Lines.SaveToFile(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
 
-  seAssembler.CaretX := 1;
-  seAssembler.CaretY := 1;
+  seDosya1.CaretX := 1;
+  seDosya1.CaretY := 1;
   DurumCubugunuGuncelle;
 end;
 

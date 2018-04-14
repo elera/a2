@@ -1,7 +1,7 @@
 ;-------------------------------------------------------------------------------
-; proje adı: pe64_01.asm
+; proje adı: pe32_04.asm
 ; program biçimi: çalıştırılabilir
-; program tanımı: windows ortamında çalışan 64 bitlik uygulama
+; program tanımı: windows ortamında çalışan 32 bitlik uygulama
 
         dosya.uzantı = 'exe'
 
@@ -9,7 +9,7 @@ program_başlangıç:
 ;-------------------------------------------------------------------------------
 TEMEL_ADRES = 400000h
 
-MAKİNE_TİP_X64 = 8664h
+MAKİNE_TİP_I386 = 14Ch
 
 ; MZ başlık verileri
         dw      'MZ'
@@ -19,7 +19,7 @@ MAKİNE_TİP_X64 = 8664h
         dw      4
 
         dw      10h
-        dw	0FFFFh
+        dw	0FFh
         dw	0
         dw      140h
         dw      0, 0, 0
@@ -42,12 +42,9 @@ db	04Ch
 db	0CDh
 db	021h
 
-db      'This program cannot be run in DOS mode.',0Dh, 0Ah
-db      '$'
+db      'This program cannot be run in DOS mode...$',0
 
 
-
-db	000h
 db	000h
 db	000h
 db	000h
@@ -58,56 +55,51 @@ db	000h
 
 ; PE başlık verileri
         dd      'PE'
-        dw      MAKİNE_TİP_X64
-        dw      3
-        dd      5AC9CD22h
+        dw      MAKİNE_TİP_I386
+        dw      2
+        dd      5AC0DF12h
         dd	0
         dd      0
-        dw      0F0h
-        dw      2Fh
+        dw      0E0h
+        dw      10Fh
 
 ; PE seçimli başlık verileri
-        dw      20Bh
+        dw      10Bh
         db	1
         db	48h
         dd      200h
-        dd      400h
+        dd      200h
         dd      0
         dd      1000h
         dd      1000h
-        dd      400000h
-        dd      0
+        dd      2000h
+        dd      TEMEL_ADRES
         dd      1000h
         dd      200h
         dw      1
         dw      0
         dw      0, 0
-        dw      5
+        dw      4
         dw      0
         dd      0
-        dd      4000h
+        dd      3000h
         dd      200h
-        dd      048CEh
+        dd      8641h
         dw      2
         dw      0
         dd      1000h
-        dd      0
         dd      1000h
-        dd      0
         dd      10000h
         dd      0
+        dd      0
+        dd      10h
 
 ; dizinler
         dd      0
         dd      0
 
-        dd      0
-        dd      10h
-
-        dd      0, 0
-
-        dd      3000h
-        dd      0AAh
+        dd      2000h
+        dd      0B0h
 
         dd      0, 0
         dd      0, 0
@@ -125,7 +117,7 @@ db	000h
         dd      0, 0
 
         dq      '.kod'
-        dd      2Dh
+        dd      3Bh
         dd      kod_başlangıç - TEMEL_ADRES
         dd      kod_bitiş - kod_başlangıç
         dd      200h
@@ -134,86 +126,60 @@ db	000h
         dd      60000020h
 
         dq      '.veri'
-        dd      024h
+        dd      0B0h
         dd      veri_başlangıç - TEMEL_ADRES
         dd      veri_bitiş - veri_başlangıç
         dd      400h
         dd      0, 0
         dw      0, 0
         dd      0C0000040h
-
-        dq      '.iveri'
-        dd      0AAh
-        dd      iveri_başlangıç - TEMEL_ADRES
-        dd      iveri_bitiş - iveri_başlangıç
-        dd      600h
-        dd      0, 0
-        dw      0, 0
-        dd      0C0000040h
 kod.tabaka = 200h
+
 ;-------------------------------------------------------------------------------
-kod.mimari = '64Bit'
+kod.mimari = '32Bit'
 kod.adres = 401000h
 kod_başlangıç:
 ;-------------------------------------------------------------------------------
-        sub     rsp,28h
-        mov     r9d,0
-        lea     r8,[PencereBaşlık]
-        lea     rdx,[PencereMesaj]
-        mov     rcx,0
-        call    user32_işlevler.messageboxa
+        push    0
+        call    [kernel32_işlevler.getcommandlinea]
 
-        mov     ecx,eax
-        call    kernel32_işlevler.exit_process
+        push    0
+        push    PencereBaşlık
+        push    eax
+        push    0
+        call    [user32_işlevler.messageboxa]
 
+        push    0
+        call    [kernel32_işlevler.exitprocess]
+
+PencereBaşlık:	db	'Assembler 2 (a2)', 0
 
 kod.tabaka = 200h
 kod_bitiş:
+
 ;-------------------------------------------------------------------------------
-kod.mimari = '64Bit'
+kod.mimari = '32Bit'
 kod.adres = 402000h
 veri_başlangıç:
 ;-------------------------------------------------------------------------------
-PencereBaşlık:	db	'Assembler 2 (a2)', 0
-PencereMesaj:	db	'14.04.2018', 0
-
-kod.tabaka = 200h
-veri_bitiş:
-;-------------------------------------------------------------------------------
-kod.mimari = '64Bit'
-kod.adres = 403000h
-iveri_başlangıç:
-;-------------------------------------------------------------------------------
-        dd      0, 0, 0, kernel32_dosya - TEMEL_ADRES, kernel32_işlevler - TEMEL_ADRES
-        dd      0, 0, 0, user32_dosya - TEMEL_ADRES, user32_işlevler - TEMEL_ADRES
+        dd      kernel32_işlevler - TEMEL_ADRES, 0, 0
+        dd      kernel32_dosya - TEMEL_ADRES, kernel32_işlevler - TEMEL_ADRES
+        dd      user32_işlevler - TEMEL_ADRES, 0, 0
+        dd      user32_dosya - TEMEL_ADRES, user32_işlevler - TEMEL_ADRES
         dd      0, 0, 0, 0, 0
 
 ; kernel32 çağrı giriş bilgileri
 ;-------------------------------------------------------------------------------
-kernel32_işlevler:
-kernel32_işlevler.exit_process:
-        dq      ExitProcess - TEMEL_ADRES
-
-kernel32_işlevler.getcommandlinea:
-        dq      GetCommandLineA - TEMEL_ADRES
-        dq      0
-
-; user32 çağrı giriş bilgileri
-;-------------------------------------------------------------------------------
-user32_işlevler:
-user32_işlevler.messageboxa:
-        dq      MessageBoxA - TEMEL_ADRES
-        dq      0
-
-MessageBoxA:
-        dw      0
-        db      'MessageBoxA', 0
-
 kernel32_dosya:
         db      'kernel32.dll', 0
 
-user32_dosya:
-        db      'user32.dll', 0
+kernel32_işlevler:
+kernel32_işlevler.exitprocess:
+        dd      ExitProcess - TEMEL_ADRES
+
+kernel32_işlevler.getcommandlinea:
+        dd      GetCommandLineA - TEMEL_ADRES
+        dd      0
 
 ExitProcess:
         dw      0
@@ -223,7 +189,21 @@ GetCommandLineA:
         dw      0
         db      'GetCommandLineA', 0
 
+; user32 çağrı giriş bilgileri
+;-------------------------------------------------------------------------------
+user32_dosya:
+        db      'user32.dll', 0
+
+user32_işlevler:
+user32_işlevler.messageboxa:
+        dd      MessageBoxA - TEMEL_ADRES
+        dd      0
+
+MessageBoxA:
+        dw      0
+        db      'MessageBoxA', 0
+
 kod.tabaka = 200h
-iveri_bitiş:
+veri_bitiş:
 ;-------------------------------------------------------------------------------
 program_bitiş:

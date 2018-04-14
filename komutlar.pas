@@ -124,8 +124,10 @@ const
   // 12. grup komutlar
   GRUP12_ADD      = $120001;
   GRUP12_CMP      = GRUP12_ADD + 1;
-  GRUP12_MOV      = GRUP12_CMP + 1;
-  GRUP12_XOR      = GRUP12_MOV + 1;
+  GRUP12_LEA      = GRUP12_CMP + 1;
+  GRUP12_MOV      = GRUP12_LEA + 1;
+  GRUP12_SUB      = GRUP12_MOV + 1;
+  GRUP12_XOR      = GRUP12_SUB + 1;
 
   {
   GRUP01_CBW 		  = $10003;
@@ -135,7 +137,7 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
-  TOPLAM_KOMUT = 83;
+  TOPLAM_KOMUT = 85;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
   // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
@@ -237,7 +239,9 @@ const
     // 12. grup komutlar
     (Komut: 'add';              GrupNo: GRUP12_ADD;           KomutTipi: ktIslemKodu),
     (Komut: 'cmp';              GrupNo: GRUP12_CMP;           KomutTipi: ktIslemKodu),
+    (Komut: 'lea';              GrupNo: GRUP12_LEA;           KomutTipi: ktIslemKodu),
     (Komut: 'mov';              GrupNo: GRUP12_MOV;           KomutTipi: ktIslemKodu),
+    (Komut: 'sub';              GrupNo: GRUP12_SUB;           KomutTipi: ktIslemKodu),
     (Komut: 'xor';              GrupNo: GRUP12_XOR;           KomutTipi: ktIslemKodu)
 
     );
@@ -278,7 +282,8 @@ var
     @Grup11Islev, @Grup11Islev,
 
     // 12. grup komutlar
-    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev
+    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
+    @Grup12Islev
   );
 
 function KomutBilgisiAl(AKomut: string): TKomutDurum;

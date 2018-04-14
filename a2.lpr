@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, anasayfaform, atamalarform, derlemebilgisiform, LConvEncoding, sysutils,
-  genel, paylasim, g11islev;
+  genel, paylasim, g11islev, onekler, ayarlarform;
 
 {$R *.res}
 
@@ -26,5 +26,6 @@ begin
   Application.CreateForm(TfrmAnaSayfa, frmAnaSayfa);
   Application.CreateForm(TfrmDerlemeBilgisi, frmDerlemeBilgisi);
   Application.CreateForm(TfrmAtamalar, frmAtamalar);
+  Application.CreateForm(TfrmAyarlar, frmAyarlar);
   Application.Run;
 end.

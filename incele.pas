@@ -33,7 +33,7 @@ function KodUret(SatirNo: Integer; KodDizisi: string): Integer;
 
 implementation
 
-uses atamalar, sysutils, donusum, yazmaclar, komutlar, paylasim, g00islev;
+uses atamalar, sysutils, donusum, yazmaclar, komutlar, paylasim, g00islev, onekler;
 
 type
   TIfadeDurum = (idYok, idAciklama, idKPAc, idKPKapat);
@@ -62,6 +62,7 @@ var
   VeriTipi: TTemelVeriTipi;   // dizi içerisinde veri tiplerini tanımlamak için
   YazmacDurum: TYazmacDurum;
   Yazmac: TYazmacDurum;
+  OnEk: TOnEk;
 
   // her bir komutun yorumlanarak ilgili işleve yönlendirilmesini sağlar
   // ParcaNo değişkeninin artırma işlemini SADECE bu işlev gerçekleştirmektedir
@@ -503,6 +504,22 @@ begin
 
   GEtiketHatasiMevcut := False;
 
+  GSabitDegerVG := vgTanimsiz;
+  GBellekSabitDegerVG := vgTanimsiz;
+
+  // bir satırın değerlendirilme süreci
+  // örnekler:
+  //   mov  eax,b1 1
+  //   mov  ebx,d8
+  //   mov  ecx,'TEST'
+  //
+  // 1. kontrol - istenilen işlem nedir?
+  // 2. kontrol - öndeğer bir yazmaç mı?
+  // 3. kontrol - öndeğer bir sayı mı?
+  // 4. kontrol - öndeğer bir sayı ise ön eki var mı?
+  // 5. kontrol - öndeğer bir karakter katarı mı?
+  // 6. kontrol - öndeğer bir değişken mi?
+
   repeat
 
     // karakter değerini al
@@ -863,20 +880,41 @@ begin
       else if(C = ' ') or (C = #9) then
       begin
 
-        if(SatirIcerik.Komut.KomutTipi = ktTanim) and (KomutUz > 0) then
+        // mantıksal tutarlılığı inclensin
+        if(KomutUz > 0) then
         begin
 
-          GHataKodu := SayisalVeriyiIsle('');
-        end
-        else if((SatirIcerik.Komut.KomutTipi = ktBelirsiz) or (SatirIcerik.Komut.KomutTipi = ktBildirim))
-          and (KomutUz > 0) then
+          OnEk := OnEkBilgisiAl(Komut);
+          if(OnEk.Deger = vgTanimsiz) then
+          begin
 
-          GHataKodu := KomutYorumla(ParcaNo, vktBosluk, Komut, 0)
-        else if(SatirIcerik.Komut.KomutTipi = ktDegisken) and (TekTirnakSayisi > 0) then
-        begin
+            if(SatirIcerik.Komut.KomutTipi = ktTanim) and (KomutUz > 0) then
+            begin
 
-          Komut += C;
-          Inc(KomutUz);
+              GHataKodu := SayisalVeriyiIsle('');
+            end
+            else if((SatirIcerik.Komut.KomutTipi = ktBelirsiz) or (SatirIcerik.Komut.KomutTipi = ktBildirim))
+              and (KomutUz > 0) then
+
+              GHataKodu := KomutYorumla(ParcaNo, vktBosluk, Komut, 0)
+            else if(SatirIcerik.Komut.KomutTipi = ktDegisken) and (TekTirnakSayisi > 0) then
+            begin
+
+              Komut += C;
+              Inc(KomutUz);
+            end;
+          end
+          else
+          // ön ek SADECE işlem kodunda kullanılabilir ?
+          begin
+
+            { TODO : GBellekSabitDegerVG değeri de burada değerlendirilecek }
+            GSabitDegerVG := OnEk.Deger;
+
+            Komut := '';
+            KomutUz := 0;
+            GHataKodu := HATA_YOK;
+          end;
         end;
       end
       // açıklama durumunun haricinde tüm bu işleyicilerin çalışma durumu

@@ -4,7 +4,7 @@
 
   İşlev: program ayarlarını saklama / yönetme işlevlerini içerir
 
-  Güncelleme Tarihi: 31/03/2018
+  Güncelleme Tarihi: 06/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -23,6 +23,9 @@ type
     PencereGenislik,
     PencereYukseklik: Integer;
     PencereDurum: TWindowState;
+
+    // ayarlar
+    SonKullanilanDosyayiAc: Boolean;
 
     // son kullanılan dosyalar
     SonKullanilanDosyalar: array[0..4] of string;
@@ -49,15 +52,12 @@ begin
 
     INIDosyasi := TINIFile.Create(FileName);
 
-    // pencere ilk değer koordinatları
+    // pencere koordinatları ilk değer atamaları
     Result.PencereSol := -1;
     Result.PencereUst := -1;
     Result.PencereGenislik := -1;
     Result.PencereYukseklik := -1;
     Result.PencereDurum := wsNormal;
-
-    // son kullanılan dosyalar ilk değer atamaları
-    for i := 0 to 4 do Result.SonKullanilanDosyalar[i] := '';
 
     INIDosyasi.WriteInteger('Pencere', 'Sol', Result.PencereSol);
     INIDosyasi.WriteInteger('Pencere', 'Ust', Result.PencereUst);
@@ -65,6 +65,13 @@ begin
     INIDosyasi.WriteInteger('Pencere', 'Yukseklik', Result.PencereYukseklik);
     INIDosyasi.WriteInteger('Pencere', 'Durum', Ord(Result.PencereDurum));
 
+    // program ayar ilk değer atamaları
+    Result.SonKullanilanDosyayiAc := True;
+
+    INIDosyasi.WriteBool('ProgramAyar', 'SonKullanilanDosyayiAc', Result.SonKullanilanDosyayiAc);
+
+    // son kullanılan dosyalar ilk değer atamaları
+    for i := 0 to 4 do Result.SonKullanilanDosyalar[i] := '';
     for i := 0 to 4 do
     begin
 
@@ -85,6 +92,9 @@ begin
     Result.PencereYukseklik := INIDosyasi.ReadInteger('Pencere', 'Yukseklik', -1);
     Result.PencereDurum := TWindowState(INIDosyasi.ReadInteger('Pencere', 'Durum',
       Ord(wsNormal)));
+
+    Result.SonKullanilanDosyayiAc := INIDosyasi.ReadBool('ProgramAyar',
+      'SonKullanilanDosyayiAc', True);
 
     for i := 0 to 4 do
     begin
@@ -114,6 +124,9 @@ begin
   INIDosyasi.WriteInteger('Pencere', 'Genislik', ProgramAyarlari.PencereGenislik);
   INIDosyasi.WriteInteger('Pencere', 'Yukseklik', ProgramAyarlari.PencereYukseklik);
   INIDosyasi.WriteInteger('Pencere', 'Durum', Ord(ProgramAyarlari.PencereDurum));
+
+  INIDosyasi.WriteBool('ProgramAyar', 'SonKullanilanDosyayiAc',
+    ProgramAyarlari.SonKullanilanDosyayiAc);
 
   for i := 0 to 4 do
   begin

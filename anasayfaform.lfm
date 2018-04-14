@@ -1,11 +1,11 @@
 object frmAnaSayfa: TfrmAnaSayfa
-  Left = 367
-  Height = 482
-  Top = 168
-  Width = 687
+  Left = 365
+  Height = 494
+  Top = 149
+  Width = 731
   Caption = 'Assembler 2 (a2)'
-  ClientHeight = 459
-  ClientWidth = 687
+  ClientHeight = 474
+  ClientWidth = 731
   Menu = mmAnaMenu
   OnClose = FormClose
   OnCreate = FormCreate
@@ -15,14 +15,10 @@ object frmAnaSayfa: TfrmAnaSayfa
   LCLVersion = '1.8.2.0'
   object sbDurum: TStatusBar
     Left = 0
-    Height = 25
-    Top = 434
-    Width = 687
+    Height = 23
+    Top = 451
+    Width = 731
     Panels = <    
-      item
-        Text = 'Proje Dosyası: -'
-        Width = 200
-      end    
       item
         Alignment = taCenter
         Text = 'Sütun: 1 - Satır: 1'
@@ -38,7 +34,7 @@ object frmAnaSayfa: TfrmAnaSayfa
     Left = 0
     Height = 29
     Top = 0
-    Width = 687
+    Width = 731
     ButtonHeight = 24
     ButtonWidth = 24
     Caption = 'tbAnaSayfa'
@@ -46,7 +42,7 @@ object frmAnaSayfa: TfrmAnaSayfa
     Images = ilAnaMenu16
     TabOrder = 1
     object tbKodDerle: TToolButton
-      Left = 81
+      Left = 113
       Hint = 'Derle'
       Top = 1
       Caption = 'tbKodDerle'
@@ -63,27 +59,27 @@ object frmAnaSayfa: TfrmAnaSayfa
       Style = tbsSeparator
     end
     object tbYardimAssemblerBelge: TToolButton
-      Left = 169
+      Left = 201
       Hint = 'Yardım Dosyasını Görüntüle'
       Top = 1
       Caption = 'tbYardimAssemblerBelge'
-      ImageIndex = 6
+      ImageIndex = 7
       OnClick = miYardimAssemblerBelgeClick
       ParentShowHint = False
       ShowHint = True
     end
     object tbKodEtiketListesi: TToolButton
-      Left = 137
+      Left = 169
       Hint = 'Etiket Listesi'
       Top = 1
       Caption = 'tbKodEtiketListesi'
-      ImageIndex = 5
+      ImageIndex = 6
       OnClick = miKodEtiketListesiClick
       ParentShowHint = False
       ShowHint = True
     end
     object tbKodCalistir: TToolButton
-      Left = 105
+      Left = 137
       Hint = 'Çalıştır'
       Top = 1
       Caption = 'tbKodCalistir'
@@ -93,7 +89,7 @@ object frmAnaSayfa: TfrmAnaSayfa
       ShowHint = True
     end
     object tbAyrim1: TToolButton
-      Left = 129
+      Left = 105
       Height = 24
       Top = 1
       Caption = 'tbAyrim1'
@@ -137,11 +133,11 @@ object frmAnaSayfa: TfrmAnaSayfa
       ShowHint = True
     end
     object tbDosyaCikis: TToolButton
-      Left = 201
+      Left = 233
       Hint = 'Programdan Çık'
       Top = 1
       Caption = 'tbDosyaCikis'
-      ImageIndex = 7
+      ImageIndex = 8
       OnClick = miDosyaCikisClick
       ParentShowHint = False
       ShowHint = True
@@ -153,504 +149,538 @@ object frmAnaSayfa: TfrmAnaSayfa
       Caption = 'tbAyrim3'
       Style = tbsSeparator
     end
+    object tbDosyaAyarlar: TToolButton
+      Left = 81
+      Hint = 'Ayarlar'
+      Top = 1
+      Caption = 'tbDosyaAyarlar'
+      ImageIndex = 5
+      OnClick = miDosyaAyarlarClick
+      ParentShowHint = False
+      ShowHint = True
+    end
+    object tbAyrim4: TToolButton
+      Left = 225
+      Height = 24
+      Top = 1
+      Caption = 'tbAyrim4'
+      Style = tbsSeparator
+    end
   end
-  inline seAssembler: TSynEdit
+  object pcDosyalar: TPageControl
     Left = 0
-    Height = 405
+    Height = 422
     Top = 29
-    Width = 687
+    Width = 731
+    ActivePage = tsDosya1
     Align = alClient
-    Font.Height = -11
-    Font.Name = 'Courier New'
-    Font.Pitch = fpFixed
-    Font.Quality = fqNonAntialiased
-    ParentColor = False
-    ParentFont = False
+    Images = ilAnaMenu16
+    TabIndex = 0
     TabOrder = 2
-    OnClick = seAssemblerClick
-    OnKeyDown = seAssemblerKeyDown
-    Gutter.Width = 55
-    Gutter.MouseActions = <>
-    RightGutter.Width = 0
-    RightGutter.MouseActions = <>
-    Highlighter = SynAssemblerSyn
-    Keystrokes = <    
-      item
-        Command = ecUp
-        ShortCut = 38
-      end    
-      item
-        Command = ecSelUp
-        ShortCut = 8230
-      end    
-      item
-        Command = ecScrollUp
-        ShortCut = 16422
-      end    
-      item
-        Command = ecDown
-        ShortCut = 40
-      end    
-      item
-        Command = ecSelDown
-        ShortCut = 8232
-      end    
-      item
-        Command = ecScrollDown
-        ShortCut = 16424
-      end    
-      item
-        Command = ecLeft
-        ShortCut = 37
-      end    
-      item
-        Command = ecSelLeft
-        ShortCut = 8229
-      end    
-      item
-        Command = ecWordLeft
-        ShortCut = 16421
-      end    
-      item
-        Command = ecSelWordLeft
-        ShortCut = 24613
-      end    
-      item
-        Command = ecRight
-        ShortCut = 39
-      end    
-      item
-        Command = ecSelRight
-        ShortCut = 8231
-      end    
-      item
-        Command = ecWordRight
-        ShortCut = 16423
-      end    
-      item
-        Command = ecSelWordRight
-        ShortCut = 24615
-      end    
-      item
-        Command = ecPageDown
-        ShortCut = 34
-      end    
-      item
-        Command = ecSelPageDown
-        ShortCut = 8226
-      end    
-      item
-        Command = ecPageBottom
-        ShortCut = 16418
-      end    
-      item
-        Command = ecSelPageBottom
-        ShortCut = 24610
-      end    
-      item
-        Command = ecPageUp
-        ShortCut = 33
-      end    
-      item
-        Command = ecSelPageUp
-        ShortCut = 8225
-      end    
-      item
-        Command = ecPageTop
-        ShortCut = 16417
-      end    
-      item
-        Command = ecSelPageTop
-        ShortCut = 24609
-      end    
-      item
-        Command = ecLineStart
-        ShortCut = 36
-      end    
-      item
-        Command = ecSelLineStart
-        ShortCut = 8228
-      end    
-      item
-        Command = ecEditorTop
-        ShortCut = 16420
-      end    
-      item
-        Command = ecSelEditorTop
-        ShortCut = 24612
-      end    
-      item
-        Command = ecLineEnd
-        ShortCut = 35
-      end    
-      item
-        Command = ecSelLineEnd
-        ShortCut = 8227
-      end    
-      item
-        Command = ecEditorBottom
-        ShortCut = 16419
-      end    
-      item
-        Command = ecSelEditorBottom
-        ShortCut = 24611
-      end    
-      item
-        Command = ecToggleMode
-        ShortCut = 45
-      end    
-      item
-        Command = ecCopy
-        ShortCut = 16429
-      end    
-      item
-        Command = ecPaste
-        ShortCut = 8237
-      end    
-      item
-        Command = ecDeleteChar
-        ShortCut = 46
-      end    
-      item
-        Command = ecCut
-        ShortCut = 8238
-      end    
-      item
-        Command = ecDeleteLastChar
-        ShortCut = 8
-      end    
-      item
-        Command = ecDeleteLastChar
-        ShortCut = 8200
-      end    
-      item
-        Command = ecDeleteLastWord
-        ShortCut = 16392
-      end    
-      item
-        Command = ecUndo
-        ShortCut = 32776
-      end    
-      item
-        Command = ecRedo
-        ShortCut = 40968
-      end    
-      item
-        Command = ecLineBreak
-        ShortCut = 13
-      end    
-      item
-        Command = ecSelectAll
-        ShortCut = 16449
-      end    
-      item
-        Command = ecCopy
-        ShortCut = 16451
-      end    
-      item
-        Command = ecBlockIndent
-        ShortCut = 24649
-      end    
-      item
-        Command = ecLineBreak
-        ShortCut = 16461
-      end    
-      item
-        Command = ecInsertLine
-        ShortCut = 16462
-      end    
-      item
-        Command = ecDeleteWord
-        ShortCut = 16468
-      end    
-      item
-        Command = ecBlockUnindent
-        ShortCut = 24661
-      end    
-      item
-        Command = ecPaste
-        ShortCut = 16470
-      end    
-      item
-        Command = ecCut
-        ShortCut = 16472
-      end    
-      item
-        Command = ecDeleteLine
-        ShortCut = 16473
-      end    
-      item
-        Command = ecDeleteEOL
-        ShortCut = 24665
-      end    
-      item
-        Command = ecUndo
-        ShortCut = 16474
-      end    
-      item
-        Command = ecRedo
-        ShortCut = 24666
-      end    
-      item
-        Command = ecGotoMarker0
-        ShortCut = 16432
-      end    
-      item
-        Command = ecGotoMarker1
-        ShortCut = 16433
-      end    
-      item
-        Command = ecGotoMarker2
-        ShortCut = 16434
-      end    
-      item
-        Command = ecGotoMarker3
-        ShortCut = 16435
-      end    
-      item
-        Command = ecGotoMarker4
-        ShortCut = 16436
-      end    
-      item
-        Command = ecGotoMarker5
-        ShortCut = 16437
-      end    
-      item
-        Command = ecGotoMarker6
-        ShortCut = 16438
-      end    
-      item
-        Command = ecGotoMarker7
-        ShortCut = 16439
-      end    
-      item
-        Command = ecGotoMarker8
-        ShortCut = 16440
-      end    
-      item
-        Command = ecGotoMarker9
-        ShortCut = 16441
-      end    
-      item
-        Command = ecSetMarker0
-        ShortCut = 24624
-      end    
-      item
-        Command = ecSetMarker1
-        ShortCut = 24625
-      end    
-      item
-        Command = ecSetMarker2
-        ShortCut = 24626
-      end    
-      item
-        Command = ecSetMarker3
-        ShortCut = 24627
-      end    
-      item
-        Command = ecSetMarker4
-        ShortCut = 24628
-      end    
-      item
-        Command = ecSetMarker5
-        ShortCut = 24629
-      end    
-      item
-        Command = ecSetMarker6
-        ShortCut = 24630
-      end    
-      item
-        Command = ecSetMarker7
-        ShortCut = 24631
-      end    
-      item
-        Command = ecSetMarker8
-        ShortCut = 24632
-      end    
-      item
-        Command = ecSetMarker9
-        ShortCut = 24633
-      end    
-      item
-        Command = EcFoldLevel1
-        ShortCut = 41009
-      end    
-      item
-        Command = EcFoldLevel2
-        ShortCut = 41010
-      end    
-      item
-        Command = EcFoldLevel3
-        ShortCut = 41011
-      end    
-      item
-        Command = EcFoldLevel4
-        ShortCut = 41012
-      end    
-      item
-        Command = EcFoldLevel5
-        ShortCut = 41013
-      end    
-      item
-        Command = EcFoldLevel6
-        ShortCut = 41014
-      end    
-      item
-        Command = EcFoldLevel7
-        ShortCut = 41015
-      end    
-      item
-        Command = EcFoldLevel8
-        ShortCut = 41016
-      end    
-      item
-        Command = EcFoldLevel9
-        ShortCut = 41017
-      end    
-      item
-        Command = EcFoldLevel0
-        ShortCut = 41008
-      end    
-      item
-        Command = EcFoldCurrent
-        ShortCut = 41005
-      end    
-      item
-        Command = EcUnFoldCurrent
-        ShortCut = 41003
-      end    
-      item
-        Command = EcToggleMarkupWord
-        ShortCut = 32845
-      end    
-      item
-        Command = ecNormalSelect
-        ShortCut = 24654
-      end    
-      item
-        Command = ecColumnSelect
-        ShortCut = 24643
-      end    
-      item
-        Command = ecLineSelect
-        ShortCut = 24652
-      end    
-      item
-        Command = ecTab
-        ShortCut = 9
-      end    
-      item
-        Command = ecShiftTab
-        ShortCut = 8201
-      end    
-      item
-        Command = ecMatchBracket
-        ShortCut = 24642
-      end    
-      item
-        Command = ecColSelUp
-        ShortCut = 40998
-      end    
-      item
-        Command = ecColSelDown
-        ShortCut = 41000
-      end    
-      item
-        Command = ecColSelLeft
-        ShortCut = 40997
-      end    
-      item
-        Command = ecColSelRight
-        ShortCut = 40999
-      end    
-      item
-        Command = ecColSelPageDown
-        ShortCut = 40994
-      end    
-      item
-        Command = ecColSelPageBottom
-        ShortCut = 57378
-      end    
-      item
-        Command = ecColSelPageUp
-        ShortCut = 40993
-      end    
-      item
-        Command = ecColSelPageTop
-        ShortCut = 57377
-      end    
-      item
-        Command = ecColSelLineStart
-        ShortCut = 40996
-      end    
-      item
-        Command = ecColSelLineEnd
-        ShortCut = 40995
-      end    
-      item
-        Command = ecColSelEditorTop
-        ShortCut = 57380
-      end    
-      item
-        Command = ecColSelEditorBottom
-        ShortCut = 57379
-      end>
-    MouseActions = <>
-    MouseTextActions = <>
-    MouseSelActions = <>
-    Options = [eoBracketHighlight, eoGroupUndo, eoTabsToSpaces, eoTrimTrailingSpaces]
-    VisibleSpecialChars = [vscSpace, vscTabAtLast]
-    SelectedColor.BackPriority = 50
-    SelectedColor.ForePriority = 50
-    SelectedColor.FramePriority = 50
-    SelectedColor.BoldPriority = 50
-    SelectedColor.ItalicPriority = 50
-    SelectedColor.UnderlinePriority = 50
-    SelectedColor.StrikeOutPriority = 50
-    BracketHighlightStyle = sbhsBoth
-    BracketMatchColor.Background = clNone
-    BracketMatchColor.Foreground = clNone
-    BracketMatchColor.Style = [fsBold]
-    FoldedCodeColor.Background = clNone
-    FoldedCodeColor.Foreground = clGray
-    FoldedCodeColor.FrameColor = clGray
-    MouseLinkColor.Background = clNone
-    MouseLinkColor.Foreground = clBlue
-    LineHighlightColor.Background = clNone
-    LineHighlightColor.Foreground = clNone
-    inline SynLeftGutterPartList1: TSynGutterPartList
-      object SynGutterMarks1: TSynGutterMarks
-        Width = 24
+    object tsDosya1: TTabSheet
+      Caption = '-'
+      ClientHeight = 394
+      ClientWidth = 723
+      ImageIndex = 9
+      inline seDosya1: TSynEdit
+        Left = 0
+        Height = 394
+        Top = 0
+        Width = 723
+        Align = alClient
+        Font.Height = -11
+        Font.Name = 'Courier New'
+        Font.Pitch = fpFixed
+        Font.Quality = fqNonAntialiased
+        ParentColor = False
+        ParentFont = False
+        TabOrder = 0
+        OnClick = seDosya1Click
+        OnKeyDown = seDosya1KeyDown
+        Gutter.Width = 55
+        Gutter.MouseActions = <>
+        RightGutter.Width = 0
+        RightGutter.MouseActions = <>
+        Highlighter = SynAssemblerSyn
+        Keystrokes = <        
+          item
+            Command = ecUp
+            ShortCut = 38
+          end        
+          item
+            Command = ecSelUp
+            ShortCut = 8230
+          end        
+          item
+            Command = ecScrollUp
+            ShortCut = 16422
+          end        
+          item
+            Command = ecDown
+            ShortCut = 40
+          end        
+          item
+            Command = ecSelDown
+            ShortCut = 8232
+          end        
+          item
+            Command = ecScrollDown
+            ShortCut = 16424
+          end        
+          item
+            Command = ecLeft
+            ShortCut = 37
+          end        
+          item
+            Command = ecSelLeft
+            ShortCut = 8229
+          end        
+          item
+            Command = ecWordLeft
+            ShortCut = 16421
+          end        
+          item
+            Command = ecSelWordLeft
+            ShortCut = 24613
+          end        
+          item
+            Command = ecRight
+            ShortCut = 39
+          end        
+          item
+            Command = ecSelRight
+            ShortCut = 8231
+          end        
+          item
+            Command = ecWordRight
+            ShortCut = 16423
+          end        
+          item
+            Command = ecSelWordRight
+            ShortCut = 24615
+          end        
+          item
+            Command = ecPageDown
+            ShortCut = 34
+          end        
+          item
+            Command = ecSelPageDown
+            ShortCut = 8226
+          end        
+          item
+            Command = ecPageBottom
+            ShortCut = 16418
+          end        
+          item
+            Command = ecSelPageBottom
+            ShortCut = 24610
+          end        
+          item
+            Command = ecPageUp
+            ShortCut = 33
+          end        
+          item
+            Command = ecSelPageUp
+            ShortCut = 8225
+          end        
+          item
+            Command = ecPageTop
+            ShortCut = 16417
+          end        
+          item
+            Command = ecSelPageTop
+            ShortCut = 24609
+          end        
+          item
+            Command = ecLineStart
+            ShortCut = 36
+          end        
+          item
+            Command = ecSelLineStart
+            ShortCut = 8228
+          end        
+          item
+            Command = ecEditorTop
+            ShortCut = 16420
+          end        
+          item
+            Command = ecSelEditorTop
+            ShortCut = 24612
+          end        
+          item
+            Command = ecLineEnd
+            ShortCut = 35
+          end        
+          item
+            Command = ecSelLineEnd
+            ShortCut = 8227
+          end        
+          item
+            Command = ecEditorBottom
+            ShortCut = 16419
+          end        
+          item
+            Command = ecSelEditorBottom
+            ShortCut = 24611
+          end        
+          item
+            Command = ecToggleMode
+            ShortCut = 45
+          end        
+          item
+            Command = ecCopy
+            ShortCut = 16429
+          end        
+          item
+            Command = ecPaste
+            ShortCut = 8237
+          end        
+          item
+            Command = ecDeleteChar
+            ShortCut = 46
+          end        
+          item
+            Command = ecCut
+            ShortCut = 8238
+          end        
+          item
+            Command = ecDeleteLastChar
+            ShortCut = 8
+          end        
+          item
+            Command = ecDeleteLastChar
+            ShortCut = 8200
+          end        
+          item
+            Command = ecDeleteLastWord
+            ShortCut = 16392
+          end        
+          item
+            Command = ecUndo
+            ShortCut = 32776
+          end        
+          item
+            Command = ecRedo
+            ShortCut = 40968
+          end        
+          item
+            Command = ecLineBreak
+            ShortCut = 13
+          end        
+          item
+            Command = ecSelectAll
+            ShortCut = 16449
+          end        
+          item
+            Command = ecCopy
+            ShortCut = 16451
+          end        
+          item
+            Command = ecBlockIndent
+            ShortCut = 24649
+          end        
+          item
+            Command = ecLineBreak
+            ShortCut = 16461
+          end        
+          item
+            Command = ecInsertLine
+            ShortCut = 16462
+          end        
+          item
+            Command = ecDeleteWord
+            ShortCut = 16468
+          end        
+          item
+            Command = ecBlockUnindent
+            ShortCut = 24661
+          end        
+          item
+            Command = ecPaste
+            ShortCut = 16470
+          end        
+          item
+            Command = ecCut
+            ShortCut = 16472
+          end        
+          item
+            Command = ecDeleteLine
+            ShortCut = 16473
+          end        
+          item
+            Command = ecDeleteEOL
+            ShortCut = 24665
+          end        
+          item
+            Command = ecUndo
+            ShortCut = 16474
+          end        
+          item
+            Command = ecRedo
+            ShortCut = 24666
+          end        
+          item
+            Command = ecGotoMarker0
+            ShortCut = 16432
+          end        
+          item
+            Command = ecGotoMarker1
+            ShortCut = 16433
+          end        
+          item
+            Command = ecGotoMarker2
+            ShortCut = 16434
+          end        
+          item
+            Command = ecGotoMarker3
+            ShortCut = 16435
+          end        
+          item
+            Command = ecGotoMarker4
+            ShortCut = 16436
+          end        
+          item
+            Command = ecGotoMarker5
+            ShortCut = 16437
+          end        
+          item
+            Command = ecGotoMarker6
+            ShortCut = 16438
+          end        
+          item
+            Command = ecGotoMarker7
+            ShortCut = 16439
+          end        
+          item
+            Command = ecGotoMarker8
+            ShortCut = 16440
+          end        
+          item
+            Command = ecGotoMarker9
+            ShortCut = 16441
+          end        
+          item
+            Command = ecSetMarker0
+            ShortCut = 24624
+          end        
+          item
+            Command = ecSetMarker1
+            ShortCut = 24625
+          end        
+          item
+            Command = ecSetMarker2
+            ShortCut = 24626
+          end        
+          item
+            Command = ecSetMarker3
+            ShortCut = 24627
+          end        
+          item
+            Command = ecSetMarker4
+            ShortCut = 24628
+          end        
+          item
+            Command = ecSetMarker5
+            ShortCut = 24629
+          end        
+          item
+            Command = ecSetMarker6
+            ShortCut = 24630
+          end        
+          item
+            Command = ecSetMarker7
+            ShortCut = 24631
+          end        
+          item
+            Command = ecSetMarker8
+            ShortCut = 24632
+          end        
+          item
+            Command = ecSetMarker9
+            ShortCut = 24633
+          end        
+          item
+            Command = EcFoldLevel1
+            ShortCut = 41009
+          end        
+          item
+            Command = EcFoldLevel2
+            ShortCut = 41010
+          end        
+          item
+            Command = EcFoldLevel3
+            ShortCut = 41011
+          end        
+          item
+            Command = EcFoldLevel4
+            ShortCut = 41012
+          end        
+          item
+            Command = EcFoldLevel5
+            ShortCut = 41013
+          end        
+          item
+            Command = EcFoldLevel6
+            ShortCut = 41014
+          end        
+          item
+            Command = EcFoldLevel7
+            ShortCut = 41015
+          end        
+          item
+            Command = EcFoldLevel8
+            ShortCut = 41016
+          end        
+          item
+            Command = EcFoldLevel9
+            ShortCut = 41017
+          end        
+          item
+            Command = EcFoldLevel0
+            ShortCut = 41008
+          end        
+          item
+            Command = EcFoldCurrent
+            ShortCut = 41005
+          end        
+          item
+            Command = EcUnFoldCurrent
+            ShortCut = 41003
+          end        
+          item
+            Command = EcToggleMarkupWord
+            ShortCut = 32845
+          end        
+          item
+            Command = ecNormalSelect
+            ShortCut = 24654
+          end        
+          item
+            Command = ecColumnSelect
+            ShortCut = 24643
+          end        
+          item
+            Command = ecLineSelect
+            ShortCut = 24652
+          end        
+          item
+            Command = ecTab
+            ShortCut = 9
+          end        
+          item
+            Command = ecShiftTab
+            ShortCut = 8201
+          end        
+          item
+            Command = ecMatchBracket
+            ShortCut = 24642
+          end        
+          item
+            Command = ecColSelUp
+            ShortCut = 40998
+          end        
+          item
+            Command = ecColSelDown
+            ShortCut = 41000
+          end        
+          item
+            Command = ecColSelLeft
+            ShortCut = 40997
+          end        
+          item
+            Command = ecColSelRight
+            ShortCut = 40999
+          end        
+          item
+            Command = ecColSelPageDown
+            ShortCut = 40994
+          end        
+          item
+            Command = ecColSelPageBottom
+            ShortCut = 57378
+          end        
+          item
+            Command = ecColSelPageUp
+            ShortCut = 40993
+          end        
+          item
+            Command = ecColSelPageTop
+            ShortCut = 57377
+          end        
+          item
+            Command = ecColSelLineStart
+            ShortCut = 40996
+          end        
+          item
+            Command = ecColSelLineEnd
+            ShortCut = 40995
+          end        
+          item
+            Command = ecColSelEditorTop
+            ShortCut = 57380
+          end        
+          item
+            Command = ecColSelEditorBottom
+            ShortCut = 57379
+          end>
         MouseActions = <>
-      end
-      object SynGutterLineNumber1: TSynGutterLineNumber
-        Width = 15
-        MouseActions = <>
-        MarkupInfo.Background = clBtnFace
-        MarkupInfo.Foreground = clNone
-        DigitCount = 2
-        ShowOnlyLineNumbersMultiplesOf = 1
-        ZeroStart = False
-        LeadingZeros = False
-      end
-      object SynGutterChanges1: TSynGutterChanges
-        Width = 4
-        MouseActions = <>
-        ModifiedColor = 59900
-        SavedColor = clGreen
-      end
-      object SynGutterSeparator1: TSynGutterSeparator
-        Width = 2
-        MouseActions = <>
-        MarkupInfo.Background = clWhite
-        MarkupInfo.Foreground = clGray
-      end
-      object SynGutterCodeFolding1: TSynGutterCodeFolding
-        MouseActions = <>
-        MarkupInfo.Background = clNone
-        MarkupInfo.Foreground = clGray
-        MouseActionsExpanded = <>
-        MouseActionsCollapsed = <>
+        MouseTextActions = <>
+        MouseSelActions = <>
+        Options = [eoBracketHighlight, eoGroupUndo, eoTabsToSpaces, eoTrimTrailingSpaces]
+        VisibleSpecialChars = [vscSpace, vscTabAtLast]
+        SelectedColor.BackPriority = 50
+        SelectedColor.ForePriority = 50
+        SelectedColor.FramePriority = 50
+        SelectedColor.BoldPriority = 50
+        SelectedColor.ItalicPriority = 50
+        SelectedColor.UnderlinePriority = 50
+        SelectedColor.StrikeOutPriority = 50
+        BracketHighlightStyle = sbhsBoth
+        BracketMatchColor.Background = clNone
+        BracketMatchColor.Foreground = clNone
+        BracketMatchColor.Style = [fsBold]
+        FoldedCodeColor.Background = clNone
+        FoldedCodeColor.Foreground = clGray
+        FoldedCodeColor.FrameColor = clGray
+        MouseLinkColor.Background = clNone
+        MouseLinkColor.Foreground = clBlue
+        LineHighlightColor.Background = clNone
+        LineHighlightColor.Foreground = clNone
+        inline SynLeftGutterPartList1: TSynGutterPartList
+          object SynGutterMarks1: TSynGutterMarks
+            Width = 24
+            MouseActions = <>
+          end
+          object SynGutterLineNumber1: TSynGutterLineNumber
+            Width = 15
+            MouseActions = <>
+            MarkupInfo.Background = clBtnFace
+            MarkupInfo.Foreground = clNone
+            DigitCount = 2
+            ShowOnlyLineNumbersMultiplesOf = 1
+            ZeroStart = False
+            LeadingZeros = False
+          end
+          object SynGutterChanges1: TSynGutterChanges
+            Width = 4
+            MouseActions = <>
+            ModifiedColor = 59900
+            SavedColor = clGreen
+          end
+          object SynGutterSeparator1: TSynGutterSeparator
+            Width = 2
+            MouseActions = <>
+            MarkupInfo.Background = clWhite
+            MarkupInfo.Foreground = clGray
+          end
+          object SynGutterCodeFolding1: TSynGutterCodeFolding
+            MouseActions = <>
+            MarkupInfo.Background = clNone
+            MarkupInfo.Foreground = clGray
+            MouseActionsExpanded = <>
+            MouseActionsCollapsed = <>
+          end
+        end
       end
     end
   end
@@ -788,75 +818,52 @@ object frmAnaSayfa: TfrmAnaSayfa
       end
       object miDosyaSonKullanilanDosya1Ac: TMenuItem
         Caption = '1'
+        ImageIndex = 9
         Visible = False
         OnClick = miDosyaSonKullanilanDosyayiAcClick
       end
       object miDosyaSonKullanilanDosya2Ac: TMenuItem
         Tag = 1
         Caption = '2'
+        ImageIndex = 9
         Visible = False
         OnClick = miDosyaSonKullanilanDosyayiAcClick
       end
       object miDosyaSonKullanilanDosya3Ac: TMenuItem
         Tag = 2
         Caption = '3'
+        ImageIndex = 9
         Visible = False
         OnClick = miDosyaSonKullanilanDosyayiAcClick
       end
       object miDosyaSonKullanilanDosya4Ac: TMenuItem
         Tag = 3
         Caption = '4'
+        ImageIndex = 9
         Visible = False
         OnClick = miDosyaSonKullanilanDosyayiAcClick
       end
       object miDosyaSonKullanilanDosya5Ac: TMenuItem
         Tag = 4
         Caption = '5'
+        ImageIndex = 9
         Visible = False
         OnClick = miDosyaSonKullanilanDosyayiAcClick
       end
       object miDosyaAyrim1: TMenuItem
         Caption = '-'
       end
+      object miDosyaAyarlar: TMenuItem
+        Caption = 'Ayarlar'
+        ImageIndex = 5
+        OnClick = miDosyaAyarlarClick
+      end
+      object miDosyaAyrim2: TMenuItem
+        Caption = '-'
+      end
       object miDosyaCikis: TMenuItem
         Caption = 'Çıkış'
-        Bitmap.Data = {
-          36040000424D3604000000000000360000002800000010000000100000000100
-          2000000000000004000064000000640000000000000000000000000000000000
-          00000000000000000000161616252A2A2A90303030D8303030FA303030FA3030
-          30D82A2A2A901717172500000000000000000000000000000000000000000000
-          0000000000002828287A303030F9303030FF303030FF303030FF303030FF3030
-          30FF303030FF303030F92929297A000000000000000000000000000000000000
-          00002A2A2A8D303030FF303030FF303030FD2F2F2FBE28282889272727892F2F
-          2FBE303030FD303030FF303030FF2B2B2B8D0000000000000000000000002020
-          204E303030FE303030FF303030DD1E1E1E340000000000000000000000000000
-          00001D1D1D34303030DD303030FF303030FE2222224E00000000000000002F2F
-          2FD4303030FF303030EE1919191F000000000000000000000000000000000000
-          0000000000001717171F303030EE303030FF303030D4000000001616162E3030
-          30FF303030FF2828287900000000000000000000000000000000000000000000
-          0000000000000000000027272779303030FF303030FF1818182E1E1E1E603030
-          30FF303030FF1717172A00000000000000000000000000000000000000000000
-          000000000000000000001515152A303030FF303030FF1F1F1F602020206E3030
-          30FF303030FF1111111300000000000000000000000000000000000000000000
-          000000000000000000000F0F0F13303030FF303030FF2121216E1D1D1D5C3030
-          30FF303030FF1818183000000000000000000000000013131321141414210000
-          0000000000000000000017171730303030FF303030FF1F1F1F5C151515253030
-          30FE303030FF2A2A2A87000000000000000013131321303030F8303030F81515
-          1521000000000000000029292987303030FF303030FE16161625000000002F2F
-          2FC6303030FF303030F61D1D1D30000000001616163F303030FF303030FF1818
-          183F000000001B1B1B30303030F6303030FF2F2F2FC600000000000000001D1D
-          1D3C303030FC303030FF303030EC212121471717173F303030FF303030FF1818
-          183F20202047303030EC303030FF303030FC1F1F1F3C00000000000000000000
-          000028282870303030FE303030FF303030F02121213F303030FF303030FF2121
-          213F303030F0303030FF303030FE292929700000000000000000000000000000
-          0000000000002525255A303030ED303030FE2222223F303030FF303030FF2323
-          233F303030FE303030ED2525255A000000000000000000000000000000000000
-          0000000000000000000012121210202020531D1D1D3F303030FF303030FF1D1D
-          1D3F202020531212121000000000000000000000000000000000000000000000
-          00000000000000000000000000000000000010101011303030D9303030D91111
-          1111000000000000000000000000000000000000000000000000
-        }
-        ImageIndex = 7
+        ImageIndex = 8
         OnClick = miDosyaCikisClick
       end
     end
@@ -950,43 +957,7 @@ object frmAnaSayfa: TfrmAnaSayfa
       end
       object miKodEtiketListesi: TMenuItem
         Caption = 'Etiket Listesi'
-        Bitmap.Data = {
-          36040000424D3604000000000000360000002800000010000000100000000100
-          2000000000000004000064000000640000000000000000000000000000000000
-          00D7000000000000000000000000000000000000000000000000000000000000
-          0000000000000000000000000000000000000000000000000000000000000000
-          00A9000000000000000000000000000000000000000000000000000000000000
-          0000000000000000000000000000000000000000000000000000000000000000
-          00A9000000000000000000000000000000000000000000000000000000000000
-          0000000000000000000000000000000000000000000000000000000000000000
-          00A9000000000000000000000000000000000000000000000000000000000000
-          0000000000000000000000000000000000000000000000000000000000000000
-          00A9000000000000000000000000000000000000000000000000000000000000
-          0000000000000000000000000000000000000000000000000000000000000000
-          00A9000000000000000000000000000000000000000000000000000000000000
-          0000000000000000000000000000000000000000000000000000000000000000
-          00A9000000000000000000000000000000000000000000000000000000000000
-          0000000000000000000C000000200000001A0000000200000000000000000000
-          00A9000000370000005400000025000000120000001A0000003B0000006E0000
-          00A4000000AD0000009E0000008900000090000000AA00000096000000000000
-          00A90000007F0000007900000085000000970000008F000000700000003F0000
-          000A0000000000000000000000000000000000000000000000AB000000000000
-          00A90000007F0000002900000000000000000000000000000000000000000000
-          00000000000000000000000000000000000000000000000000AB000000000000
-          00A90000007F0000002900000000000000000000000000000000000000000000
-          00000000000000000000000000000000000000000000000000AB000000000000
-          00A90000007F0000002900000000000000000000000000000000000000000000
-          00000000000000000000000000000000000000000000000000AB000000000000
-          00A90000007F0000002900000000000000000000000000000000000000000000
-          00000000000000000000000000000000000000000000000000AB000000000000
-          00A90000007F0000002900000000000000000000000000000000000000000000
-          00000000000000000000000000000000000000000000000000AB000000000000
-          00A90000007F0000002C00000000000000000000000000000000000000190000
-          00540000008C000000AA000000AA000000AA0000009F000000C0000000000000
-          00700000003C000000A7000000AB000000A9000000AA000000AC000000940000
-          0059000000200000000000000000000000000000000D0000002E
-        }
-        ImageIndex = 5
+        ImageIndex = 6
         ShortCut = 16453
         OnClick = miKodEtiketListesiClick
       end
@@ -995,51 +966,16 @@ object frmAnaSayfa: TfrmAnaSayfa
       Caption = 'Bilgi'
       object miYardimAssemblerBelge: TMenuItem
         Caption = 'Yardım Dosyasını Görüntüle'
-        Bitmap.Data = {
-          36040000424D3604000000000000360000002800000010000000100000000100
-          2000000000000004000064000000640000000000000000000000000000000000
-          00000000000000000000000000360000009A000000AF000000AA000000AA0000
-          00AF0000009A0000003600000000000000000000000000000000000000000000
-          00000000000A0000009B0000008D0000001C0000000000000000000000000000
-          00000000001C0000008D0000009B0000000A0000000000000000000000000000
-          000A000000B30000003B00000000000000000000000000000000000000000000
-          000000000000000000000000003B000000B30000000A00000000000000000000
-          009B0000003B0000000000000000000000000000000000000000000000000000
-          00000000000000000000000000000000003B0000009B00000000000000360000
-          008D00000000000000000000000000000000000000000000007E0000008D0000
-          0000000000000000000000000000000000000000008D000000360000009A0000
-          001C0000000000000000000000000000000000000000000000290000002D0000
-          0000000000000000000000000000000000000000001C0000009A000000AF0000
-          0000000000000000000000000000000000000000000000000068000000730000
-          00000000000000000000000000000000000000000000000000AF000000AA0000
-          0000000000000000000000000000000000000000000000000049000000D20000
-          00070000000000000000000000000000000000000000000000AA000000AA0000
-          00000000000000000000000000000000000000000000000000000000009E0000
-          008F0000000000000000000000000000000000000000000000AA000000AF0000
-          00000000000000000000000000000000000000000009000000000000000D0000
-          00EC0000001800000000000000000000000000000000000000AF0000009A0000
-          001C00000000000000000000000000000006000000EE00000023000000110000
-          00EC0000001E0000000000000000000000000000001C0000009A000000360000
-          008D000000000000000000000000000000000000005D000000E7000000EC0000
-          0080000000000000000000000000000000000000008D00000036000000000000
-          009B0000003B0000000000000000000000000000000000000000000000000000
-          00000000000000000000000000000000003B0000009B00000000000000000000
-          000A000000B30000003B00000000000000000000000000000000000000000000
-          000000000000000000000000003B000000B30000000A00000000000000000000
-          00000000000A0000009B0000008D0000001C0000000000000000000000000000
-          00000000001C0000008D0000009B0000000A0000000000000000000000000000
-          00000000000000000000000000360000009A000000AF000000AA000000AA0000
-          00AF0000009A0000003600000000000000000000000000000000
-        }
-        ImageIndex = 6
+        ImageIndex = 7
         OnClick = miYardimAssemblerBelgeClick
       end
     end
   end
   object ilAnaMenu16: TImageList
-    left = 488
+    left = 440
+    top = 72
     Bitmap = {
-      4C6908000000100000001000000000000000C6C6C6BAF8F8F8FFF8F8F8FFF8F8
+      4C690A000000100000001000000000000000C6C6C6BAF8F8F8FFF8F8F8FFF8F8
       F8FFF8F8F8FFF8F8F8FFF8F8F8FFF8F8F8FFF4F4F4FED8D8D875000000000000
       000000000000000000000000000000000000BBBBBBC8FDFDFDFFFDFDFDFFFDFD
       FDFFFDFDFDFFFDFDFDFFFDFDFDFFFCFCFCFFF4F4F4FFE7E7E7FEC5C5C56F0000
@@ -1199,6 +1135,38 @@ object frmAnaSayfa: TfrmAnaSayfa
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000003C000000A1000000A6000000B00000
+      00D9000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000053000000950000000B0000000D000000AE0000
+      002A000000000000000000000000000000000000000000000000000000000000
+      00000000000000000008000000AF0000000100000000000000AA0000002A0000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000003A0000006B0000000000000000000000A4000000000000
+      00000000000000000026000000CD000000000000000000000000000000000000
+      000000000000000000370000006F0000000000000000000000A5000000000000
+      000000000026000000B0000000B4000000000000000000000000000000000000
+      00000000000000000005000000B300000003000000000000007C000000A50000
+      00A4000000AD00000010000000A5000000000000000000000000000000000000
+      00000000000000000056000000AA0000009A0000000200000000000000000000
+      0000000000000000000B000000A1000000000000000000000000000000000000
+      00000000006A0000007E000000000000004A0000009A00000003000000000000
+      000000000000000000910000003E000000000000000000000000000000000000
+      007D0000006B000000000000000000000001000000B0000000B2000000690000
+      0064000000AC00000057000000000000000000000000000000020000008E0000
+      00570000000000000000000000000000008D00000048000000060000003C0000
+      00400000000B000000000000000000000000000000060000009C000000450000
+      000000000000000000000000007A000000590000000000000000000000000000
+      00000000000000000000000000000000000C000000A600000036000000000000
+      000000000000000000650000006E000000000000000000000000000000000000
+      0000000000000000000000000000000000960000002900000000000000000000
+      00000000004C0000008400000000000000000000000000000000000000000000
+      00000000000000000000000000000000009E0000000000000000000000000000
+      0038000000990000000100000000000000000000000000000000000000000000
+      0000000000000000000000000000000000A50000001000000000000000260000
+      00A6000000050000000000000000000000000000000000000000000000000000
+      000000000000000000000000000000000000000000A50000009D000000980000
+      000D000000000000000000000000000000000000000000000000000000000000
       000000000000000000000000000000000000000000700000003C000000A70000
       00AB000000A9000000AA000000AC000000940000005900000020000000000000
       0000000000000000000D0000002E00000000000000A90000007F0000002C0000
@@ -1264,38 +1232,70 @@ object frmAnaSayfa: TfrmAnaSayfa
       009B0000000A0000000000000000000000000000000000000000000000000000
       00360000009A000000AF000000AA000000AA000000AF0000009A000000360000
       0000000000000000000000000000000000000000000000000000000000000000
-      00000000000010101011303030D9303030D91111111100000000000000000000
-      0000000000000000000000000000000000000000000000000000000000001212
-      1210202020531D1D1D3F303030FF303030FF1D1D1D3F20202053121212100000
-      00000000000000000000000000000000000000000000000000002525255A3030
-      30ED303030FE2222223F303030FF303030FF2323233F303030FE303030ED2525
-      255A000000000000000000000000000000000000000028282870303030FE3030
-      30FF303030F02121213F303030FF303030FF2121213F303030F0303030FF3030
-      30FE292929700000000000000000000000001D1D1D3C303030FC303030FF3030
-      30EC212121471717173F303030FF303030FF1818183F20202047303030EC3030
-      30FF303030FC1F1F1F3C00000000000000002F2F2FC6303030FF303030F61D1D
-      1D30000000001616163F303030FF303030FF1818183F000000001B1B1B303030
-      30F6303030FF2F2F2FC60000000015151525303030FE303030FF2A2A2A870000
-      00000000000013131321303030F8303030F81515152100000000000000002929
-      2987303030FF303030FE161616251D1D1D5C303030FF303030FF181818300000
-      0000000000000000000013131321141414210000000000000000000000001717
-      1730303030FF303030FF1F1F1F5C2020206E303030FF303030FF111111130000
-      0000000000000000000000000000000000000000000000000000000000000F0F
-      0F13303030FF303030FF2121216E1E1E1E60303030FF303030FF1717172A0000
-      0000000000000000000000000000000000000000000000000000000000001515
-      152A303030FF303030FF1F1F1F601616162E303030FF303030FF282828790000
-      0000000000000000000000000000000000000000000000000000000000002727
-      2779303030FF303030FF1818182E000000002F2F2FD4303030FF303030EE1919
-      191F0000000000000000000000000000000000000000000000001717171F3030
-      30EE303030FF303030D400000000000000002020204E303030FE303030FF3030
-      30DD1E1E1E34000000000000000000000000000000001D1D1D34303030DD3030
-      30FF303030FE2222224E0000000000000000000000002A2A2A8D303030FF3030
-      30FF303030FD2F2F2FBE28282889272727892F2F2FBE303030FD303030FF3030
-      30FF2B2B2B8D00000000000000000000000000000000000000002828287A3030
-      30F9303030FF303030FF303030FF303030FF303030FF303030FF303030F92929
-      297A000000000000000000000000000000000000000000000000000000001616
-      16252A2A2A90303030D8303030FA303030FA303030D82A2A2A90171717250000
-      0000000000000000000000000000
+      00000000000000000018000000B8000000B80000001800000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000005400000057000000570000005400000000000000000000
+      0000000000000000000000000000000000000000000000000000000000270000
+      00BF0000004D000000550000005500000055000000550000004D000000BF0000
+      002700000000000000000000000000000000000000000000003A000000AF0000
+      006B0000005500000055000000550000005500000055000000550000006B0000
+      00AF0000003A00000000000000000000000000000017000000B4000000080000
+      00770000004F000000550000005500000055000000550000004F000000770000
+      0008000000B40000001700000000000000000000009500000029000000480000
+      0095000000010000005500000055000000550000005500000001000000950000
+      004800000029000000950000000000000009000000A900000001000000B60000
+      0005000000000000005500000055000000550000005500000000000000050000
+      00B600000001000000A9000000090000003B00000071000000320000007D0000
+      0000000000000000004B0000006D0000006D0000004B00000000000000000000
+      007D00000032000000710000003A000000520000005700000052000000580000
+      0000000000000000000400000086000000860000000400000000000000000000
+      00580000005200000057000000520000004700000064000000420000006A0000
+      0000000000000000000000000000000000000000000000000000000000000000
+      006A00000042000000640000004700000018000000970000000B000000AC0000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00AC0000000B000000970000001800000000000000AE0000000C0000007F0000
+      0050000000000000000000000000000000000000000000000000000000500000
+      007F0000000C000000AD00000000000000000000003E0000008D000000030000
+      00A1000000680000000400000000000000000000000400000069000000A10000
+      00030000008D0000003E0000000000000000000000000000007D0000006F0000
+      00000000005C000000AF000000AB000000AB000000AF0000005C000000000000
+      006F0000007D0000000000000000000000000000000000000000000000700000
+      00A4000000290000000000000000000000000000000000000029000000A40000
+      0070000000000000000000000000000000000000000000000000000000000000
+      00200000008C000000AE000000AA000000AA000000AE0000008C000000200000
+      0000000000000000000000000000000000000000001E00000096000000800000
+      0080000000800000008000000080000000800000008000000080000000800000
+      0080000000970000001D0000000000000000000000560000002B000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000002C0000005500000000000000000000005700000029000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000002A0000005700000000000000000000005700000029000000000000
+      0020000000200000002000000020000000200000002000000020000000200000
+      00080000002A0000005700000000000000000000005700000029000000060000
+      005F000000600000006000000060000000600000006000000060000000600000
+      001F0000002A0000005700000000000000000000005700000029000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000002A0000005700000000000000000000005700000029000000000000
+      00790000008100000081000000810000008100000081000000810000007E0000
+      00030000002A0000005700000000000000000000005700000029000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000002A0000005700000000000000000000005700000029000000000000
+      00750000007C0000007C0000007C0000007C0000007C0000007C000000790000
+      00030000002A0000005700000000000000000000005700000029000000000000
+      0004000000050000000500000005000000050000000500000005000000040000
+      00000000002A0000005700000000000000000000005700000029000000000000
+      00220000002900000029000000290000001B0000000000000000000000000000
+      00000000002A0000005700000000000000000000005700000029000000000000
+      004B0000005700000057000000570000003B0000000000000000000000000000
+      00000000002A0000005700000000000000000000005700000029000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000002A0000005700000000000000000000005700000029000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000002A000000570000000000000000000000540000002D000000020000
+      00700000008B000000660000000000000007000000870000008A000000660000
+      00000000002D000000550000000000000000000000120000008D0000008F0000
+      002D000000000000003C0000008B0000008E0000001D00000000000000380000
+      008C000000930000001700000000
     }
   end
   object SynAssemblerSyn: TSynAnySyn
@@ -1322,14 +1322,16 @@ object frmAnaSayfa: TfrmAnaSayfa
     ShortCut = 16416
     EndOfTokenChr = '()[].'
     ExecCommandID = ecSynCompletionExecute
-    Editor = seAssembler
+    Editor = seDosya1
     ToggleReplaceWhole = False
     left = 440
   end
   object OpenDialog1: TOpenDialog
-    left = 544
+    left = 344
+    top = 72
   end
   object SaveDialog1: TSaveDialog
-    left = 601
+    left = 392
+    top = 72
   end
 end
