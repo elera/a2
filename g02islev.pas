@@ -6,7 +6,7 @@
 
   2. grup kodlama işlevi, DEĞİŞKEN ifadelerini yönetir
 
-  Güncelleme Tarihi: 07/03/2018
+  Güncelleme Tarihi: 23/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -21,17 +21,17 @@ function Grup02Degisken(SatirNo: Integer; ParcaNo: Integer;
 
 implementation
 
-uses donusum, komutlar, kodlama;
+uses donusum, komutlar, kodlama, onekler;
 
 var
-  SayiTipi: TSayiTipi;
+  SayiTipi: TVeriGenisligi;
   VeriGenisligi: Integer;
   VirgulKullanildi: Boolean;
 
 function Grup02Degisken(SatirNo: Integer; ParcaNo: Integer;
   VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
 var
-  _SayiTipi: TSayiTipi;
+  _SayiTipi: TVeriGenisligi;
   i, j: Integer;
   SayisalVeri: QWord;
   s, s2: string;
@@ -42,10 +42,11 @@ begin
   begin
 
     case KomutListesi[Veri2].GrupNo of
-      GRUP02_DB: begin VeriGenisligi := 1; SayiTipi := st1B; end;
-      GRUP02_DW: begin VeriGenisligi := 2; SayiTipi := st2B; end;
-      GRUP02_DD: begin VeriGenisligi := 4; SayiTipi := st4B; end;
-      GRUP02_DQ: begin VeriGenisligi := 8; SayiTipi := st8B; end;
+      GRUP02_DB:  begin VeriGenisligi := 1; SayiTipi := vgB1;   end;
+      GRUP02_DBW: begin VeriGenisligi := 1; SayiTipi := vgB1B2; end;
+      GRUP02_DW:  begin VeriGenisligi := 2; SayiTipi := vgB2;   end;
+      GRUP02_DD:  begin VeriGenisligi := 4; SayiTipi := vgB4;   end;
+      GRUP02_DQ:  begin VeriGenisligi := 8; SayiTipi := vgB8;   end;
     end;
 
     // virgül kullanıldı olarak belirlenerek ilk gelecek verinin sayısal
@@ -66,10 +67,10 @@ begin
       // pascal derleyici tarafından utf-8 olarak kodlanan veri ansi karaktere çevriliyor
       s2 := YeniUTF8AnsiTR(Veri1);
 
-      // karakter dizisinin uzunluğu db olması halinde veri uzunluğunu kontrol
+      // karakter dizisinin uzunluğu db veya dbw olması halinde veri uzunluğunu kontrol
       // etmeye gerek yoktur. veri uzunluğu sınırsızdır
       // aksi durumda uzunluk kontrolünün yapılması gerekmektedir
-      if(SayiTipi = st1B) then
+      if(SayiTipi = vgB1) or (SayiTipi = vgB1B2) then
 
         s := s2
       else
@@ -95,8 +96,18 @@ begin
       end;
 
       // hazırlanan veriyi hedef bellek bölgesine kopyala
-      j := Length(s);
-      for i := 1 to j do KodEkle(Byte(s[i]));
+      if(SayiTipi = vgB1B2) then
+      begin
+
+        j := Length(s);
+        for i := 1 to j do begin KodEkle(Byte(s[i])); KodEkle(Byte(0)); end;
+      end
+      else
+      begin
+
+        j := Length(s);
+        for i := 1 to j do KodEkle(Byte(s[i]));
+      end;
 
       VirgulKullanildi := False;
 

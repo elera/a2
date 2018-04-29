@@ -57,8 +57,7 @@ type
   public
     constructor Create;
     function Ekle(SatirNo: Integer; EtiketAdi: string; AtamaTipi: TAtamaTipi;
-      BellekAdresi: QWord; VeriTipi: TTemelVeriTipi; VeriUzunlugu: Integer; sDeger: string;
-      iDeger: QWord): Integer;
+      BellekAdresi: QWord; VeriTipi: TTemelVeriTipi; sDeger: string; iDeger: QWord): Integer;
     function Bul(EtiketAdi: string): TAtama;
     procedure Temizle;
     function Temizle2: Integer;
@@ -68,7 +67,7 @@ type
 
 implementation
 
-uses genel, donusum, yazmaclar, komutlar;
+uses genel, donusum, yazmaclar, komutlar, onekler;
 
 constructor TAtama.Create(ACollection: TCollection);
 begin
@@ -89,14 +88,13 @@ begin
 end;
 
 function TAtamaListesi.Ekle(SatirNo: Integer; EtiketAdi: string; AtamaTipi: TAtamaTipi;
-  BellekAdresi: QWord; VeriTipi: TTemelVeriTipi; VeriUzunlugu: Integer; sDeger: string;
-  iDeger: QWord): Integer;
+  BellekAdresi: QWord; VeriTipi: TTemelVeriTipi; sDeger: string; iDeger: QWord): Integer;
 var
   s: string;
   Etiket: TAtama;
   Komut: TKomutDurum;
   Yazmac: TYazmacDurum;
-  SayiTipi: TSayiTipi;
+  SayiTipi: TVeriGenisligi;
 begin
 
   Result := HATA_YOK;
@@ -140,10 +138,10 @@ begin
       SayiTipi := SayiTipiniAl(iDeger);
       case SayiTipi of
         //stHatali: Etiket.VeriUzunluk := 0;
-        st1B: Etiket.VeriUzunluk := 1;
-        st2B: Etiket.VeriUzunluk := 2;
-        st4B: Etiket.VeriUzunluk := 4;
-        st8B: Etiket.VeriUzunluk := 8;
+        vgB1: Etiket.VeriUzunluk := 1;
+        vgB2: Etiket.VeriUzunluk := 2;
+        vgB4: Etiket.VeriUzunluk := 4;
+        vgB8: Etiket.VeriUzunluk := 8;
       end;
       Etiket.iDeger := iDeger;
     end
@@ -178,10 +176,10 @@ begin
         SayiTipi := SayiTipiniAl(iDeger);
         case SayiTipi of
           //stHatali: Etiket.VeriUzunluk := 0;
-          st1B: Etiket.VeriUzunluk := 1;
-          st2B: Etiket.VeriUzunluk := 2;
-          st4B: Etiket.VeriUzunluk := 4;
-          st8B: Etiket.VeriUzunluk := 8;
+          vgB1: Etiket.VeriUzunluk := 1;
+          vgB2: Etiket.VeriUzunluk := 2;
+          vgB4: Etiket.VeriUzunluk := 4;
+          vgB8: Etiket.VeriUzunluk := 8;
         end;
         Etiket.iDeger := iDeger;
       end
@@ -254,7 +252,7 @@ begin
       if(Eleman[i].EtiketHatasiMevcut) then
       begin
 
-        Delete(i);
+        inherited Delete(i);
         Inc(Result);
       end;
     end;
@@ -279,7 +277,7 @@ end;
 function TAtamaListesi.GetToplam: Integer;
 begin
 
-  Result := Count;
+  Result := inherited Count;
 end;
 
 end.

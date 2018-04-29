@@ -99,7 +99,7 @@ begin
       if(Tanimlanan = GRUP01_DOS_AD_) then
       begin
 
-        GAsm2.DosyaAdi := sTanim;
+        GAsm2.CikisDosyaAdi := sTanim;
         Result := HATA_YOK;
       end
       // * dosya uzantı tanımlaması

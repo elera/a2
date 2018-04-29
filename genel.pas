@@ -4,7 +4,7 @@
 
   İşlev: genel sabit, değişken, yapı ve işlevleri içerir
 
-  Güncelleme Tarihi: 14/04/2018
+  Güncelleme Tarihi: 29/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -16,8 +16,8 @@ uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler;
 
 const
   ProgramAdi = 'Assembler 2 (a2)';
-  ProgramSurum = '0.0.12.2018';
-  SurumTarihi = '14.04.2018';
+  ProgramSurum = '0.0.13.2018';
+  SurumTarihi = '29.04.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -126,8 +126,6 @@ var
   MevcutBellekAdresi: Integer;
   KodBellek: array[0..4095] of Byte;
   KodBellekU: Integer;
-  GAciklama,                                // her bir satır için tanımlanan açıklama
-  GEtiket,                                  // her bir satır için tanımlanan etiket
   // ("bellek db 10" örneğinde bellek değeri) değişken ilk değeri veya
   // ("bellek = 10" örneğinde bellek değeri) tanım ilk değeri
   GTanimlanacakVeri: string;
@@ -157,10 +155,12 @@ var
   // -------------------------------------------------------------------------->
   // etiket veya tanım ataması yapılırken işleme dahil olunan etiket ve / veya tanım
   // olmaması durumunda, öndeğer sayısal değer kullanımında bu değişken aktifleştirilerek
-  // tekrarlı döngülerin sağlanması amaçlanmaktadır
+  // tekrarlı döngülerin sağlanması amaçlanmaktadır.
+  // atamalar tarafından atama listesinin güncellenmesi için kullanılır.
   GEtiketHatasiMevcut: Boolean;
-  // bir çevrim döngüsü içerisinde, o anda karşılığı olmayan etiket sayısı
-  // birden fazla çevrimleri kontrol edilmesi amacıyla tasarlanmıştır.
+  // bir çevrim döngüsü içerisinde, o anda karşılığı olmayan etiket sayısı.
+  // birden fazla çevrimlerin kontrol edilmesi amacıyla tasarlanmıştır.
+  // döngüler, bu değişkenin 0'dan büyük olması aracılığı ile tekrar ettirilir
   GEtiketHataSayisi: Integer;
   // <--------------------------------------------------------------------------
 

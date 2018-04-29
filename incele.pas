@@ -5,7 +5,7 @@
   İşlev: her bir veri satırının içerisindeki bölümleri inceleme ve yönlendirme
     işlevlerini içerir
 
-  Güncelleme Tarihi: 18/02/2018
+  Güncelleme Tarihi: 29/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -36,7 +36,7 @@ implementation
 uses atamalar, sysutils, donusum, yazmaclar, komutlar, paylasim, g00islev, onekler;
 
 type
-  TIfadeDurum = (idYok, idAciklama, idKPAc, idKPKapat);
+  TIfadeDurum = (idYok, idKPAc, idKPKapat);
 
 var
   SonVeriKontrolTip: TVeriKontrolTip;     // en son işlenen veri tipini içerir
@@ -188,7 +188,7 @@ var
             // 1. tanım etiketini listeye ekle
             // { TODO : tvtTanimsiz incelensin }
             if(ParcaNo = 2) then Result := GAsm2.AtamaListesi.Ekle(SatirNo, GTanimlanacakVeri,
-              etEtiket, MevcutBellekAdresi, tvtTanimsiz, _VeriUzunlugu, '', 0);
+              etEtiket, MevcutBellekAdresi, tvtTanimsiz, '', 0);
 
             // 2. hata olmaması durumunda ilgili işleve çağrıda bulun
             if(Result = HATA_YOK) then
@@ -384,8 +384,6 @@ var
           if(_Atama = nil) then
           begin
 
-            //SendDebug('Bilinmeyen Etiket: ' + Komut);
-
             // Sayısal değerin öndeğer 0 olarak belirlenmesi bölme işleminde
             // problem oluşturabilir
             SayisalDeger := $FFFFFF0;    // etiketin bulunamaması durumunda öndeğer alacak
@@ -429,8 +427,6 @@ var
               //else if(_Degisken.VeriTipi = tvtDiger) then   // karakterdizisi
                 //SayisalDeger := _Degisken.BellekAdresi
             //end;
-
-            //SendDebug('Etiket SayisalDeger: ' + IntToStr(SayisalDeger));
 
             if(Length(AIsleyici) > 0) then
             begin
@@ -493,7 +489,6 @@ begin
   KomutUz := 0;
   SonKullanilanIsleyici := '+';
 
-  GEtiket := '';
   GTanimlanacakVeri := '';
 
   IfadeDurum := idYok;
@@ -504,8 +499,8 @@ begin
 
   GEtiketHatasiMevcut := False;
 
-  GSabitDegerVG := vgTanimsiz;
-  GBellekSabitDegerVG := vgTanimsiz;
+  GSabitDegerVG := vgHatali;
+  GBellekSabitDegerVG := vgHatali;
 
   // bir satırın değerlendirilme süreci
   // örnekler:
@@ -530,7 +525,7 @@ begin
     if(KodDizisiSira > UKodDizisi) then SatirSonu := True;
 
     // satır içeriğini kontrol edecek kontrol değer kahramanları
-    if(IfadeDurum <> idAciklama) and
+    if not(dvAciklama in SatirIcerik.DigerVeri) and
       (C in [' ', '''', ',', ':', ';', '=', '(', ')', '[', ']', '+', '-',
         '*', '/', #9]) then
     begin
@@ -664,9 +659,6 @@ begin
               begin
 
                 GAsm2.Matematik.Sonuc(SayisalDeger);
-                SendDebug('Virgül1: ' + IntToStr(ParcaNo));
-                SendDebug('Virgül2: ' + Komut);
-                SendDebug('Virgül3: ' + IntToStr(SayisalDeger));
 
                 GHataKodu := SayisalVeriyiIsle('');
 
@@ -792,7 +784,6 @@ begin
                   end;
                 end;
 
-
                 if(GHataKodu = HATA_YOK) then
                 begin
 
@@ -842,50 +833,55 @@ begin
           end;
         end;
       end
-      // etiket kontrol işlemi
-      else if(C = ':') and (ParcaNo = 1) then
+      // etiket ve yazmaç ön ek kontrol işleminin yapıldığı kısım
+      // örnek etiket      : etiket:
+      // örnek yazmaç ön ek: [cs:edi]
+      else if(C = ':') then
       begin
 
         if(KomutUz > 0) then
         begin
 
-          if(dvEtiket in SatirIcerik.DigerVeri) then
+          { *** Etiket İşlevi >>>>>>>>>>>>>>>>>>>> }
 
-            GHataKodu := HATA_BIRDEN_FAZLA_ETIKET
-          else
+          // etiket, satırın ilk parçasında olmak zorunda
+          if(ParcaNo = 1) then
           begin
 
-            SatirIcerik.DigerVeri += [dvEtiket];
+            if(dvEtiket in SatirIcerik.DigerVeri) then
 
-            //SendDebug('Bellek Adresi1: ' + IntToStr(GMevcutBellekAdresi));
-
-            // etiketin mevcut olup olmadığını gerçekleştir
-            { TODO : Veri tip uzunluğunun gerekliliği kontrol edilecek }
-            GHataKodu := GAsm2.AtamaListesi.Ekle(SatirNo, Komut, etEtiket,
-              MevcutBellekAdresi, tvtSayi, 0, '', 0);
-
-            //SendDebug('Bellek Adresi2: ' + IntToStr(GMevcutBellekAdresi));
-
-            if(GHataKodu = HATA_YOK) then
+              GHataKodu := HATA_BIRDEN_FAZLA_ETIKET
+            else
             begin
 
-              GEtiket := Komut;
-              Komut := '';
-              KomutUz := 0;
-            end else GHataAciklama := Komut;    // hata olması durumunda
+              SatirIcerik.DigerVeri += [dvEtiket];
+              SatirIcerik.Etiket := Komut;
+
+              // etiketin mevcut olup olmadığını gerçekleştir
+              GHataKodu := GAsm2.AtamaListesi.Ekle(SatirNo, SatirIcerik.Etiket,
+                etEtiket, MevcutBellekAdresi, tvtSayi, '', 0);
+
+              if(GHataKodu = HATA_YOK) then
+              begin
+
+                Komut := '';
+                KomutUz := 0;
+              end else GHataAciklama := Komut;    // hata olması durumunda
+            end;
           end;
+          { *** Etiket İşlevi <<<<<<<<<<<<<<<<<<<< }
         end;
       end
       // boşluk karakteri SADECE işlem kodunu almak için kullanılıyor
       else if(C = ' ') or (C = #9) then
       begin
 
-        // mantıksal tutarlılığı inclensin
+        // mantıksal tutarlılığı incelensin
         if(KomutUz > 0) then
         begin
 
           OnEk := OnEkBilgisiAl(Komut);
-          if(OnEk.Deger = vgTanimsiz) then
+          if(OnEk.Deger = vgHatali) then
           begin
 
             if(SatirIcerik.Komut.KomutTipi = ktTanim) and (KomutUz > 0) then
@@ -918,11 +914,9 @@ begin
         end;
       end
       // açıklama durumunun haricinde tüm bu işleyicilerin çalışma durumu
-      else if((IfadeDurum <> idAciklama) and ((C = '(') or (C = ')') or (C = '+') or
+      else if((not(dvAciklama in SatirIcerik.DigerVeri)) and ((C = '(') or (C = ')') or (C = '+') or
         (C = '-') or (C = '*') or (C = '/'))) then
       begin
-
-        //SendDebug('DD ++: ' + Komut);
 
         // ölçek verisinin işlendiği bölüm
         if(KPSayisi > 0) and (C = '*') and (KomutUz > 0) then
@@ -964,7 +958,6 @@ begin
             if(VeriTipi = tvtSayi) or (VeriTipi = tvtTanimsiz) then
             begin
 
-              SendDebug('DD +: ' + Komut);
               GHataKodu := SayisalVeriyiIsle(C);
             end
             else
@@ -987,34 +980,31 @@ begin
           end;
         end;
       end
-      // açıklama kontrolü
-      else if(C = ';') and not(IfadeDurum = idAciklama) then
+      { *** Açıklama İşlevi >>>>>>>>>>>>>>>>>>>> }
+      else if(C = ';') and not(dvAciklama in SatirIcerik.DigerVeri) then
       begin
 
-        // açıklama satırından önce sürmekte olan bir komut var ise
-        // mevcut komutun yorumlanmasını sağla
+        // açıklama satırından önce sürmekte olan komutun yorumlanmasını sağla
         if(KomutUz > 0) then
         begin
 
-          GHataKodu := KomutYorumla(ParcaNo, vktDegisken, Komut, 0);
+          { TODO : bu kısımda her türlü komut olabilir. başlamış / başlayacak veya
+            tamamlanacak olabilir. kısacası KomutYorumla işlevinin bu yapıyı yönetecek
+            bir biçimde yeniden yapılandırılması gerekmekte }
+          //GHataKodu := KomutYorumla(ParcaNo, vktDegisken, Komut, 0);
         end;
 
-        // eğer hata yok ise ifade durumunu AÇIKLAMA olarak belirle
-        if(GHataKodu = HATA_YOK) then
-        begin
-
-          SatirIcerik.DigerVeri += [dvAciklama];
-          GAciklama := '';
-          IfadeDurum := idAciklama;
-        end;
+        // hata yok ise, satırın açıklama bilgisine sahip olduğunu belirle
+        if(GHataKodu = HATA_YOK) then SatirIcerik.DigerVeri += [dvAciklama];
       end;
+      { *** Açıklama İşlevi <<<<<<<<<<<<<<<<<<<< }
     end
     else
     begin
 
-      if(IfadeDurum = idAciklama) then
+      if(dvAciklama in SatirIcerik.DigerVeri) then
 
-        GAciklama := GAciklama + C
+        SatirIcerik.Aciklama += C
       else
       begin
 
@@ -1065,8 +1055,6 @@ begin
             // içindir. SayisalVeriyiIsle işlevi her zaman öndeğerli değerleri işler
             GHataKodu := SayisalVeriyiIsle('');
 
-            //SendDebug('Sayısal Değer: ' + Komut);
-            //SendDebug('Etiket Kodu: ' + Komut);
             if(GHataKodu = HATA_YOK) then
             begin
 

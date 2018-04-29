@@ -4,7 +4,7 @@
 
   İşlev: grafiksel ortamda program ayarlarını saklama / yönetme işlevlerini içerir
 
-  Güncelleme Tarihi: 06/04/2018
+  Güncelleme Tarihi: 23/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -14,7 +14,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls, Buttons;
+  ExtCtrls, Buttons, ComCtrls;
 
 type
 
@@ -24,8 +24,11 @@ type
     btnKaydet: TBitBtn;
     btnIptal: TBitBtn;
     cbSonKullanilanDosyayiAc: TCheckBox;
+    edtYaziBoyutu: TEdit;
+    lblYaziBoyutu: TLabel;
     pnlAlt: TPanel;
-    Shape1: TShape;
+    shpAyirac: TShape;
+    udYaziBoyutu: TUpDown;
     procedure btnKaydetClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
@@ -46,11 +49,17 @@ uses genel;
 procedure TfrmAyarlar.FormShow(Sender: TObject);
 begin
 
+  edtYaziBoyutu.Text := IntToStr(GProgramAyarlari.DuzenleyiciYaziBoyut);
   cbSonKullanilanDosyayiAc.Checked := GProgramAyarlari.SonKullanilanDosyayiAc;
 end;
 
 procedure TfrmAyarlar.btnKaydetClick(Sender: TObject);
 begin
+
+  try
+    GProgramAyarlari.DuzenleyiciYaziBoyut := StrToInt(edtYaziBoyutu.Text);
+  except
+  end;
 
   GProgramAyarlari.SonKullanilanDosyayiAc := cbSonKullanilanDosyayiAc.Checked;
 end;

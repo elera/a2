@@ -4,7 +4,7 @@
 
   İşlev: sayısal verinin genişiliğini belirleyen önek değerleri içerir
 
-  Güncelleme Tarihi: 02/04/2018
+  Güncelleme Tarihi: 23/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -14,7 +14,9 @@ interface
 
 type
   // veri genişliği
-  TVeriGenisligi = (vgTanimsiz, vgB1, vgB2, vgB4, vgB8);
+  // B1 = 1 Byte, B1B2 = 1 Byte verinin 2 Byte olarak tanımlanması
+  { TODO : vgB1B2 ve diğer tanımlanacak veriler TOnEk kısmında da tanımlanabilir }
+  TVeriGenisligi = (vgHatali, vgB1, vgB1B2, vgB2, vgB4, vgB8);
 
 type
   TOnEk = record
@@ -44,7 +46,7 @@ begin
 
   OnEk := LowerCase(AOnEk);
 
-  Result.Deger := vgTanimsiz;
+  Result.Deger := vgHatali;
 
   for i := 0 to TOPLAM_ONEK - 1 do
   begin

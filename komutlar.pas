@@ -43,7 +43,8 @@ const
 
   // 2. grup komutlar
   GRUP02_DB       = $020001;
-  GRUP02_DW       = GRUP02_DB + 1;
+  GRUP02_DBW      = GRUP02_DB + 1;
+  GRUP02_DW       = GRUP02_DBW + 1;
   GRUP02_DD       = GRUP02_DW + 1;
   GRUP02_DQ       = GRUP02_DD + 1;
 
@@ -118,15 +119,19 @@ const
   GRUP11_DIV      = GRUP11_DEC + 1;
   GRUP11_INC      = GRUP11_DIV + 1;
   GRUP11_INT      = GRUP11_INC + 1;
-  GRUP11_JNZ      = GRUP11_INT + 1;
-  GRUP11_PUSH     = GRUP11_JNZ + 1;
+  GRUP11_JMP      = GRUP11_INT + 1;
+  GRUP11_JNZ      = GRUP11_JMP + 1;
+  GRUP11_JZ       = GRUP11_JNZ + 1;
+  GRUP11_PUSH     = GRUP11_JZ + 1;
+  GRUP11_POP      = GRUP11_PUSH + 1;
 
   // 12. grup komutlar
   GRUP12_ADD      = $120001;
   GRUP12_CMP      = GRUP12_ADD + 1;
   GRUP12_LEA      = GRUP12_CMP + 1;
   GRUP12_MOV      = GRUP12_LEA + 1;
-  GRUP12_SUB      = GRUP12_MOV + 1;
+  GRUP12_OR       = GRUP12_MOV + 1;
+  GRUP12_SUB      = GRUP12_OR  + 1;
   GRUP12_XOR      = GRUP12_SUB + 1;
 
   {
@@ -137,7 +142,7 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
-  TOPLAM_KOMUT = 85;
+  TOPLAM_KOMUT = 90;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
   // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
@@ -149,6 +154,7 @@ const
 
   // grup 02 - DEĞİŞKENLER - (sıralama sınıflamaya göredir)
   (Komut: 'db';                 GrupNo: GRUP02_DB;            KomutTipi: ktDegisken),
+  (Komut: 'dbw';                GrupNo: GRUP02_DBW;           KomutTipi: ktDegisken),
   (Komut: 'dw';                 GrupNo: GRUP02_DW;            KomutTipi: ktDegisken),
   (Komut: 'dd';                 GrupNo: GRUP02_DD;            KomutTipi: ktDegisken),
   (Komut: 'dq';                 GrupNo: GRUP02_DQ;            KomutTipi: ktDegisken),
@@ -233,14 +239,18 @@ const
     (Komut: 'div';              GrupNo: GRUP11_DIV;           KomutTipi: ktIslemKodu),
     (Komut: 'inc';              GrupNo: GRUP11_INC;           KomutTipi: ktIslemKodu),
     (Komut: 'int';              GrupNo: GRUP11_INT;           KomutTipi: ktIslemKodu),
+    (Komut: 'jmp';              GrupNo: GRUP11_JMP;           KomutTipi: ktIslemKodu),
     (Komut: 'jnz';              GrupNo: GRUP11_JNZ;           KomutTipi: ktIslemKodu),
+    (Komut: 'jz';               GrupNo: GRUP11_JZ;            KomutTipi: ktIslemKodu),
     (Komut: 'push';             GrupNo: GRUP11_PUSH;          KomutTipi: ktIslemKodu),
+    (Komut: 'pop';              GrupNo: GRUP11_POP;           KomutTipi: ktIslemKodu),
 
     // 12. grup komutlar
     (Komut: 'add';              GrupNo: GRUP12_ADD;           KomutTipi: ktIslemKodu),
     (Komut: 'cmp';              GrupNo: GRUP12_CMP;           KomutTipi: ktIslemKodu),
     (Komut: 'lea';              GrupNo: GRUP12_LEA;           KomutTipi: ktIslemKodu),
     (Komut: 'mov';              GrupNo: GRUP12_MOV;           KomutTipi: ktIslemKodu),
+    (Komut: 'or';               GrupNo: GRUP12_OR;            KomutTipi: ktIslemKodu),
     (Komut: 'sub';              GrupNo: GRUP12_SUB;           KomutTipi: ktIslemKodu),
     (Komut: 'xor';              GrupNo: GRUP12_XOR;           KomutTipi: ktIslemKodu)
 
@@ -255,6 +265,7 @@ var
 
     // 2. grup komutlar
     @Grup02Degisken, @Grup02Degisken, @Grup02Degisken, @Grup02Degisken,
+    @Grup02Degisken,
 
     // 10. grup komutlar
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
@@ -279,11 +290,11 @@ var
 
     // 11. grup komutlar
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev,
+    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
 
     // 12. grup komutlar
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
-    @Grup12Islev
+    @Grup12Islev, @Grup12Islev
   );
 
 function KomutBilgisiAl(AKomut: string): TKomutDurum;

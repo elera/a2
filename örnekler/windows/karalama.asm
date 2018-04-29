@@ -1,1 +1,3 @@
-push    B4 1
+kod.mimari = '32Bit'
+
+push   B4 1

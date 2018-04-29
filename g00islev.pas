@@ -24,7 +24,7 @@ function Grup00Islev(SatirNo: Integer; ParcaNo: Integer;
 
 implementation
 
-uses atamalar, donusum, asm2, sysutils, genel;
+uses atamalar, donusum, asm2, sysutils, genel, onekler;
 
 var
   VeriTipi: TTemelVeriTipi;
@@ -40,7 +40,7 @@ var
   s: string;
   i: Integer;
   Atama: TAtama;
-  SayiTipi: TSayiTipi;
+  SayiTipi: TVeriGenisligi;
 begin
 
   // tanım verisi gönderilmeden önceki ilk aşama
@@ -104,10 +104,10 @@ begin
       SayiTipi := SayiTipiniAl(iTanim);
       case SayiTipi of
         //stHatali: // şu aşamada değerlendirilmesi gereksiz
-        st1B: VeriUzunlugu := 1;
-        st2B: VeriUzunlugu := 2;
-        st4B: VeriUzunlugu := 4;
-        st8B: VeriUzunlugu := 8;
+        vgB1: VeriUzunlugu := 1;
+        vgB2: VeriUzunlugu := 2;
+        vgB4: VeriUzunlugu := 4;
+        vgB8: VeriUzunlugu := 8;
       end;
 
       Result := HATA_YOK;
@@ -127,7 +127,7 @@ begin
 
         VeriUzunlugu := Length(sTanim);
         Result := GAsm2.AtamaListesi.Ekle(SatirNo, Tanimlanan, etTanim, -1,
-          tvtKarakterDizisi, VeriUzunlugu, sTanim, 0);
+          tvtKarakterDizisi, sTanim, 0);
 
         Result := HATA_YOK;
       end
@@ -135,7 +135,7 @@ begin
       begin
 
         Result := GAsm2.AtamaListesi.Ekle(SatirNo, Tanimlanan, etTanim, -1,
-          tvtSayi, VeriUzunlugu, '', iTanim);
+          tvtSayi, '', iTanim);
 
         Result := HATA_YOK;
       end else Result := HATA_BILINMEYEN_BILDIRIM;

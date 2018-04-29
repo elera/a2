@@ -4,7 +4,7 @@
 
   İşlev: derleme sonrası bilgi verme işlemi
 
-  Güncelleme Tarihi: 22/02/2018
+  Güncelleme Tarihi: 14/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -44,7 +44,7 @@ type
     DerlenenSatirSayisi,
     IkiliDosyaUzunluk,
     DerlemeCevrimSayisi: Integer;
-    DerlenenDosya: string;
+    ProjeDosyaAdi, DerlenenDosya: string;
   end;
 
 var
@@ -57,6 +57,7 @@ implementation
 procedure TfrmDerlemeBilgisi.FormShow(Sender: TObject);
 begin
 
+  lblProjeDosyasi.Caption := ProjeDosyaAdi;
   lblDerlenenDosya.Caption := DerlenenDosya;
   lblSatirSayisi.Caption := IntToStr(DerlenenSatirSayisi);
   lblDerlemeCevrimSayisi.Caption := IntToStr(DerlemeCevrimSayisi);

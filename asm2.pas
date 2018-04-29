@@ -4,7 +4,7 @@
 
   İşlev: derleyici içerisinde kullanılan tüm sınıfları yönetecek ana sınıf
 
-  Güncelleme Tarihi: 25/03/2018
+  Güncelleme Tarihi: 15/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -18,11 +18,17 @@ type
   TMimari = (mim16Bit, mim32Bit, mim64Bit);
 
 type
+
+  { TAsm2 }
+
   TAsm2 = class
   private
     FMimari: TMimari;
-    FProjeDizin, FDosyaAdi, FProjeDosyaUzanti, FCikisDosyaUzanti: string;
+    FProjeDizin, FProjeDosyaAdi, FProjeDosyaUzanti,
+    FCikisDosyaAdi, FCikisDosyaUzanti: string;
     FDerlemeBasarili: Boolean;
+    procedure SetProjeDosyaAdi(AProjeDosyaAdi: string);
+    procedure SetProjeDosyaUzanti(AProjeDosyaUzanti: string);
   public
     AtamaListesi: TAtamaListesi;
     Matematik: TMatematik;           // tüm çoklu matematiksel / mantıksal işlemleri yönetir
@@ -35,8 +41,9 @@ type
   published
     property Mimari: TMimari read FMimari write FMimari;
     property ProjeDizin: string read FProjeDizin write FProjeDizin;
-    property DosyaAdi: string read FDosyaAdi write FDosyaAdi;
-    property ProjeDosyaUzanti: string read FProjeDosyaUzanti write FProjeDosyaUzanti;
+    property ProjeDosyaAdi: string read FProjeDosyaAdi write SetProjeDosyaAdi;
+    property ProjeDosyaUzanti: string read FProjeDosyaUzanti write SetProjeDosyaUzanti;
+    property CikisDosyaAdi: string read FCikisDosyaAdi write FCikisDosyaAdi;
     property CikisDosyaUzanti: string read FCikisDosyaUzanti write FCikisDosyaUzanti;
     property DerlemeBasarili: Boolean read FDerlemeBasarili write FDerlemeBasarili;
     property DerlemeCevrimSayisi: Integer read FDerlemeCevrimSayisi
@@ -66,8 +73,9 @@ begin
 
   FMimari := mim16Bit;
   FProjeDizin := GProgramCalismaDizin;
-  FDosyaAdi := '';
+  FProjeDosyaAdi := '';
   FProjeDosyaUzanti := '';
+  FCikisDosyaAdi := '';
   FCikisDosyaUzanti := '';
   FDerlemeBasarili := False;
 
@@ -79,6 +87,26 @@ begin
 
   Matematik.Destroy;
   AtamaListesi.Destroy;
+end;
+
+procedure TAsm2.SetProjeDosyaAdi(AProjeDosyaAdi: string);
+begin
+
+  if(FProjeDosyaAdi = AProjeDosyaAdi) then Exit;
+
+  // her proje dosya adı girişi yapıldığında çıkış dosyası da bu dosya adını alır
+  FProjeDosyaAdi := AProjeDosyaAdi;
+  FCikisDosyaAdi := AProjeDosyaAdi;
+end;
+
+procedure TAsm2.SetProjeDosyaUzanti(AProjeDosyaUzanti: string);
+begin
+
+  if(FProjeDosyaUzanti = AProjeDosyaUzanti) then Exit;
+
+  // proje ve cikis dosya uzantısını değiştir
+  FProjeDosyaUzanti := AProjeDosyaUzanti;
+  FCikisDosyaUzanti := 'bin';
 end;
 
 function TAsm2.ProgramAyarDosyasiniOku: TProgramAyarlari;

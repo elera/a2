@@ -19,10 +19,11 @@ uses Classes, SysUtils, genel, paylasim;
 
 function Grup11Islev(SatirNo: Integer; ParcaNo: Integer; VeriKontrolTip:
   TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
+procedure GoreceliDegerEkle;
 
 implementation
 
-uses kodlama, Dialogs, asm2, komutlar, yazmaclar, donusum, dbugintf;
+uses kodlama, Dialogs, asm2, komutlar, yazmaclar, donusum, dbugintf, onekler;
 
   // ünite içi genel kullanımlık yerel değişkenler
 var
@@ -33,7 +34,7 @@ var
 function Grup11Islev(SatirNo: Integer; ParcaNo: Integer;
   VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
 var
-  SayiTipi: TSayiTipi;
+  SayiTipi: TVeriGenisligi;
   SayisalVeri, VeriGenisligi, i: Integer;
   ii: Byte;
   i4: Integer;
@@ -200,15 +201,36 @@ begin
 
       Result := HATA_YOK;
     end
-    // jnz komutu
-    else if(SatirIcerik.Komut.GrupNo = GRUP11_JNZ) then
+    // jcc komutları
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_JNZ) or
+      (SatirIcerik.Komut.GrupNo = GRUP11_JZ) then
     begin
 
-      // jnz komut adresleme işlemi SADECE mevcut noktadan geri
-      // bir adrese atlama olarak ve byte türünde değerlendirildi.
-      ii := (MevcutBellekAdresi + 2) - GSabitDeger;
-      KodEkle($75);
-      KodEkle(-ii);
+      // ÖNEMLİ: tüm göreceli (relative) yönlendirmeler burada yapılacaktır.
+      // işlem kodları en üst değer olmaktan çıkarılarak yerine
+      // öndeğer (parametre) önceliği yerleştirilecektir
+
+      {if(SatirIcerik.Komut.GrupNo = GRUP11_JNZ) then
+        KodEkle($75)
+      else if(SatirIcerik.Komut.GrupNo = GRUP11_JZ) then
+        KodEkle($74);
+
+      GoreceliDegerEkle;}
+
+
+      // bu komutlar bir komut grubu olup, bulunulan konumdan kaç adım ileri veya
+      // geri (relative) adrese dallanma yapılacağını bildirir
+      // not: şu aşamada 8 bitlik katı kodlama uygulanmıştır
+      if(GSabitDeger < (MevcutBellekAdresi + 2)) then
+        ii := -((MevcutBellekAdresi + 2) - GSabitDeger)
+      else ii := GSabitDeger - (MevcutBellekAdresi + 2);
+
+      if(SatirIcerik.Komut.GrupNo = GRUP11_JNZ) then
+        KodEkle($75)
+      else if(SatirIcerik.Komut.GrupNo = GRUP11_JZ) then
+        KodEkle($74);
+
+      KodEkle(ii);
       Result := HATA_YOK;
     end
     // call komutu
@@ -257,58 +279,123 @@ begin
     end
     // PUSH komutu
     // sayısal değer tamam
-    else if(SatirIcerik.Komut.GrupNo = GRUP11_PUSH) then
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_PUSH) or
+      (SatirIcerik.Komut.GrupNo = GRUP11_POP) then
     begin
 
-      if(SatirIcerik.BolumTip1.BolumAnaTip = batSayisalDeger) then
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batSayisalDeger) or
+        (SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
       begin
 
-        SayiTipi := SayiTipiniAl(GSabitDeger);
+        // pop işlevinin sayısal değer ile kullanımı yoktur
+        if(SatirIcerik.Komut.GrupNo = GRUP11_POP) then
 
-        // 64 bitlik sayıyı hiçbir mimari desteklememektedir
-        if(VeriGenisligi = 8) then
-
-          Result := 1
-        // 32 bitlik sayıyı 16 bitlik mimari desteklememektedir
-        else if(VeriGenisligi = 4) and (GAsm2.Mimari = mim16Bit) then
-
-          Result := 1
+          Result := HATA_ISL_KULLANIM
         else
         begin
 
-          // diğer durumlarda ilgili mimariye göre sayısal atamalar
-          // yapılmaktadır. burada ön ek kavramı devreye girmekte ve
-          // $66 ve diğer kontrollerin uygulanması gerekmektedir
-          // bilgi: henüz uygulanmadı
-          case SayiTipi of
-            //stHatali: // şu aşamada değerlendirilmesi gereksiz
-            st1B: begin VeriGenisligi := 1; KodEkle($6A); end;
-            st2B: begin VeriGenisligi := 2; KodEkle($68); end;
-            st4B: begin VeriGenisligi := 4; KodEkle($68); end;
-            // 64 bitlik sayı değeri geçerli değildir
-          end;
-
-          // sayısal veriyi belleğe yaz
-          SayisalVeri := GSabitDeger;
-          for i := 1 to VeriGenisligi do
+          if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
           begin
 
-            KodEkle(Byte(SayisalVeri));
-            SayisalVeri := SayisalVeri shr 8;
+            i4 := GBellekSabitDeger;
+            SayiTipi := SayiTipiniAl(i4);
+
+            // eğer önek sayı değerinden büyükse sayı değerinin veri
+            // genişliğini önek olarak ayarla
+            if(GBellekSabitDegerVG > SayiTipi) then SayiTipi := GSabitDegerVG;
+          end
+          else
+          begin
+
+            i4 := GSabitDeger;
+            SayiTipi := SayiTipiniAl(i4);
+
+            // eğer önek sayı değerinden büyükse sayı değerinin veri
+            // genişliğini önek olarak ayarla
+            if(GSabitDegerVG > SayiTipi) then SayiTipi := GSabitDegerVG;
           end;
 
-          Result := HATA_YOK;
+          // 64 bitlik sayıyı hiçbir mimari desteklememektedir
+          if(SayiTipi = vgB8) then
+
+            Result := 1
+          // 32 bitlik sayıyı 16 bitlik mimari desteklememektedir
+          else if(SayiTipi = vgB4) and (GAsm2.Mimari = mim16Bit) then
+
+            Result := 1
+          else
+          begin
+
+            // bellek değerinin yığına push işlemi
+            // örnek: push [112233h]
+            if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
+            begin
+
+              KodEkle($FF);
+              KodEkle((6 shl 3) or 5);
+            end
+            else
+            begin
+
+              // diğer durumlarda ilgili mimariye göre sayısal atamalar
+              // yapılmaktadır. burada ön ek kavramı devreye girmekte ve
+              // $66 ve diğer kontrollerin uygulanması gerekmektedir
+              // bilgi: henüz uygulanmadı
+              case SayiTipi of
+                //stHatali: // şu aşamada değerlendirilmesi gereksiz
+                vgB1: begin KodEkle($6A); end;
+                vgB2: begin KodEkle($68); end;
+                vgB4: begin KodEkle($68); end;
+                // 64 bitlik sayı değeri geçerli değildir
+              end;
+            end;
+
+            case SayiTipi of
+              //stHatali: // şu aşamada değerlendirilmesi gereksiz
+              vgB1: begin VeriGenisligi := 1; end;
+              vgB2: begin VeriGenisligi := 2; end;
+              vgB4: begin VeriGenisligi := 4; end;
+              // 64 bitlik sayı değeri geçerli değildir
+            end;
+
+            // sayısal veriyi belleğe yaz
+            SayisalVeri := i4;
+            for i := 1 to VeriGenisligi do
+            begin
+
+              KodEkle(Byte(SayisalVeri));
+              SayisalVeri := SayisalVeri shr 8;
+            end;
+
+            Result := HATA_YOK;
+          end;
         end;
       end
       else if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) then
       begin
 
-        if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
+        { TODO : diğer yazmaç genişlikleri için herhangi bir problem yok.
+          test edilerek işleve dahil edilmeli }
+        if(SatirIcerik.Komut.GrupNo = GRUP11_PUSH) then
         begin
 
-          KodEkle($50 + (YazmacListesi[GYazmac1].Deger and 7));
-          Result := HATA_YOK;
-        end else Result := HATA_DEVAM_EDEN_CALISMA;
+          if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
+          begin
+
+            KodEkle($50 + (YazmacListesi[GYazmac1].Deger and 7));
+            Result := HATA_YOK;
+          end else Result := HATA_DEVAM_EDEN_CALISMA;
+        end
+        else if(SatirIcerik.Komut.GrupNo = GRUP11_POP) then
+        begin
+
+          if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
+          begin
+
+            KodEkle($58 + (YazmacListesi[GYazmac1].Deger and 7));
+            Result := HATA_YOK;
+          end else Result := HATA_DEVAM_EDEN_CALISMA;
+        end
       end;
     end
     // INC ve DEC komutları incelenmiştir
@@ -349,6 +436,59 @@ begin
       end;
     end else Result := 1;
   end else Result := 1;
+end;
+
+// çok önemli: göreceli değerlerle işlem yapılırken ilgili komut bir sonraki
+// adresi hesaplayamayacağından dolayı en az iki çevcrim yapılması gerekmektedir
+// kısaca: birinci aşamada sanal (ama gerçek uzunlukta) veri üretildiktenb sonra
+// 2. aşamada gerçek kodlama gerçekleştirilecektir.
+procedure GoreceliDegerEkle;
+var
+  SayiTipi: TVeriGenisligi;
+  SayisalVeri, VeriGenisligi, i: Integer;
+  ii: Byte;
+  i4: Integer;
+begin
+
+  SayiTipi := SayiTipiniAl(SayisalVeri);
+
+  // eğer önek sayı değerinden büyükse sayı değerinin veri
+  // genişliğini önek olarak ayarla
+  if(GSabitDegerVG > SayiTipi) then SayiTipi := GSabitDegerVG;
+
+  case SayiTipi of
+    vgB1: ii := 1;
+    vgB2: ii := 2;
+    vgB4: ii := 4;
+    vgB8: ii := 8;
+  end;
+
+  // bu komutlar bir komut grubu olup, bulunulan konumdan kaç adım ileri veya
+  // geri (relative) adrese dallanma yapılacağını bildirir
+  // not: şu aşamada 8 bitlik katı kodlama uygulanmıştır
+  if(GSabitDeger < (MevcutBellekAdresi - 1)) then
+    SayisalVeri := -((MevcutBellekAdresi - 1) - GSabitDeger)
+  else SayisalVeri := GSabitDeger - (MevcutBellekAdresi - 1);
+
+  SayiTipi := SayiTipiniAl(SayisalVeri);
+
+  // eğer önek sayı değerinden büyükse sayı değerinin veri
+  // genişliğini önek olarak ayarla
+  if(GSabitDegerVG > SayiTipi) then SayiTipi := GSabitDegerVG;
+
+  case SayiTipi of
+    vgB1: ii := 1;
+    vgB2: ii := 2;
+    vgB4: ii := 4;
+    vgB8: ii := 8;
+  end;
+
+  for i := 1 to ii do
+  begin
+
+    KodEkle(Byte(SayisalVeri));
+    SayisalVeri := SayisalVeri shr 8;
+  end;
 end;
 
 end.

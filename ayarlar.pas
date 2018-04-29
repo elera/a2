@@ -4,7 +4,7 @@
 
   İşlev: program ayarlarını saklama / yönetme işlevlerini içerir
 
-  Güncelleme Tarihi: 06/04/2018
+  Güncelleme Tarihi: 23/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -24,9 +24,10 @@ type
     PencereYukseklik: Integer;
     PencereDurum: TWindowState;
 
+    DuzenleyiciYaziBoyut: Integer;
+
     // ayarlar
     SonKullanilanDosyayiAc: Boolean;
-
     // son kullanılan dosyalar
     SonKullanilanDosyalar: array[0..4] of string;
   end;
@@ -59,15 +60,18 @@ begin
     Result.PencereYukseklik := -1;
     Result.PencereDurum := wsNormal;
 
+    Result.DuzenleyiciYaziBoyut := 8;
+
     INIDosyasi.WriteInteger('Pencere', 'Sol', Result.PencereSol);
     INIDosyasi.WriteInteger('Pencere', 'Ust', Result.PencereUst);
     INIDosyasi.WriteInteger('Pencere', 'Genislik', Result.PencereGenislik);
     INIDosyasi.WriteInteger('Pencere', 'Yukseklik', Result.PencereYukseklik);
     INIDosyasi.WriteInteger('Pencere', 'Durum', Ord(Result.PencereDurum));
 
+    INIDosyasi.WriteInteger('Duzenleyici', 'YaziBoyut', Result.DuzenleyiciYaziBoyut);
+
     // program ayar ilk değer atamaları
     Result.SonKullanilanDosyayiAc := True;
-
     INIDosyasi.WriteBool('ProgramAyar', 'SonKullanilanDosyayiAc', Result.SonKullanilanDosyayiAc);
 
     // son kullanılan dosyalar ilk değer atamaları
@@ -92,6 +96,9 @@ begin
     Result.PencereYukseklik := INIDosyasi.ReadInteger('Pencere', 'Yukseklik', -1);
     Result.PencereDurum := TWindowState(INIDosyasi.ReadInteger('Pencere', 'Durum',
       Ord(wsNormal)));
+
+    Result.DuzenleyiciYaziBoyut := INIDosyasi.ReadInteger('Duzenleyici',
+      'YaziBoyut', 8);
 
     Result.SonKullanilanDosyayiAc := INIDosyasi.ReadBool('ProgramAyar',
       'SonKullanilanDosyayiAc', True);
@@ -124,6 +131,8 @@ begin
   INIDosyasi.WriteInteger('Pencere', 'Genislik', ProgramAyarlari.PencereGenislik);
   INIDosyasi.WriteInteger('Pencere', 'Yukseklik', ProgramAyarlari.PencereYukseklik);
   INIDosyasi.WriteInteger('Pencere', 'Durum', Ord(ProgramAyarlari.PencereDurum));
+
+  INIDosyasi.WriteInteger('Duzenleyici', 'YaziBoyut', ProgramAyarlari.DuzenleyiciYaziBoyut);
 
   INIDosyasi.WriteBool('ProgramAyar', 'SonKullanilanDosyayiAc',
     ProgramAyarlari.SonKullanilanDosyayiAc);

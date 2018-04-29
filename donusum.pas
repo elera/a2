@@ -12,14 +12,14 @@ unit donusum;
 
 interface
 
-uses Classes, SysUtils, paylasim;
+uses Classes, SysUtils, paylasim, onekler;
 
 function SayiyaCevir(Sistem10s: string; var Sistem10i: QWord): Boolean;
 function Sistem2Sistem10(Sistem2: string; var Sistem10: QWord): Boolean;
 function Sistem16Sistem10(Sistem16: string; var Sistem10: QWord): Boolean;
 function KucukHarfeCevir(s: string): string;
 function YeniUTF8AnsiTR(s: string): string;
-function SayiTipiniAl(SayisalDeger: QWord): TSayiTipi;
+function SayiTipiniAl(SayisalDeger: QWord): TVeriGenisligi;
 
 implementation
 
@@ -226,7 +226,7 @@ begin
 end;
 
 // sayısal verinin veri tipini belirler
-function SayiTipiniAl(SayisalDeger: QWord): TSayiTipi;
+function SayiTipiniAl(SayisalDeger: QWord): TVeriGenisligi;
 begin
 
   if((SayisalDeger and $FFFFFFFFFFFFFF00) > 0) then
@@ -238,10 +238,10 @@ begin
       if((SayisalDeger and $FFFFFFFF00000000) > 0) then
       begin
 
-        Result := st8B;
-      end else Result := st4B;
-    end else Result := st2B;
-  end else Result := st1B;
+        Result := vgB8;
+      end else Result := vgB4;
+    end else Result := vgB2;
+  end else Result := vgB1;
 end;
 
 end.

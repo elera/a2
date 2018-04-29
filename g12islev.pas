@@ -630,7 +630,8 @@ begin
         end else Result := HATA_BILINMEYEN_HATA;
       end;
     end
-    else if(SatirIcerik.Komut.GrupNo = GRUP12_XOR) then
+    else if((SatirIcerik.Komut.GrupNo = GRUP12_XOR) or
+      (SatirIcerik.Komut.GrupNo = GRUP12_OR)) then
     begin
 
       // yazmaçtan yazmaca atama işlemi
@@ -659,7 +660,10 @@ begin
             // 66 ön ekini kodun başına ekle
             if(GAsm2.Mimari = mim16Bit) then KodEkle($66);
 
-            KodEkle($31);
+            if(SatirIcerik.Komut.GrupNo = GRUP12_XOR) then
+              KodEkle($31)
+            else if(SatirIcerik.Komut.GrupNo = GRUP12_OR) then
+              KodEkle($09);
           end;
         end;
 

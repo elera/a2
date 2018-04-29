@@ -150,11 +150,14 @@ begin
   for i := 0 to TOPLAM_YAZMAC - 1 do
     SynAssemblerSyn.KeyWords.Add(UpperCase(YazmacListesi[i].Ad));
 
-  frmAnaSayfa.Left := GProgramAyarlari.PencereSol;
-  frmAnaSayfa.Top := GProgramAyarlari.PencereUst;
-  frmAnaSayfa.Width := GProgramAyarlari.PencereGenislik;
-  frmAnaSayfa.Height := GProgramAyarlari.PencereYukseklik;
-  frmAnaSayfa.WindowState := GProgramAyarlari.PencereDurum;
+  Self.Left := GProgramAyarlari.PencereSol;
+  Self.Top := GProgramAyarlari.PencereUst;
+  Self.Width := GProgramAyarlari.PencereGenislik;
+  Self.Height := GProgramAyarlari.PencereYukseklik;
+  Self.WindowState := GProgramAyarlari.PencereDurum;
+
+  // düzenleyici (editor) yazı boyutu
+  seDosya1.Font.Size := GProgramAyarlari.DuzenleyiciYaziBoyut;
 
   // ayarlarda, program açılışında son kullanılan dosyanın açılması varsa, aç
   if(GProgramAyarlari.SonKullanilanDosyayiAc) then
@@ -224,7 +227,11 @@ end;
 procedure TfrmAnaSayfa.miDosyaAyarlarClick(Sender: TObject);
 begin
 
-  FormuOrtala(frmAyarlar, True);
+  if(FormuOrtala(frmAyarlar, True) = mrOK) then
+  begin
+
+    seDosya1.Font.Size := GProgramAyarlari.DuzenleyiciYaziBoyut;
+  end;
 end;
 
 procedure TfrmAnaSayfa.miDosyaCikisClick(Sender: TObject);
@@ -237,11 +244,11 @@ procedure TfrmAnaSayfa.miDosyaKaydetClick(Sender: TObject);
 begin
 
   // dosya daha önceden kaydedilmiş veya açılmış ise...
-  if(Length(GAsm2.DosyaAdi) > 0) then
+  if(Length(GAsm2.ProjeDosyaAdi) > 0) then
   begin
 
     seDosya1.Lines.SaveToFile(GAsm2.ProjeDizin + DirectorySeparator +
-      GAsm2.DosyaAdi + '.' + GAsm2.ProjeDosyaUzanti);
+      GAsm2.ProjeDosyaAdi + '.' + GAsm2.ProjeDosyaUzanti);
   end
   else
   begin
@@ -284,7 +291,7 @@ begin
   GAsm2.AtamaListesi.Temizle;
 
   // ilk değer atamaları
-  GAsm2.DerlemeCevrimSayisi := 1;
+  GAsm2.DerlemeCevrimSayisi := 0;
 
   while (DerlemeCevrimindenCik = False) do
   begin
@@ -309,9 +316,12 @@ begin
       if(Length(Trim(HamVeri)) > 0) then
       begin
 
-        // her 2 değişken tipi de burada yok olarak belirtiliyor
+        // satır içerik değişkenlerini ilk değerlerle yükle
         SatirIcerik.Komut.KomutTipi := ktBelirsiz;
+
         SatirIcerik.DigerVeri := [];
+        SatirIcerik.Etiket := '';
+        SatirIcerik.Aciklama := '';
 
         SatirIcerik.Komut.GrupNo := -1;
         SatirIcerik.BolumTip1.BolumAnaTip := batYok;
@@ -339,9 +349,10 @@ begin
     // derleme başarılı olduğu için çıkış yap
     else if(IslevSonuc = HATA_YOK) and (GAsm2.AtamaListesi.Temizle2 = 0) then
 
-      DerlemeCevrimindenCik := True
+      DerlemeCevrimindenCik := True;
 
-    else GAsm2.DerlemeCevrimSayisi := GAsm2.DerlemeCevrimSayisi + 1;
+    // çevrim sayısını bir artır
+    GAsm2.DerlemeCevrimSayisi := GAsm2.DerlemeCevrimSayisi + 1;
 
     Application.ProcessMessages;
   end;
@@ -357,17 +368,18 @@ begin
   begin
 
     // dosya adının olması durumunda ...
-    if(Length(GAsm2.DosyaAdi) > 0) then
+    if(Length(GAsm2.CikisDosyaAdi) > 0) then
     begin
 
       // dosya uzantısının olmaması durumunda dosyaya uzantı ekleme (özellikle linux için)
       if(Length(GAsm2.CikisDosyaUzanti) > 0) then
-        Dosya := GAsm2.DosyaAdi + '.' + GAsm2.CikisDosyaUzanti
-      else Dosya := GAsm2.DosyaAdi;
+        Dosya := GAsm2.CikisDosyaAdi + '.' + GAsm2.CikisDosyaUzanti
+      else Dosya := GAsm2.CikisDosyaAdi;
 
       if(ProgramDosyasiOlustur(GAsm2.ProjeDizin + DirectorySeparator + Dosya)) then
       begin
 
+        frmDerlemeBilgisi.ProjeDosyaAdi := GAsm2.ProjeDosyaAdi + '.' + GAsm2.ProjeDosyaUzanti;
         frmDerlemeBilgisi.DerlenenDosya := Dosya;
         frmDerlemeBilgisi.DerlenenSatirSayisi := IslenenSatirSayisi;
         frmDerlemeBilgisi.IkiliDosyaUzunluk := KodBellekU;
@@ -403,7 +415,7 @@ begin
     Process := TProcessUTF8.Create(nil);
     try
 
-      Process.Executable := GAsm2.ProjeDizin + '\' + GAsm2.DosyaAdi + '.' +
+      Process.Executable := GAsm2.ProjeDizin + '\' + GAsm2.CikisDosyaAdi + '.' +
         GAsm2.CikisDosyaUzanti;
       Process.Options := Process.Options + [poWaitOnExit];
       Process.Execute;
@@ -476,12 +488,12 @@ var
 begin
 
   // dosya ad ve uzantısını güncelle
-  if(Length(GAsm2.DosyaAdi) > 0) then
+  if(Length(GAsm2.ProjeDosyaAdi) > 0) then
   begin
 
     if(Length(GAsm2.ProjeDosyaUzanti) > 0) then
-      DosyaAdiVeUzanti := GAsm2.DosyaAdi + '.' + GAsm2.ProjeDosyaUzanti
-    else DosyaAdiVeUzanti := GAsm2.DosyaAdi;
+      DosyaAdiVeUzanti := GAsm2.ProjeDosyaAdi + '.' + GAsm2.ProjeDosyaUzanti
+    else DosyaAdiVeUzanti := GAsm2.ProjeDosyaAdi;
 
     pcDosyalar.Pages[0].Caption := DosyaAdiVeUzanti;
   end else pcDosyalar.Pages[0].Caption := '-';
@@ -525,7 +537,7 @@ begin
     GAsm2.Ilklendir;
 
     GAsm2.ProjeDizin := ProjeDizin;
-    GAsm2.DosyaAdi := DosyaAdi;
+    GAsm2.ProjeDosyaAdi := DosyaAdi;
     GAsm2.ProjeDosyaUzanti := DosyaUzanti;
 
     SonKullanilanlarListesineEkle(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
@@ -562,7 +574,7 @@ begin
   end;
 
   GAsm2.ProjeDizin := ProjeDizin;
-  GAsm2.DosyaAdi := DosyaAdi;
+  GAsm2.ProjeDosyaAdi := DosyaAdi;
   GAsm2.ProjeDosyaUzanti := DosyaUzanti;
 
   ShowMessage(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);

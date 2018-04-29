@@ -59,9 +59,8 @@ type
     BolumTip1: TBolumTip;
     BolumTip2: TBolumTip;
     DigerVeri: TDigerVeri;
+    Etiket, Aciklama: string;
   end;
-
-  TSayiTipi = (stHatali, st1B, st2B, st4B, st8B);
 
 implementation
 

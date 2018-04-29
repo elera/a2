@@ -27,6 +27,10 @@
 - vktYazmac tanımlarının problemleri giderildikten sonra vktKarakterDizisi veri yapısı tamamlanacak
 - ParcaNo değerinin diğer kontrollerden önce ya da sonra artırılması düzenlenecek
 - Tab kontrol üzerine birden fazla dosya açılması, her bir tab üzerindeki dosyanın derlenebilme özelliği eklenecek
+- göreceli (relative) adres hesaplama işlevi eklenecek (8/16/32/64 bit jxx komutları için)
+- KomutYorumla işlevi, dvAciklama tanımlamasındaki açıklama gereğince yeniden tanımlanacak
+
++
 
 +-------------------------------------------------------------+-------------+
 |                     Çalışma Alanı                           | Tamamlanma  |
@@ -70,8 +74,24 @@
 |  iOS çalıştırılabilir / kütüphane dosya biçim çalışmaları   |       -     |
 +-------------------------------------------------------------+-------------+
 
+işlem kodu (opcode) atama olasılıkları
+push	1		      ; sayısal değer
+push	eax		    ; yazmaç
+push	[eax]	    ; yazmaç ile bellek adresleme
+push  [1234h]   ; sayısal değer ile bellek adresleme
+
+mov	eax,1		    ; sayısal değer
+mov	eax,ebx		  ; yazmaç
+mov	eax,[ebx]	  ; yazmaç ile bellek adresleme
+mov eax,[1234h] ; sayısal değer ile bellek adresleme
+
+mov	[eax],1		  ; sayısal değer
+mov	[eax],ebx	  ; yazmaç ile bellek adresleme
+mov	[1234h],ebx	; sayısal değer ile bellek adresleme
+
 // program içerisindeki kavram ve kullanımları
 00 - tanım      16BitDeger = 1B + 2B + 3B   - değişken tanımlamalar. tanımlamaları değişkendir, sabit değildir
 01 - bildirim   kod.mimari = '16bit'        - SADECE derleyiciyi yöneten bildirimleri içerir. tanımlamaları sabittir, değişmez
 02 - değişken   degisken dd 1000h           - kod / data
 
+03 - etiket     etiket:                     -
