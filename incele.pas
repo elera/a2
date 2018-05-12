@@ -33,7 +33,8 @@ function KodUret(SatirNo: Integer; KodDizisi: string): Integer;
 
 implementation
 
-uses atamalar, sysutils, donusum, yazmaclar, komutlar, paylasim, g00islev, onekler;
+uses atamalar, sysutils, donusum, yazmaclar, komutlar, paylasim, g00islev,
+  onekler, makrolar;
 
 type
   TIfadeDurum = (idYok, idKPAc, idKPKapat);
@@ -85,12 +86,12 @@ var
     if(iKomutYorumla = nil) then
     begin
 
-      // ParcaNo = 1 = İşlem Kodu, ParcaNo = 2 = Tanımlama
-      // İşlem Kodu 1. aşamada, Tanımlama 2. aşamada gerçekleşir
+      // ParcaNo = 1 = İşlem Kodu incelenmekte
+      // ParcaNo = 2 = Tanımlama incelenmektedir
       if(ParcaNo < 3) then
       begin
 
-        // komutun sıra değeri alınarak var olup olmadığı test ediliyor
+        // komutun bir işlem kodu olup olmadığı test ediliyor
         _KomutDurum := KomutBilgisiAl(AVeri1);
 
         // eğer komut, komut listesinde yok ise, öndeğere sahip
@@ -98,10 +99,7 @@ var
         if(_KomutDurum.SiraNo = -1) then
         begin
 
-          //if(AVeriKontrolTip = vktEsittir) then SendDebug('ParcaNo: ' + IntToStr(ParcaNo));
-          //SendDebug('GTanimlanacakVeri111');
-
-          // 1. aşamada ilgili komutun bulunamaması durumunda, 2. aşamada
+          // 1. aşamada ilgili komutun işlem kodu olmaması durumunda, 2. aşamada
           // komutun bir değişken veya tanım olasılığına karşı veri saklanıyor
           if(ParcaNo = 1) then
           begin
@@ -109,7 +107,6 @@ var
             { TODO : boşluk olmaksızın açıklama gelmesi durumunda veri buraya
               gelmektedir. Her ne kadar sonuç olarak bir problem olmasa da çözümlenmesi
               gerekmektedir. }
-            //SendDebug('GTanimlanacakVeri: ' + AVeri1);
             GTanimlanacakVeri := AVeri1;
             Result := HATA_YOK
           end
@@ -150,12 +147,10 @@ var
           else if(_KomutDurum.KomutTipi = ktBildirim) then
           begin
 
-            //SendDebug('Bildirim: ' + IntToStr(_KomutDurum.SiraNo));
             SatirIcerik.Komut.KomutTipi := ktBildirim;
             SonVeriKontrolTip := vktIlk;
             iKomutYorumla := KomutListe[_KomutDurum.SiraNo];
             Result := iKomutYorumla(SatirNo, AParcaNo, vktIlk, AVeri1, _KomutDurum.SiraNo);
-            //SendDebug('Bildirim2: ' + AVeri1);
 
             // boşluktan önce eşittir verisinin gelmesi durumunda,
             // veri ilgili işleve gönderiliyor
@@ -375,6 +370,11 @@ var
             Result := HATA_YOK;
           end else Result := HATA_SAYISAL_DEGER;
         end
+        else if(VeriTipi = tvtMakro) then
+        begin
+
+          Result := MakroIslev(AIsleyici, Komut, SonKullanilanIsleyici);
+        end
         // aksi durumda veri bir değişkendir
         // bilgi: karaktersel veriler ana bölümde ele alınmaktadır
         else // if(VeriTipi = tvtDiger) then
@@ -527,7 +527,7 @@ begin
     // satır içeriğini kontrol edecek kontrol değer kahramanları
     if not(dvAciklama in SatirIcerik.DigerVeri) and
       (C in [' ', '''', ',', ':', ';', '=', '(', ')', '[', ']', '+', '-',
-        '*', '/', #9]) then
+        '*', '/', '%', #9]) then
     begin
 
       {
@@ -539,12 +539,9 @@ begin
         if(SatirIcerik.Komut.KomutTipi = ktIslemKodu) then
         begin
 
-          //SendDebug('Virgül1: ' + IntToStr(ParcaNo));
-          //SendDebug('Virgül2: ' + Komut);
           if(ParcaNo = 1) then
           begin
 
-            SendDebug('Virgül: Hatalı kullanım');
             GHataKodu := HATA_ISL_KULLANIM;
           end
           else
@@ -581,7 +578,6 @@ begin
 
               GHataKodu := SayisalVeriyiIsle('');
               GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
-              //SendDebug('DD Virgül: ' + Komut);
 
               GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktSayi,
                 '', SayisalDeger);
@@ -621,9 +617,7 @@ begin
 
                 GEtiketHatasiMevcut := True;
                 Inc(GEtiketHataSayisi);
-                SendDebug('Satır No: ' + IntToStr(SatirNo));
 
-                //SendDebug('Değişken1 Ad: ' + Komut);
                 SayisalDeger := $FFFFFF0;
                 GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
 
@@ -955,7 +949,7 @@ begin
           begin
 
             // açıklama haline getirilen satırlar bağlam noktasında anlamsızdır
-            if(VeriTipi = tvtSayi) or (VeriTipi = tvtTanimsiz) then
+            if(VeriTipi = tvtSayi) or (VeriTipi = tvtMakro) or (VeriTipi = tvtTanimsiz) then
             begin
 
               GHataKodu := SayisalVeriyiIsle(C);
@@ -996,10 +990,19 @@ begin
 
         // hata yok ise, satırın açıklama bilgisine sahip olduğunu belirle
         if(GHataKodu = HATA_YOK) then SatirIcerik.DigerVeri += [dvAciklama];
+      end
+      else if(C = '%') then
+      begin
+
+        Komut := '%';
+        KomutUz := 1;
+        VeriTipi := tvtMakro;
       end;
       { *** Açıklama İşlevi <<<<<<<<<<<<<<<<<<<< }
     end
     else
+    // bir satırdaki her bir boşluk veya tab karakterinden sonraki karakter
+    // yukarıdaki kontrol karakterlerinden biri değilse
     begin
 
       if(dvAciklama in SatirIcerik.DigerVeri) then

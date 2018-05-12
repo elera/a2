@@ -10,8 +10,6 @@
 ================================================================================
 - derleyici tarafından yönetilen ikili / onlu / onaltılı sayı sistem karakter katarının
   çoklu aritmetik / parantez önceliği / mantıksal işlemler dahilinde yorumlanması
-- ikili kod verilerinin dosyaya aktarılmadan önce yerleştirildiği bellek (kodlama)
-  yönetimi işlevselleştirilecek
 - windows pe dosya format çalışması tamamlanacak
 - 32-64 bit exe ve 32-64 bit dll windows / linux dosya biçim çalışmaları başladı
 - veritipi ve diğer ana bölümlerin tutarlılığı sağlanacak
@@ -27,10 +25,10 @@
 - vktYazmac tanımlarının problemleri giderildikten sonra vktKarakterDizisi veri yapısı tamamlanacak
 - ParcaNo değerinin diğer kontrollerden önce ya da sonra artırılması düzenlenecek
 - Tab kontrol üzerine birden fazla dosya açılması, her bir tab üzerindeki dosyanın derlenebilme özelliği eklenecek
+  (çalışmalar başladı)
 - göreceli (relative) adres hesaplama işlevi eklenecek (8/16/32/64 bit jxx komutları için)
 - KomutYorumla işlevi, dvAciklama tanımlamasındaki açıklama gereğince yeniden tanımlanacak
-
-+
+- jmp çalışmasından devam edilecek
 
 +-------------------------------------------------------------+-------------+
 |                     Çalışma Alanı                           | Tamamlanma  |
@@ -73,21 +71,6 @@
 +-------------------------------------------------------------+-------------+
 |  iOS çalıştırılabilir / kütüphane dosya biçim çalışmaları   |       -     |
 +-------------------------------------------------------------+-------------+
-
-işlem kodu (opcode) atama olasılıkları
-push	1		      ; sayısal değer
-push	eax		    ; yazmaç
-push	[eax]	    ; yazmaç ile bellek adresleme
-push  [1234h]   ; sayısal değer ile bellek adresleme
-
-mov	eax,1		    ; sayısal değer
-mov	eax,ebx		  ; yazmaç
-mov	eax,[ebx]	  ; yazmaç ile bellek adresleme
-mov eax,[1234h] ; sayısal değer ile bellek adresleme
-
-mov	[eax],1		  ; sayısal değer
-mov	[eax],ebx	  ; yazmaç ile bellek adresleme
-mov	[1234h],ebx	; sayısal değer ile bellek adresleme
 
 // program içerisindeki kavram ve kullanımları
 00 - tanım      16BitDeger = 1B + 2B + 3B   - değişken tanımlamalar. tanımlamaları değişkendir, sabit değildir

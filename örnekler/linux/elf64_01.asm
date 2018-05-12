@@ -3,10 +3,11 @@
 ; program tanımı: linux ortamında çalışan ELF64 biçiminde yazı mod uygulaması
 ; linux ortamında çalışacak program kodları - başlangıç
 ;---------------------------------------------------------------------
-program_başlangıç:
+kod.adres = 400000h
 
 TEMEL_ADRES = 400000h
-VERİ_ADRES = TEMEL_ADRES + 1000h
+
+program_başlangıç:
 
 MAKİNE_TİP_I386 = 14Ch
 MAKİNE_TİP_X64 = 8664h
@@ -46,8 +47,8 @@ db 02h, 00h
         dd      6
 
         dq      0DAh
-        dq      VERİ_ADRES+veri_başlangıç
-        dq      VERİ_ADRES+veri_başlangıç
+        dq      4010DAh
+        dq      4010DAh
         dq      0Dh
 
         dq      0Dh

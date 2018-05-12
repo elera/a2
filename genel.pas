@@ -4,7 +4,7 @@
 
   İşlev: genel sabit, değişken, yapı ve işlevleri içerir
 
-  Güncelleme Tarihi: 29/04/2018
+  Güncelleme Tarihi: 05/05/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -16,8 +16,8 @@ uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler;
 
 const
   ProgramAdi = 'Assembler 2 (a2)';
-  ProgramSurum = '0.0.13.2018';
-  SurumTarihi = '29.04.2018';
+  ProgramSurum = '0.0.14.2018';
+  SurumTarihi = '12.05.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -26,6 +26,22 @@ type
     Kod: Integer;
     Aciklama: string;
   end;
+
+const
+  // oluşturulacak azami dosya boyutu = 40MB
+  AZAMI_DOSYA_BOYUTU = (40 * 1024 * 1024);
+  // bellek artış blok uzunluğu = 4KB (her bir artışta eklenecek boyut)
+  BELLEK_BLOK_UZUNLUGU = (4 * 1024);
+
+var
+  // kod adres takibi için kullanılan değişken
+  MevcutBellekAdresi,
+  // kodlar için ayrılmış o anki kapasite. (BELLEK_BLOK_UZUNLUGU'nun katları ile artar)
+  BellekKapasitesi: Integer;
+  // kodların yerleştirileceği bellek
+  KodBellek: array of Byte;
+  // KodBellek'teki kodların uzunluğu
+  KodBellekU: Integer;
 
 const
   // 0 numaralı hata kodu, HataKodunuAl işlevinin kendisi için tanımlanmıştır.
@@ -48,7 +64,8 @@ const
   HATA_OLCEK_ZATEN_KULLANILMIS    = HATA_YAZMAC_GEREKLI + 1;
   HATA_OLCEK_DEGER                = HATA_OLCEK_ZATEN_KULLANILMIS + 1;
   HATA_OLCEK_DEGER_GEREKLI        = HATA_OLCEK_DEGER + 1;
-  HATA_ISL_KOD_KULLANIM           = HATA_OLCEK_DEGER_GEREKLI + 1;
+  HATA_MAKRO_TANIMLANMAMIS        = HATA_OLCEK_DEGER_GEREKLI + 1;
+  HATA_ISL_KOD_KULLANIM           = HATA_MAKRO_TANIMLANMAMIS + 1;
   HATA_BELLEKTEN_BELLEGE          = HATA_ISL_KOD_KULLANIM + 1;
   HATA_SAYISAL_DEGER              = HATA_BELLEKTEN_BELLEGE + 1;
   HATA_VERI_TIPI                  = HATA_SAYISAL_DEGER + 1;
@@ -76,6 +93,7 @@ const
   sHATA_OLCEK_ZATEN_KULLANILMIS   = 'Ölçek değer zaten kullanılmış';
   sHATA_OLCEK_DEGER               = 'Hatalı ölçek değer';
   sHATA_OLCEK_DEGER_GEREKLI       = 'Ölçek değer gerekli';
+  sHATA_MAKRO_TANIMLANMAMIS       = 'Makro tanımlanmamış';
   sHATA_ISL_KOD_KULLANIM          = 'İşlem kodu hatalı kullanılmakta';
   sHATA_BELLEKTEN_BELLEGE         = 'Bellek bölgesinde diğer bellek bölgesine atama yapamazsınız';
   sHATA_SAYISAL_DEGER             = 'Hatalı sayısal değer';
@@ -123,9 +141,6 @@ var
   GProgramAyarDizin: string;                // program ayar dizinini içerir
   GProgramCalismaDizin: string;             // programın çalıştığı dizin
   GProgramAyarlari: TProgramAyarlari;       // program ayar değerlerini içerir
-  MevcutBellekAdresi: Integer;
-  KodBellek: array[0..4095] of Byte;
-  KodBellekU: Integer;
   // ("bellek db 10" örneğinde bellek değeri) değişken ilk değeri veya
   // ("bellek = 10" örneğinde bellek değeri) tanım ilk değeri
   GTanimlanacakVeri: string;
@@ -151,6 +166,7 @@ var
   GSabitDeger: Integer;                     // bellek / yazmaç için sayısal değer
   GSabitDegerVG: TVeriGenisligi;
   GYazmacB1OlcekM, GYazmacB2OlcekM: Boolean;// bellek yazmaçlarının ölçek değerleri var mı?
+  GDosyaKimlikNo: Integer;                  // tab alanında açılan her dosya için kullanılan kimlik
 
   // -------------------------------------------------------------------------->
   // etiket veya tanım ataması yapılırken işleme dahil olunan etiket ve / veya tanım
@@ -165,10 +181,11 @@ var
   // <--------------------------------------------------------------------------
 
 function HataKodunuAl(HataKodu: Integer): string;
+function IslemKodununAtamasiniYap(Yazmac1, IslemKodu8, IslemKodu1632: Byte): Integer;
 
 implementation
 
-uses kodlama;
+uses kodlama, yazmaclar;
 
 // hata kodunun karakter dizi karşılığını geri döndürür
 function HataKodunuAl(HataKodu: Integer): string;
@@ -176,6 +193,36 @@ begin
 
   if(HataKodu > TOPLAM_HATA_BILGI_UYARI) then HataKodu := HATA_BILINMEYEN_HATA;
   Result := BilgiDizisi[HataKodu].Aciklama;
+end;
+
+// burada Yazmac1 uzunluğuna göre işlem kod değeri belirleniyor. Yazmac2
+// değeri de burada değerlendirilsin
+function IslemKodununAtamasiniYap(Yazmac1, IslemKodu8, IslemKodu1632: Byte): Integer;
+begin
+
+  case YazmacListesi[Yazmac1].Uzunluk of
+    yu8bGY: KodEkle(IslemKodu8);
+    yu16bGY:
+    begin
+
+      // 16 bitlik yazmaçların 16 bit mimari haricinde kullanılması halinde
+      // 66 ön ekini kodun başına ekle
+      if(GAsm2.Mimari <> mim16Bit) then KodEkle($66);
+
+      KodEkle(IslemKodu1632);
+    end;
+    yu32bGY:
+    begin
+
+      // 32 bitlik yazmaçların 16 bit mimaride kullanılması halinde
+      // 66 ön ekini kodun başına ekle
+      if(GAsm2.Mimari = mim16Bit) then KodEkle($66);
+
+      KodEkle(IslemKodu1632);
+    end;
+  end;
+
+  Result := HATA_YOK;
 end;
 
 end.

@@ -156,7 +156,16 @@ begin
             j := iTanim - j;
 
             // işlem sonucu 0'dan büyük, align sayısından farklı olmalıdır
-            if(j > 0) and (j <> iTanim) then for i := 1 to j do KodEkle(0);
+            if(j > 0) and (j <> iTanim) then
+            begin
+
+              while j > 0 do
+              begin
+
+                KodEkle(0);
+                Dec(j);
+              end;
+            end;
           end;
           Result := HATA_YOK;
         end else Result := HATA_VERI_TIPI;

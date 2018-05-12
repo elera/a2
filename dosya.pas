@@ -4,7 +4,7 @@
 
   İşlev: dosya işlevlerini içerir
 
-  Güncelleme Tarihi: 01/04/2018
+  Güncelleme Tarihi: 30/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}

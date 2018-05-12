@@ -1,7 +1,7 @@
 object frmAnaSayfa: TfrmAnaSayfa
-  Left = 365
+  Left = 239
   Height = 494
-  Top = 149
+  Top = 125
   Width = 731
   Caption = 'Assembler 2 (a2)'
   ClientHeight = 474
@@ -42,7 +42,7 @@ object frmAnaSayfa: TfrmAnaSayfa
     Images = ilAnaMenu16
     TabOrder = 1
     object tbKodDerle: TToolButton
-      Left = 113
+      Left = 81
       Hint = 'Derle'
       Top = 1
       Caption = 'tbKodDerle'
@@ -69,7 +69,7 @@ object frmAnaSayfa: TfrmAnaSayfa
       ShowHint = True
     end
     object tbKodEtiketListesi: TToolButton
-      Left = 169
+      Left = 137
       Hint = 'Etiket Listesi'
       Top = 1
       Caption = 'tbKodEtiketListesi'
@@ -79,7 +79,7 @@ object frmAnaSayfa: TfrmAnaSayfa
       ShowHint = True
     end
     object tbKodCalistir: TToolButton
-      Left = 137
+      Left = 105
       Hint = 'Çalıştır'
       Top = 1
       Caption = 'tbKodCalistir'
@@ -89,7 +89,7 @@ object frmAnaSayfa: TfrmAnaSayfa
       ShowHint = True
     end
     object tbAyrim1: TToolButton
-      Left = 105
+      Left = 129
       Height = 24
       Top = 1
       Caption = 'tbAyrim1'
@@ -150,7 +150,7 @@ object frmAnaSayfa: TfrmAnaSayfa
       Style = tbsSeparator
     end
     object tbDosyaAyarlar: TToolButton
-      Left = 81
+      Left = 169
       Hint = 'Ayarlar'
       Top = 1
       Caption = 'tbDosyaAyarlar'
@@ -172,17 +172,17 @@ object frmAnaSayfa: TfrmAnaSayfa
     Height = 422
     Top = 29
     Width = 731
-    ActivePage = tsDosya1
+    ActivePage = tsDosya0
     Align = alClient
     Images = ilAnaMenu16
     TabIndex = 0
     TabOrder = 2
-    object tsDosya1: TTabSheet
+    object tsDosya0: TTabSheet
       Caption = '-'
       ClientHeight = 394
       ClientWidth = 723
       ImageIndex = 9
-      inline seDosya1: TSynEdit
+      inline seDosya0: TSynEdit
         Left = 0
         Height = 394
         Top = 0
@@ -195,8 +195,8 @@ object frmAnaSayfa: TfrmAnaSayfa
         ParentColor = False
         ParentFont = False
         TabOrder = 0
-        OnClick = seDosya1Click
-        OnKeyDown = seDosya1KeyDown
+        OnClick = seDosya0Click
+        OnKeyDown = seDosya0KeyDown
         Gutter.Width = 55
         Gutter.MouseActions = <>
         RightGutter.Width = 0
@@ -772,6 +772,47 @@ object frmAnaSayfa: TfrmAnaSayfa
         ImageIndex = 1
         ShortCut = 16449
         OnClick = miDosyaAcClick
+      end
+      object miDosyaAcANSI: TMenuItem
+        Caption = 'Dosyayı ANSI Kod Setiyle Yeniden Aç'
+        Bitmap.Data = {
+          36040000424D3604000000000000360000002800000010000000100000000100
+          2000000000000004000064000000640000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          001C000000270000002700000027000000270000002700000027000000270000
+          002700000027000000270000000B000000000000000000000000000000850000
+          00FE000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000
+          00FF000000FF000000FF000000F2000000570000000000000000000000F90000
+          00C5000000170000001700000017000000170000001700000017000000170000
+          0017000000170000001900000084000000F40000001000000000000000FF0000
+          00FC0000001B0000000000000000000000000000000000000000000000000000
+          0000000000000000000000000005000000EB0000006700000000000000FF0000
+          00FF000000770000000000000000000000000000000000000000000000000000
+          000000000000000000000000000000000092000000C600000000000000FF0000
+          00FF000000D60000000000000000000000000000000000000000000000000000
+          000000000000000000000000000000000033000000FE00000026000000FF0000
+          00FF000000FF0000003600000000000000000000000000000000000000000000
+          000000000000000000000000000000000000000000D300000085000000FF0000
+          00FF000000FF000000A200000000000000000000000000000000000000000000
+          00000000000000000000000000000000000000000074000000E1000000FF0000
+          00FF000000FF000000FF000000D8000000C7000000C7000000C7000000C70000
+          00C7000000C7000000C7000000C7000000C7000000D6000000EC000000FF0000
+          00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000
+          00FF000000FF000000FF000000FF000000BF000000760000002E000000FF0000
+          00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000
+          00FF000000FF000000FF000000F9000000390000000000000000000000F90000
+          00FF000000FF000000FF000000FF000000FF000000D10000004F0000004F0000
+          004F0000004F0000004F00000022000000000000000000000000000000870000
+          00FE000000FF000000FF000000FF000000F90000005200000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          001C000000270000002700000027000000130000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000
+        }
+        ImageIndex = 1
+        OnClick = miDosyaAcANSIClick
       end
       object miDosyaKaydet: TMenuItem
         Caption = '&Kaydet'
@@ -1649,7 +1690,7 @@ object frmAnaSayfa: TfrmAnaSayfa
     ShortCut = 16416
     EndOfTokenChr = '()[].'
     ExecCommandID = ecSynCompletionExecute
-    Editor = seDosya1
+    Editor = seDosya0
     ToggleReplaceWhole = False
     left = 440
   end

@@ -14,13 +14,13 @@ interface
 
 type
   // satır içerisinde kullanılan temel veri tipi
-  TTemelVeriTipi = (tvtTanimsiz, tvtKarakterDizisi, tvtSayi, tvtYazmac);
+  TTemelVeriTipi = (tvtTanimsiz, tvtKarakterDizisi, tvtSayi, tvtYazmac, tvtMakro);
 
   // her bir satırın veri tipi.
   // not 1: abvtBuyukYapi (makrolar) ileride tanımlanabilir - 03.02.2018
   // not 2: tanım verileri sabit veri değildir. tanımlaması programcı
   //  tarafından gerçekleştirilir
-  TKomutTipi = (ktBelirsiz, ktIslemKodu, ktDegisken, ktTanim, ktBildirim);
+  TKomutTipi = (ktBelirsiz, ktIslemKodu, ktDegisken, ktTanim, ktBildirim, ktMakro);
 
   // alt satırdaki veriler TAnaBolumVeriTipi içerisinde yok edilecek
   // işlem kod ana ve alt bölümleri

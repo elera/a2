@@ -1,3 +1,7 @@
-kod.mimari = '32Bit'
+kod.adres = 400000h
+kod.adres = %BURASI+10h
+merhaba:
 
-push   B4 1
+        mov     eax,1
+
+merhaab2:

@@ -12,16 +12,14 @@ unit g12islev;
 
 interface
 
-uses Classes, SysUtils, genel, paylasim;
+uses Classes, SysUtils, paylasim;
 
 function Grup12Islev(SatirNo: Integer; ParcaNo: Integer;
   VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
-function IslemKodunDegiskenKodlariniOlustur(SatirIcerik: TSatirIcerik): Integer;
-function YazmactanYazmacaAtamaYap(SatirIcerik: TSatirIcerik): Integer;
 
 implementation
 
-uses dbugintf, yazmaclar, kodlama, komutlar, asm2;
+uses dbugintf, yazmaclar, kodlama, komutlar, asm2, degerkodla, genel;
 
 // ünite içi genel kullanımlık yerel değişkenler
 var
@@ -414,7 +412,7 @@ begin
           end;
         end;
 
-        Result := YazmactanYazmacaAtamaYap(SatirIcerik);
+        Result := YazmactanYazmacaAtamaYap(SatirIcerik, GYazmac1, GYazmac2);
       end
       else
       begin
@@ -467,7 +465,7 @@ begin
           end;
         end;
 
-        Result := YazmactanYazmacaAtamaYap(SatirIcerik);
+        Result := YazmactanYazmacaAtamaYap(SatirIcerik, GYazmac1, GYazmac2);
       end
       else
       begin
@@ -526,7 +524,7 @@ begin
           end;
         end;
 
-        Result := YazmactanYazmacaAtamaYap(SatirIcerik);
+        Result := YazmactanYazmacaAtamaYap(SatirIcerik, GYazmac1, GYazmac2);
       end
       else
       begin
@@ -630,8 +628,7 @@ begin
         end else Result := HATA_BILINMEYEN_HATA;
       end;
     end
-    else if((SatirIcerik.Komut.GrupNo = GRUP12_XOR) or
-      (SatirIcerik.Komut.GrupNo = GRUP12_OR)) then
+    else if(SatirIcerik.Komut.GrupNo = GRUP12_XOR) then
     begin
 
       // yazmaçtan yazmaca atama işlemi
@@ -642,92 +639,26 @@ begin
         // bu aşamada yazmaç uyumluluğunun uyumlu olduğu farzediliyor.
         // yazmaç uyumluluğu alt satırdaki YazmactanYazmacaAtamaYap işlevi
         // tarafından yerine getirilmektedir
-        case YazmacListesi[GYazmac1].Uzunluk of
-          yu8bGY: KodEkle($30);
-          yu16bGY:
-          begin
+        IslemKodununAtamasiniYap(GYazmac1, $30, $31);
+        Result := YazmactanYazmacaAtamaYap(SatirIcerik, GYazmac1, GYazmac2);
+      end else Result := HATA_DEVAM_EDEN_CALISMA;
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP12_OR) then
+    begin
 
-            // 16 bitlik yazmaçların 16 bit mimari haricinde kullanılması halinde
-            // 66 ön ekini kodun başına ekle
-            if(GAsm2.Mimari <> mim16Bit) then KodEkle($66);
+      // yazmaçtan yazmaca atama işlemi
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) and
+        (SatirIcerik.BolumTip2.BolumAnaTip = batYazmac) then
+      begin
 
-            KodEkle($31);
-          end;
-          yu32bGY:
-          begin
-
-            // 32 bitlik yazmaçların 16 bit mimaride kullanılması halinde
-            // 66 ön ekini kodun başına ekle
-            if(GAsm2.Mimari = mim16Bit) then KodEkle($66);
-
-            if(SatirIcerik.Komut.GrupNo = GRUP12_XOR) then
-              KodEkle($31)
-            else if(SatirIcerik.Komut.GrupNo = GRUP12_OR) then
-              KodEkle($09);
-          end;
-        end;
-
-        Result := YazmactanYazmacaAtamaYap(SatirIcerik);
+        // bu aşamada yazmaç uyumluluğunun uyumlu olduğu farzediliyor.
+        // yazmaç uyumluluğu alt satırdaki YazmactanYazmacaAtamaYap işlevi
+        // tarafından yerine getirilmektedir
+        IslemKodununAtamasiniYap(GYazmac1, $08, $09);
+        Result := YazmactanYazmacaAtamaYap(SatirIcerik, GYazmac1, GYazmac2);
       end else Result := HATA_DEVAM_EDEN_CALISMA;
     end
   end else Result := 1;
-end;
-
-// işlem kodunun "İşlemKodu Yazmaç1, Yazmaç2" olması halinde gerekli
-// kodlar bu işlev tarafından oluşturulur.
-function YazmactanYazmacaAtamaYap(SatirIcerik: TSatirIcerik): Integer;
-var
-  DesMim1, DesMim2: TDestekleyenMimari;
-begin
-
-  DesMim1 := YazmacListesi[GYazmac1].DesMim;
-  DesMim2 := YazmacListesi[GYazmac2].DesMim;
-
-  // 1. yazmaçlar tüm mimariler tarafından destekleniyorsa
-  if(DesMim1 = dmTum) and (DesMim2 = dmTum) then
-  begin
-
-    // yazmaç uzunlukları birbirine eşit ise ...
-    if(YazmacListesi[GYazmac1].Uzunluk = YazmacListesi[GYazmac2].Uzunluk) then
-
-      Result := IslemKodunDegiskenKodlariniOlustur(SatirIcerik)
-    else Result := HATA_ISL_KOD_KULLANIM;
-  end
-
-  // 2. yazmaçlar SADECE 64 bit mimariler tarafından destekleniyorsa
-  else if(DesMim1 = dm64Bit) and (DesMim2 = dm64Bit) then
-  begin
-
-    Result := HATA_DEVAM_EDEN_CALISMA;
-
-    { TODO : REX çalışmaları buraya eklenecek }
-    {if(GAsm2.Mimari = mim64Bit) then
-    begin
-
-      KodEkle($31);
-      Result := IslemKodunDegiskenKodlariniOlustur(SatirIcerik);
-    end else Result := HATA_64BIT_MIMARI_GEREKLI;}
-  end
-end;
-
-function IslemKodunDegiskenKodlariniOlustur(SatirIcerik: TSatirIcerik): Integer;
-var
-  i: Byte;
-begin
-
-  // İşlemKodu Hedef_Yazmaç, Kaynak_Yazmaç
-  // 11_HY0_KY0 -> 11 = $C0, HY0 = Hedef Yazmaç, KY0 = Kaynak Yazmaç
-  // -----------------------
-  // 32 bit yazmaçtan 32 bit yazmaça aktarma işlemi. diğer yazmaçlar test edilsin
-  if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) and
-    (SatirIcerik.BolumTip2.BolumAnaTip = batYazmac) then
-  begin
-
-    i := $C0 or ((YazmacListesi[GYazmac2].Deger and 7) shl 3) or
-      (YazmacListesi[GYazmac1].Deger and 7);
-    KodEkle(i);
-    Result := HATA_YOK;
-  end;
 end;
 
 end.

@@ -4,7 +4,7 @@
 
   İşlev: işlem kodları (opcode) ve ilgili çağrı işlevlerini içerir
 
-  Güncelleme Tarihi: 24/03/2018
+  Güncelleme Tarihi: 03/05/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -92,7 +92,8 @@ const
   GRUP10_FXAM     = GRUP10_FYL2XP1 + 1;
   GRUP10_FXTRACT  = GRUP10_FXAM + 1;
   GRUP10_HLT 		  = GRUP10_FXTRACT + 1;
-  GRUP10_LAHF     = GRUP10_HLT + 1;
+  GRUP10_INTO     = GRUP10_HLT + 1;
+  GRUP10_LAHF     = GRUP10_INTO + 1;
   GRUP10_LEAVE    = GRUP10_LAHF + 1;
   GRUP10_LOCK     = GRUP10_LEAVE + 1;
   GRUP10_POPA	    = GRUP10_LOCK + 1;
@@ -122,7 +123,10 @@ const
   GRUP11_JMP      = GRUP11_INT + 1;
   GRUP11_JNZ      = GRUP11_JMP + 1;
   GRUP11_JZ       = GRUP11_JNZ + 1;
-  GRUP11_PUSH     = GRUP11_JZ + 1;
+  GRUP11_LODSB    = GRUP11_JZ + 1;
+  GRUP11_LODSD    = GRUP11_LODSB + 1;
+  GRUP11_LODSW    = GRUP11_LODSD + 1;
+  GRUP11_PUSH     = GRUP11_LODSW + 1;
   GRUP11_POP      = GRUP11_PUSH + 1;
 
   // 12. grup komutlar
@@ -142,7 +146,7 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
-  TOPLAM_KOMUT = 90;
+  TOPLAM_KOMUT = 94;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
   // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
@@ -205,6 +209,7 @@ const
   (Komut: 'fxam';               GrupNo: GRUP10_FXAM;          KomutTipi: ktIslemKodu),
   (Komut: 'fxtract';            GrupNo: GRUP10_FXTRACT;       KomutTipi: ktIslemKodu),
   (Komut: 'hlt';                GrupNo: GRUP10_HLT;           KomutTipi: ktIslemKodu),
+  (Komut: 'into';               GrupNo: GRUP10_INTO;          KomutTipi: ktIslemKodu),
   (Komut: 'lahf';               GrupNo: GRUP10_LAHF;          KomutTipi: ktIslemKodu),
   (Komut: 'leave';              GrupNo: GRUP10_LEAVE;         KomutTipi: ktIslemKodu),
   (Komut: 'lock';               GrupNo: GRUP10_LOCK;          KomutTipi: ktIslemKodu),
@@ -242,6 +247,9 @@ const
     (Komut: 'jmp';              GrupNo: GRUP11_JMP;           KomutTipi: ktIslemKodu),
     (Komut: 'jnz';              GrupNo: GRUP11_JNZ;           KomutTipi: ktIslemKodu),
     (Komut: 'jz';               GrupNo: GRUP11_JZ;            KomutTipi: ktIslemKodu),
+    (Komut: 'lodsb';            GrupNo: GRUP11_LODSB;         KomutTipi: ktIslemKodu),
+    (Komut: 'lodsd';            GrupNo: GRUP11_LODSD;         KomutTipi: ktIslemKodu),
+    (Komut: 'lodsw';            GrupNo: GRUP11_LODSW;         KomutTipi: ktIslemKodu),
     (Komut: 'push';             GrupNo: GRUP11_PUSH;          KomutTipi: ktIslemKodu),
     (Komut: 'pop';              GrupNo: GRUP11_POP;           KomutTipi: ktIslemKodu),
 
@@ -280,7 +288,7 @@ var
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev,
+    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
     {
     @Grup01Islev,           // cbw
     @Grup01Islev,           // cdq
@@ -291,6 +299,7 @@ var
     // 11. grup komutlar
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
+    @Grup11Islev, @Grup11Islev, @Grup11Islev,
 
     // 12. grup komutlar
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,

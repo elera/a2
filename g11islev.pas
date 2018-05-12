@@ -7,7 +7,7 @@
   11. grup kodlama işlevi, tek parametreli yazmaç, sabit değer ve segment
     değerlerinin işlendiği komutlardır
 
-  Güncelleme Tarihi: 19/03/2018
+  Güncelleme Tarihi: 11/05/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -23,7 +23,8 @@ procedure GoreceliDegerEkle;
 
 implementation
 
-uses kodlama, Dialogs, asm2, komutlar, yazmaclar, donusum, dbugintf, onekler;
+uses kodlama, Dialogs, asm2, komutlar, yazmaclar, donusum, dbugintf, onekler,
+  degerkodla;
 
   // ünite içi genel kullanımlık yerel değişkenler
 var
@@ -61,8 +62,6 @@ begin
   else if(VeriKontrolTip = vktYazmac) then
   begin
 
-    //SendDebug('G13-Yazmaç: ' + YazmacListesi[Veri2].Ad);
-
     if(SatirIcerik.BolumTip1.BolumAnaTip = batYok) then
     begin
 
@@ -75,8 +74,6 @@ begin
   end
   else if(VeriKontrolTip = vktKPAc) then
   begin
-
-    SendDebug('G13: vktKPAc');
 
     // daha önce köşeli parantez kullanılmışsa
     if(KoseliParantezSayisi > 0) then
@@ -94,8 +91,6 @@ begin
   else if(VeriKontrolTip = vktKPKapat) then
   begin
 
-    SendDebug('G13: vktKPKapat');
-
     // açılan parantez sayısı kadar parantez kapatılmalıdır
     if(KoseliParantezSayisi < 1) then
 
@@ -109,8 +104,6 @@ begin
   end
   else if(VeriKontrolTip = vktArti) then
   begin
-
-    //SendDebug('G13: Artı');
 
     // artı toplam değerinin kullanılması için tek bir köşeli parantez
     // açılması gerekmekte (bellek adresleme)
@@ -127,8 +120,6 @@ begin
   // ölçek (scale) - bellek adreslemede yazmaç ölçek değeri
   else if(VeriKontrolTip = vktOlcek) then
   begin
-
-    //SendDebug('G13: Ölçek');
 
     if(baOlcek in SatirIcerik.BolumTip1.BolumAyrinti) then
     begin
@@ -160,8 +151,6 @@ begin
   else if(VeriKontrolTip = vktSayi) then
   begin
 
-    //SendDebug('G13_Sayı: ' + IntToStr(Veri2));
-
     // ParcaNo 2 veya 3'ün bellek adreslemesi olması durumunda
     if(SatirIcerik.BolumTip1.BolumAnaTip = batYok) then
     begin
@@ -183,8 +172,39 @@ begin
   else if(VeriKontrolTip = vktSon) then
   begin
 
+    // lodsb / lodsw / lodsd komutları - (not: tamamlanmadı)
+    if(SatirIcerik.Komut.GrupNo = GRUP11_LODSB) or
+      (SatirIcerik.Komut.GrupNo = GRUP11_LODSD) or
+      (SatirIcerik.Komut.GrupNo = GRUP11_LODSW) then
+    begin
+
+      // herhangi bir öndeğer kullanılmamışsa
+      if(SatirIcerik.BolumTip1.BolumAyrinti = []) and (SatirIcerik.BolumTip2.BolumAyrinti = []) then
+      begin
+
+        case SatirIcerik.Komut.GrupNo of
+          GRUP11_LODSB: KodEkle($AC);
+
+          // $66 önekinin 16 / 32 / 64 / bitlik ortamlarda kullanımı aşağıdaki gibidir.
+          GRUP11_LODSD:
+          begin
+
+            if(GAsm2.Mimari = mim16Bit) then KodEkle($66);
+            KodEkle($AD);
+          end;
+          GRUP11_LODSW:
+          begin
+
+            if(GAsm2.Mimari <> mim16Bit) then KodEkle($66);
+            KodEkle($AD);
+          end;
+        end;
+
+        Result := HATA_YOK;
+      end else Result := HATA_DEVAM_EDEN_CALISMA;
+    end
     // int komutu
-    if(SatirIcerik.Komut.GrupNo = GRUP11_INT) then
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_INT) then
     begin
 
       // int 03
@@ -408,17 +428,13 @@ begin
         if(SatirIcerik.Komut.GrupNo = GRUP11_INC) then
         begin
 
-          SendDebug('G13_Yazmaç: ' + YazmacListesi[GYazmac1].Ad);
-
-          KodEkle($40 + (YazmacListesi[GYazmac1].Deger and 7));
+          YazmacAtamasiYap($40, GYazmac1);
           Result := HATA_YOK;
         end
         else if(SatirIcerik.Komut.GrupNo = GRUP11_DEC) then
         begin
 
-          //SendDebug('G13_Yazmaç: ' + YazmacListesi[GYazmac1].Ad);
-
-          KodEkle($48 + (YazmacListesi[GYazmac1].Deger and 7));
+          YazmacAtamasiYap($48, GYazmac1);
           Result := HATA_YOK;
         end
         // div komutu

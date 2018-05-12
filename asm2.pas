@@ -4,7 +4,7 @@
 
   İşlev: derleyici içerisinde kullanılan tüm sınıfları yönetecek ana sınıf
 
-  Güncelleme Tarihi: 15/04/2018
+  Güncelleme Tarihi: 29/04/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -106,7 +106,12 @@ begin
 
   // proje ve cikis dosya uzantısını değiştir
   FProjeDosyaUzanti := AProjeDosyaUzanti;
+
+  {$IFDEF Windows}
   FCikisDosyaUzanti := 'bin';
+  {$ELSE}
+  FCikisDosyaUzanti := '';
+  {$ENDIF}
 end;
 
 function TAsm2.ProgramAyarDosyasiniOku: TProgramAyarlari;

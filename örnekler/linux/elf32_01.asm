@@ -1,0 +1,482 @@
+;---------------------------------------------------------------------
+; program biçimi: çalıştırılabilir
+; program tanımı: linux ortamında çalışan ELF32 biçiminde yazı mod uygulaması
+; linux ortamında çalışacak program kodları - başlangıç
+; http://www.wiki-zero.net/index.php?q=aHR0cHM6Ly9lbi53aWtpcGVkaWEub3JnL3dpa2kvRXhlY3V0YWJsZV9hbmRfTGlua2FibGVfRm9ybWF0
+;---------------------------------------------------------------------
+kod.adres = 8048000h
+
+TEMEL_ADRES = 8048000h
+
+program_başlangıç:
+
+MAKİNE_TİP_I386 = 14Ch
+MAKİNE_TİP_X64 = 8664h
+
+kod.mimari = '32Bit'
+
+
+        db      7Fh, 45h, 4Ch, 46h
+        db      1
+        db      1
+        db      1
+        db	0
+        db	0
+        db	0, 0, 0, 0, 0, 0, 0
+        dw	2
+        dw      3
+        dd      1
+        dd      kod_başlangıç
+        dd      pb_tablo-TEMEL_ADRES
+        dd      bb_başlangıç-TEMEL_ADRES
+        dd      0
+        dw	34h
+        dw      20h
+        dw      2h
+        dd	28h
+        dw      6
+        dw	3
+
+pb_tablo:
+        ; bölüm-1
+        dd	1
+        dd	0
+        dd      program_başlangıç
+        dd      program_başlangıç
+        dd      0A2h
+        dd      0A2h
+        dd      5
+        dd	1000h
+
+        ; bölüm-2
+        dd      1
+        dd	0A4h
+        dd      veri_başlangıç
+        dd      veri_başlangıç
+        dd	0Dh
+        dd	0Dh
+        dd	6
+        dd	1000h
+
+kod.tabaka = 80h
+
+kod_başlangıç:
+
+        mov     edx,13
+        mov     ecx,veri1
+        mov     ebx,1
+        mov     eax,4
+        int     80h
+
+        mov     ebx,0
+        mov     eax,1
+        int     80h
+
+kod.tabaka = 4
+kod.adres = %BURASI+1000h
+veri_başlangıç:
+veri1:
+        db      '<Merhaba a2>', 10
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	080h
+db	080h
+db	004h
+db	008h
+db	000h
+db	000h
+db	000h
+db	000h
+db	003h
+db	000h
+db	001h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	0A4h
+db	090h
+db	004h
+db	008h
+db	000h
+db	000h
+db	000h
+db	000h
+db	003h
+db	000h
+db	002h
+db	000h
+db	001h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	004h
+db	000h
+db	0F1h
+db	0FFh
+db	010h
+db	000h
+db	000h
+db	000h
+db	0A4h
+db	090h
+db	004h
+db	008h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	002h
+db	000h
+db	019h
+db	000h
+db	000h
+db	000h
+db	080h
+db	080h
+db	004h
+db	008h
+db	000h
+db	000h
+db	000h
+db	000h
+db	010h
+db	000h
+db	001h
+db	000h
+db	014h
+db	000h
+db	000h
+db	000h
+db	0B1h
+db	090h
+db	004h
+db	008h
+db	000h
+db	000h
+db	000h
+db	000h
+db	010h
+db	000h
+db	002h
+db	000h
+db	020h
+db	000h
+db	000h
+db	000h
+db	0B1h
+db	090h
+db	004h
+db	008h
+db	000h
+db	000h
+db	000h
+db	000h
+db	010h
+db	000h
+db	002h
+db	000h
+db	027h
+db	000h
+db	000h
+db	000h
+db	0B4h
+db	090h
+db	004h
+db	008h
+db	000h
+db	000h
+db	000h
+db	000h
+db	010h
+db	000h
+db	002h
+db	000h
+db	000h
+        db      'helloworld'
+db	02Eh
+        db      'asm.msg', 0
+        db      '__bss_start', 0
+        db      '_edata', 0
+        db      '_end', 0
+        db	0
+
+        db      '.symtab', 0
+        db      '.strtab', 0
+        db      '.shstrtab', 0
+        db      '.text', 0
+        db      '.data', 0
+        db	0
+bb_başlangıç:
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	01Bh
+db	000h
+db	000h
+db	000h
+db	001h
+db	000h
+db	000h
+db	000h
+db	006h
+db	000h
+db	000h
+db	000h
+db	080h
+db	080h
+db	004h
+db	008h
+db	080h
+db	000h
+db	000h
+db	000h
+db	022h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	010h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	021h
+db	000h
+db	000h
+db	000h
+db	001h
+db	000h
+db	000h
+db	000h
+db	003h
+db	000h
+db	000h
+db	000h
+db	0A4h
+db	090h
+db	004h
+db	008h
+db	0A4h
+db	000h
+db	000h
+db	000h
+db	00Dh
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	004h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	011h
+db	000h
+db	000h
+db	000h
+db	003h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	070h
+db	001h
+db	000h
+db	000h
+db	027h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	001h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	001h
+db	000h
+db	000h
+db	000h
+db	002h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	0B4h
+db	000h
+db	000h
+db	000h
+db	090h
+db	000h
+db	000h
+db	000h
+db	005h
+db	000h
+db	000h
+db	000h
+db	005h
+db	000h
+db	000h
+db	000h
+db	004h
+db	000h
+db	000h
+db	000h
+db	010h
+db	000h
+db	000h
+db	000h
+db	009h
+db	000h
+db	000h
+db	000h
+db	003h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	044h
+db	001h
+db	000h
+db	000h
+db	02Ch
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	001h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
+db	000h
