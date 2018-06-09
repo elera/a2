@@ -4,7 +4,7 @@
 
   İşlev: işlem kodları (opcode) ve ilgili çağrı işlevlerini içerir
 
-  Güncelleme Tarihi: 03/05/2018
+  Güncelleme Tarihi: 09/06/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -110,7 +110,11 @@ const
   GRUP10_RDTSCP   = GRUP10_RDTSC + 1;
   GRUP10_STC 		  = GRUP10_RDTSCP + 1;
   GRUP10_STI 		  = GRUP10_STC + 1;
-  GRUP10_SYSCALL  = GRUP10_STI + 1;
+  GRUP10_STOSB    = GRUP10_STI + 1;
+  GRUP10_STOSD    = GRUP10_STOSB + 1;
+  GRUP10_STOSW    = GRUP10_STOSD + 1;
+  GRUP10_STOSQ    = GRUP10_STOSW + 1;
+  GRUP10_SYSCALL  = GRUP10_STOSQ + 1;
   GRUP10_SYSENTER = GRUP10_SYSCALL + 1;
   GRUP10_WBINVD   = GRUP10_SYSENTER + 1;
 
@@ -118,7 +122,9 @@ const
   GRUP11_CALL     = $110001;
   GRUP11_DEC      = GRUP11_CALL + 1;
   GRUP11_DIV      = GRUP11_DEC + 1;
-  GRUP11_INC      = GRUP11_DIV + 1;
+  GRUP11_FLD      = GRUP11_DIV + 1;
+  GRUP11_FST      = GRUP11_FLD + 1;
+  GRUP11_INC      = GRUP11_FST + 1;
   GRUP11_INT      = GRUP11_INC + 1;
   GRUP11_JMP      = GRUP11_INT + 1;
   GRUP11_JNZ      = GRUP11_JMP + 1;
@@ -135,7 +141,11 @@ const
   GRUP12_LEA      = GRUP12_CMP + 1;
   GRUP12_MOV      = GRUP12_LEA + 1;
   GRUP12_OR       = GRUP12_MOV + 1;
-  GRUP12_SUB      = GRUP12_OR  + 1;
+  GRUP12_RCL      = GRUP12_OR + 1;
+  GRUP12_RCR      = GRUP12_RCL + 1;
+  GRUP12_ROL      = GRUP12_RCR + 1;
+  GRUP12_ROR      = GRUP12_ROL + 1;
+  GRUP12_SUB      = GRUP12_ROR + 1;
   GRUP12_XOR      = GRUP12_SUB + 1;
 
   {
@@ -146,7 +156,7 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
-  TOPLAM_KOMUT = 94;
+  TOPLAM_KOMUT = 104;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
   // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
@@ -227,6 +237,10 @@ const
   (Komut: 'rdtscp';             GrupNo: GRUP10_RDTSCP;        KomutTipi: ktIslemKodu),
   (Komut: 'stc';                GrupNo: GRUP10_STC;           KomutTipi: ktIslemKodu),
   (Komut: 'sti';                GrupNo: GRUP10_STI;           KomutTipi: ktIslemKodu),
+  (Komut: 'stosb';              GrupNo: GRUP10_STOSB;         KomutTipi: ktIslemKodu),
+  (Komut: 'stosd';              GrupNo: GRUP10_STOSD;         KomutTipi: ktIslemKodu),
+  (Komut: 'stosw';              GrupNo: GRUP10_STOSW;         KomutTipi: ktIslemKodu),
+  (Komut: 'stosq';              GrupNo: GRUP10_STOSQ;         KomutTipi: ktIslemKodu),
   (Komut: 'syscall';            GrupNo: GRUP10_SYSCALL;       KomutTipi: ktIslemKodu),
   (Komut: 'sysenter';           GrupNo: GRUP10_SYSENTER;      KomutTipi: ktIslemKodu),
   (Komut: 'wbinvd';             GrupNo: GRUP10_WBINVD;        KomutTipi: ktIslemKodu),
@@ -242,6 +256,8 @@ const
     (Komut: 'call';             GrupNo: GRUP11_CALL;          KomutTipi: ktIslemKodu),
     (Komut: 'dec';              GrupNo: GRUP11_DEC;           KomutTipi: ktIslemKodu),
     (Komut: 'div';              GrupNo: GRUP11_DIV;           KomutTipi: ktIslemKodu),
+    (Komut: 'fld';              GrupNo: GRUP11_FLD;           KomutTipi: ktIslemKodu),
+    (Komut: 'fst';              GrupNo: GRUP11_FST;           KomutTipi: ktIslemKodu),
     (Komut: 'inc';              GrupNo: GRUP11_INC;           KomutTipi: ktIslemKodu),
     (Komut: 'int';              GrupNo: GRUP11_INT;           KomutTipi: ktIslemKodu),
     (Komut: 'jmp';              GrupNo: GRUP11_JMP;           KomutTipi: ktIslemKodu),
@@ -259,6 +275,10 @@ const
     (Komut: 'lea';              GrupNo: GRUP12_LEA;           KomutTipi: ktIslemKodu),
     (Komut: 'mov';              GrupNo: GRUP12_MOV;           KomutTipi: ktIslemKodu),
     (Komut: 'or';               GrupNo: GRUP12_OR;            KomutTipi: ktIslemKodu),
+    (Komut: 'rcl';              GrupNo: GRUP12_RCL;           KomutTipi: ktIslemKodu),
+    (Komut: 'rcr';              GrupNo: GRUP12_RCR;           KomutTipi: ktIslemKodu),
+    (Komut: 'rol';              GrupNo: GRUP12_ROL;           KomutTipi: ktIslemKodu),
+    (Komut: 'ror';              GrupNo: GRUP12_ROR;           KomutTipi: ktIslemKodu),
     (Komut: 'sub';              GrupNo: GRUP12_SUB;           KomutTipi: ktIslemKodu),
     (Komut: 'xor';              GrupNo: GRUP12_XOR;           KomutTipi: ktIslemKodu)
 
@@ -288,7 +308,8 @@ var
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
+    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
+    @Grup10Islev, @Grup10Islev, @Grup10Islev,
     {
     @Grup01Islev,           // cbw
     @Grup01Islev,           // cdq
@@ -299,11 +320,12 @@ var
     // 11. grup komutlar
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev, @Grup11Islev,
+    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
 
     // 12. grup komutlar
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
-    @Grup12Islev, @Grup12Islev
+    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
+    @Grup12Islev
   );
 
 function KomutBilgisiAl(AKomut: string): TKomutDurum;

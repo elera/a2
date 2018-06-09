@@ -4,7 +4,7 @@
 
   İşlev: derleyici tarafından atanan etiket ve tanım değerlerini görüntüler
 
-  Güncelleme Tarihi: 07/03/2018
+  Güncelleme Tarihi: 02/06/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -14,13 +14,18 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ComCtrls,
-    ExtCtrls;
+    ExtCtrls, StdCtrls;
 
 type
   TfrmAtamalar = class(TForm)
     ilGenel: TImageList;
+    Image1: TImage;
+    Image2: TImage;
+    Label1: TLabel;
+    Label3: TLabel;
+    lblToplamNesne: TLabel;
     lvEtiketler: TListView;
-    sbDurum: TStatusBar;
+    pnlBilgi: TPanel;
     procedure FormShow(Sender: TObject);
     procedure lvEtiketlerKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -56,7 +61,7 @@ begin
     Atama := GAsm2.AtamaListesi.Eleman[i];
 
     li := lvEtiketler.Items.Add;
-    if(Atama.Tip = etEtiket) then
+    if(Atama.Tip = atEtiket) then
       li.ImageIndex := 0
     else li.ImageIndex := 1;
     li.Caption := '';
@@ -65,7 +70,7 @@ begin
     li.SubItems.Add(IntToStr(Ord(Atama.Tip)));
 
     // bellek adresi SADECE etiketlere özgüdür
-    if(Atama.Tip = etEtiket) then
+    if(Atama.Tip = atEtiket) then
     begin
 
       if(Atama.BellekAdresi = 0) then
@@ -87,7 +92,7 @@ begin
     end;
   end;
 
-  sbDurum.SimpleText := 'Toplam Etiket Sayısı: ' + IntToStr(EtiketU);
+  lblToplamNesne.Caption := 'Toplam Eleman Sayısı: ' + IntToStr(EtiketU);
 end;
 
 procedure TfrmAtamalar.lvEtiketlerKeyDown(Sender: TObject; var Key: Word;

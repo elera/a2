@@ -91,7 +91,7 @@ into
 *jge
 *jl
 *jle
-*jmp
+jmp
 *jna
 *jnae
 *jnb
@@ -166,9 +166,10 @@ rdtscp
 *sidt
 stc
 sti
-*stosb
-*stosd
-*stosw
+stosb
+stosd
+stosw
+stosq
 *sub
 syscall
 sysenter

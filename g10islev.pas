@@ -6,7 +6,7 @@
 
   10. grup kodlama işlevi, SADECE işlem kodunun (opcode) işlendiği komutlardır
 
-  Güncelleme Tarihi: 03/05/2018
+  Güncelleme Tarihi: 06/06/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -83,6 +83,39 @@ function Grup10Islev(SatirNo: Integer; ParcaNo: Integer;
     KodEkle(Kod3);
     Result := HATA_YOK;
   end;
+
+  // 16 / 32 / 64 bitlik genel kodlama
+  function KodOlustur4(Mimari: TMimari; Kod: Byte): Integer;
+  begin
+
+    // 64 bitlik mimari ve sadece 64 bitlik mimaride çalışacak kodlar
+    if(Mimari = mim64Bit) then
+    begin
+
+      if(Mimari = GAsm2.Mimari) then
+      begin
+
+        KodEkle($48);
+        KodEkle(Kod);
+        Result := HATA_YOK;
+      end else Result := HATA_64BIT_MIMARI_GEREKLI;
+    end
+    // 16 / 32 bitlik mimari
+    else if(Mimari <> GAsm2.Mimari) then
+    begin
+
+      KodEkle($66);
+      KodEkle(Kod);
+      Result := HATA_YOK;
+    end
+    else
+    begin
+
+      KodEkle(Kod);
+      Result := HATA_YOK;
+    end;
+  end;
+
 begin
 
   if(VeriKontrolTip = vktIlk) then
@@ -156,6 +189,10 @@ begin
       GRUP10_RDTSCP:      Result := KodOlustur3($0F, $01, $F9);
       GRUP10_STC:         Result := KodOlustur1($F9);
       GRUP10_STI:         Result := KodOlustur1($FB);
+      GRUP10_STOSB:       Result := KodOlustur1($AA);
+      GRUP10_STOSD:       Result := KodOlustur4(mim32Bit, $AB);
+      GRUP10_STOSW:       Result := KodOlustur4(mim16Bit, $AB);
+      GRUP10_STOSQ:       Result := KodOlustur4(mim64Bit, $AB);
       GRUP10_SYSCALL:     Result := KodOlustur22($0F, $05);
       GRUP10_SYSENTER:    Result := KodOlustur2($0F, $34);
       GRUP10_WBINVD:      Result := KodOlustur2($0F, $09);
@@ -172,7 +209,7 @@ begin
 
     GHataAciklama := Veri1;
     Result := HATA_BEKLENMEYEN_IFADE;
-  end
+  end;
 end;
 
 end.

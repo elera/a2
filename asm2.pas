@@ -18,9 +18,6 @@ type
   TMimari = (mim16Bit, mim32Bit, mim64Bit);
 
 type
-
-  { TAsm2 }
-
   TAsm2 = class
   private
     FMimari: TMimari;

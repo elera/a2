@@ -221,6 +221,20 @@ begin
 
       Result := HATA_YOK;
     end
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_JMP) then
+    begin
+
+      // GSabitDeger verisi byte olarak değerlendirildi.
+      // diğer (16 / 32 / 64 bit) veriler de değerlendiirlecek
+      if(GSabitDeger < (MevcutBellekAdresi + 2)) then
+        ii := -((MevcutBellekAdresi + 2) - GSabitDeger)
+      else ii := GSabitDeger - (MevcutBellekAdresi + 2);
+
+      KodEkle($EB);
+
+      KodEkle(ii);
+      Result := HATA_YOK;
+    end
     // jcc komutları
     else if(SatirIcerik.Komut.GrupNo = GRUP11_JNZ) or
       (SatirIcerik.Komut.GrupNo = GRUP11_JZ) then
@@ -418,6 +432,7 @@ begin
         end
       end;
     end
+    // öndeğerin yazmaç olarak değerlendirilmesi
     // INC ve DEC komutları incelenmiştir
     else if(baHedefYazmac in SatirIcerik.BolumTip1.BolumAyrinti) then
     begin

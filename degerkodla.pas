@@ -5,7 +5,7 @@
   İşlev: işlem kodundan sonraki 1 veya 2 öndeğerin (parametre) kodlamasını
     gerçekleştirir
 
-  Güncelleme Tarihi: 02/05/2018
+  Güncelleme Tarihi: 09/06/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -33,8 +33,11 @@ uses paylasim, yazmaclar, genel, kodlama;
 function YazmacAtamasiYap(IslemKodu: Byte; Yazmac1: Integer): Integer;
 function YazmactanYazmacaAtamaYap(SatirIcerik: TSatirIcerik; Yazmac1,
   Yazmac2: Integer): Integer;
+function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string): Integer;
 
 implementation
+
+uses sysutils;
 
 // 1.2 - işlem kodu kullanımı
 { TODO : çalışma genişletilecek ve tamamlanacak }
@@ -93,6 +96,21 @@ begin
       Result := IslemKodunDegiskenKodlariniOlustur(SatirIcerik);
     end else Result := HATA_64BIT_MIMARI_GEREKLI;}
   end
+end;
+
+function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string): Integer;
+var
+  KNSayi: Double;
+  p: PByte;
+  i: Integer;
+begin
+
+  KNSayi := StrToFloat(StringReplace(KayanNoktaSayi, '.',  ',' ,[]));
+  p := @KNSayi;
+
+  for i := 0 to 7 do begin KodEkle(p^); Inc(p); end;
+
+  Result := HATA_YOK;
 end;
 
 end.

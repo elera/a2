@@ -183,7 +183,7 @@ var
             // 1. tanım etiketini listeye ekle
             // { TODO : tvtTanimsiz incelensin }
             if(ParcaNo = 2) then Result := GAsm2.AtamaListesi.Ekle(SatirNo, GTanimlanacakVeri,
-              etEtiket, MevcutBellekAdresi, tvtTanimsiz, '', 0);
+              atEtiket, MevcutBellekAdresi, tvtTanimsiz, '', 0);
 
             // 2. hata olmaması durumunda ilgili işleve çağrıda bulun
             if(Result = HATA_YOK) then
@@ -231,11 +231,15 @@ var
     else if(_AVeriKontrolTip = vktOlcek) or (_AVeriKontrolTip = vktSayi) then
     begin
 
-      {if(SatirIcerik.Komut.KomutTipi = ktDegisken) then
-        SendDebug('VirgülX: ' + IntToStr(AVeri2));}
-
       SonVeriKontrolTip := _AVeriKontrolTip;
       Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', AVeri2);
+    end
+    // kayan nokta verilerinin işlenmesi
+    else if(_AVeriKontrolTip = vktKayanNokta64)then
+    begin
+
+      SonVeriKontrolTip := _AVeriKontrolTip;
+      Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, AVeri1, 0);
     end
     else if(_AVeriKontrolTip = vktVirgul) then
     begin
@@ -420,7 +424,7 @@ var
 //              (_Degisken.VeriTipi = tvtTanimsiz) then
             //begin
 
-              if(_Atama.Tip = etEtiket) then
+              if(_Atama.Tip = atEtiket) then
                 SayisalDeger := _Atama.BellekAdresi
               else //if(_Degisken.VeriTipi = tvtSayi) then
                 SayisalDeger := _Atama.iDeger;
@@ -526,7 +530,7 @@ begin
 
     // satır içeriğini kontrol edecek kontrol değer kahramanları
     if not(dvAciklama in SatirIcerik.DigerVeri) and
-      (C in [' ', '''', ',', ':', ';', '=', '(', ')', '[', ']', '+', '-',
+      (C in [' ', '''', '.', ',', ':', ';', '=', '(', ')', '[', ']', '+', '-',
         '*', '/', '%', #9]) then
     begin
 
@@ -853,7 +857,7 @@ begin
 
               // etiketin mevcut olup olmadığını gerçekleştir
               GHataKodu := GAsm2.AtamaListesi.Ekle(SatirNo, SatirIcerik.Etiket,
-                etEtiket, MevcutBellekAdresi, tvtSayi, '', 0);
+                atEtiket, MevcutBellekAdresi, tvtSayi, '', 0);
 
               if(GHataKodu = HATA_YOK) then
               begin
@@ -865,6 +869,16 @@ begin
           end;
           { *** Etiket İşlevi <<<<<<<<<<<<<<<<<<<< }
         end;
+      end
+      else if(C = '.') then
+      begin
+
+        // eğer değer sayı olarak belirlenmişse, kayan nokta sayı olarak değiştir
+        if(VeriTipi = tvtSayi) then VeriTipi := tvtKayanNokta64;
+
+        Komut += C;
+        Inc(KomutUz);
+        GHataKodu := HATA_YOK;
       end
       // boşluk karakteri SADECE işlem kodunu almak için kullanılıyor
       else if(C = ' ') or (C = #9) then
@@ -1050,6 +1064,12 @@ begin
           begin
 
             GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);
+          end
+          else if(VeriTipi = tvtKayanNokta64) then
+          begin
+
+            GHataKodu := KomutYorumla(ParcaNo, vktKayanNokta64, Komut, 0);
+            if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
           end
           else if(VeriTipi = tvtSayi) then
           begin

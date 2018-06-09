@@ -126,7 +126,7 @@ begin
       begin
 
         VeriUzunlugu := Length(sTanim);
-        Result := GAsm2.AtamaListesi.Ekle(SatirNo, Tanimlanan, etTanim, -1,
+        Result := GAsm2.AtamaListesi.Ekle(SatirNo, Tanimlanan, atTanim, -1,
           tvtKarakterDizisi, sTanim, 0);
 
         Result := HATA_YOK;
@@ -134,7 +134,7 @@ begin
       else if(VeriTipi = tvtSayi) then
       begin
 
-        Result := GAsm2.AtamaListesi.Ekle(SatirNo, Tanimlanan, etTanim, -1,
+        Result := GAsm2.AtamaListesi.Ekle(SatirNo, Tanimlanan, atTanim, -1,
           tvtSayi, '', iTanim);
 
         Result := HATA_YOK;

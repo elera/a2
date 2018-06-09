@@ -21,7 +21,7 @@ interface
 uses Classes, SysUtils, paylasim;
 
 type
-  TAtamaTipi = (etEtiket, etTanim);
+  TAtamaTipi = (atEtiket, atTanim);
 
 type
   TAtama = class(TCollectionItem)
@@ -128,7 +128,7 @@ begin
     Etiket.Adi := s;
     Etiket.Tip := AtamaTipi;
 
-    if(AtamaTipi = etEtiket) then Etiket.BellekAdresi := BellekAdresi;
+    if(AtamaTipi = atEtiket) then Etiket.BellekAdresi := BellekAdresi;
 
     Etiket.VeriTipi := VeriTipi;
 
@@ -166,7 +166,7 @@ begin
       Etiket.Adi := s;
       Etiket.Tip := AtamaTipi;
 
-      if(AtamaTipi = etEtiket) then Etiket.BellekAdresi := BellekAdresi;
+      if(AtamaTipi = atEtiket) then Etiket.BellekAdresi := BellekAdresi;
 
       Etiket.VeriTipi := VeriTipi;
 

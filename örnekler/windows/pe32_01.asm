@@ -1,8 +1,8 @@
-;---------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 ; proje adı: pe32_01.asm
 ; program biçimi: çalıştırılabilir
 ; program tanımı: windows ortamında çalışan 32 bitlik uygulama
-;---------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 TEMEL_ADRES = 400000h
 
 MAKİNE_TİP_I386 = 14Ch
@@ -104,15 +104,9 @@ kod.adres = 401000h
 kod_başlangıç:
 
 ; grafiksel arabirim kodları
-;----------------------------------------------------------------
-
-        mov     eax,700
-        mov     ebx,14
-        add     eax,ebx
-
+;-------------------------------------------------------------------------------
+        mov     eax,[SayisalDeger]
         mov     edi,PencereMesaj+9
-        mov     ebx,3
-        mov     ecx,4
 
 sonraki_basamak:
 
@@ -144,10 +138,12 @@ kod.tabaka = 200h
 
 veri_başlangıç:
 PencereBaşlık:	db	'Assembler 2 (a2)', 0
+PencereBaşlık2:	db	'Assembler 2 (a2)-2', 0
 PencereMesaj:	db	'0000000000', 0
+SayisalDeger    dd      09062018
 
 ; program içerisinde kullanılacak sistem işlevleri (import table)
-;---------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 kod.tabaka = 4
 girdiler_başlangıç:
 	dd	0, 0, 0, kernel32_dll - TEMEL_ADRES, ExitProcessİşlevi - TEMEL_ADRES
@@ -183,6 +179,6 @@ girdiler_son:
 bölüm1_son:
 
 program_son:
-;---------------------------------------------------------------------
+;-------------------------------------------------------------------------------
 ; windows ortamında çalışacak program kodları - son
-;---------------------------------------------------------------------
+;-------------------------------------------------------------------------------

@@ -56,25 +56,30 @@ begin
   else if(VeriKontrolTip = vktYazmac) then
   begin
 
+    //  "işlemkodu hedef, kaynak"
+    // virgülden önceki hedef alan değerlendirilmeye alınıyor
     if(ParcaNo = 2) then
     begin
 
+      // hedef alan öndeğer tipi daha önce belirlenmemişse
       if(SatirIcerik.BolumTip1.BolumAnaTip = batYok) then
-        SatirIcerik.BolumTip1.BolumAnaTip := batYazmac;
-
-      if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) then
       begin
 
-        //SendDebug('G12_Yazmaç1: ' + IntToStr(Veri2));
+        SatirIcerik.BolumTip1.BolumAnaTip := batYazmac;
+        SatirIcerik.BolumTip1.BolumAyrinti += [baHedefYazmac];
         GYazmac1 := Veri2;
-        SatirIcerik.BolumTip1.BolumAyrinti += [baHedefYazmac];  // ?
         Result := HATA_YOK;
+      end
+      // yazmaç olan bölgeye yeniden değer ataması yapılıyorsa
+      else if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) then
+      begin
+
+        Result := HATA_ISL_KULLANIM;
       end
       else //if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
       begin
 
-        //SendDebug('G12_6: ' + IntToStr(Veri2));
-
+        // sorgulanan durum -> işlemkodu [baBellekYazmac1 + baBellekYazmac2], xyz
         if(baBellekYazmac1 in SatirIcerik.BolumTip1.BolumAyrinti) then
         begin
 
@@ -86,7 +91,6 @@ begin
           else
           begin
 
-            SendDebug('G12_YazmaçB2: ' + YazmacListesi[Veri2].Ad);
             SatirIcerik.BolumTip1.BolumAyrinti += [baBellekYazmac2];
             GYazmacB2 := Veri2;
             Result := HATA_YOK;
@@ -95,7 +99,6 @@ begin
         else
         begin
 
-          SendDebug('G12_YazmaçB1: ' + YazmacListesi[Veri2].Ad);
           GYazmacB1 := Veri2;
           SatirIcerik.BolumTip1.BolumAyrinti += [baBellekYazmac1];
           Result := HATA_YOK;
@@ -104,8 +107,6 @@ begin
     end
     else if(ParcaNo = 3) then
     begin
-
-      //SendDebug('G12_Yazmaç12_2: ' + YazmacListesi[Veri2].Ad);
 
       // 3. parça işlenmeden önce virgülün kullanılıp kullanılmadığı test edilmektedir
       if not VirgulKullanildi then
@@ -116,23 +117,31 @@ begin
       else
       begin
 
-        if(SatirIcerik.BolumTip2.BolumAnaTip = batYok) then
-          SatirIcerik.BolumTip2.BolumAnaTip := batYazmac;
-
-        if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) then
+        // her iki alan bellek bölgesi ataması olamaz
+        if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) and
+          (SatirIcerik.BolumTip2.BolumAnaTip = batBellek) then
         begin
 
-          GYazmac2 := Veri2;
+          Result := HATA_BELLEKTEN_BELLEGE;
+        end
+        // sorgulanan durum -> işlemkodu xyz, [baBellekYazmac1 + baBellekYazmac2]
+        else if(SatirIcerik.BolumTip2.BolumAnaTip = batYok) then
+        begin
+
+          SatirIcerik.BolumTip2.BolumAnaTip := batYazmac;
           SatirIcerik.BolumTip2.BolumAyrinti += [baKaynakYazmac];
+          GYazmac2 := Veri2;
           Result := HATA_YOK;
         end
-        else
+
+        else //if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
         begin
 
-          if(baBellekYazmac1 in SatirIcerik.BolumTip1.BolumAyrinti) then
+          // sorgulanan durum -> işlemkodu [baBellekYazmac1 + baBellekYazmac2], xyz
+          if(baBellekYazmac1 in SatirIcerik.BolumTip2.BolumAyrinti) then
           begin
 
-            if(baBellekYazmac2 in SatirIcerik.BolumTip1.BolumAyrinti) then
+            if(baBellekYazmac2 in SatirIcerik.BolumTip2.BolumAyrinti) then
             begin
 
               Result := HATA_ISL_KOD_KULLANIM
@@ -140,7 +149,7 @@ begin
             else
             begin
 
-              SatirIcerik.BolumTip1.BolumAyrinti += [baBellekYazmac2];
+              SatirIcerik.BolumTip2.BolumAyrinti += [baBellekYazmac2];
               GYazmacB2 := Veri2;
               Result := HATA_YOK;
             end;
@@ -149,7 +158,7 @@ begin
           begin
 
             GYazmacB1 := Veri2;
-            SatirIcerik.BolumTip1.BolumAyrinti += [baBellekYazmac1];
+            SatirIcerik.BolumTip2.BolumAyrinti += [baBellekYazmac1];
             Result := HATA_YOK;
           end;
         end;
@@ -158,8 +167,6 @@ begin
   end
   else if(VeriKontrolTip = vktVirgul) then
   begin
-
-    SendDebug('G12_vktVirgul');
 
     // virgül kullanılmadan önce:
     // 1. yazmaç değeri kullanılmamışsa
@@ -186,8 +193,6 @@ begin
   else if(VeriKontrolTip = vktKPAc) then
   begin
 
-    SendDebug('G12_vktKPAc');
-
     // daha önce köşeli parantez kullanılmışsa
     if(KoseliParantezSayisi > 0) then
 
@@ -211,8 +216,6 @@ begin
   end
   else if(VeriKontrolTip = vktKPKapat) then
   begin
-
-    SendDebug('G12_vktKPKapat');
 
     // açılan parantez sayısı kadar parantez kapatılmalıdır
     if(KoseliParantezSayisi < 1) then
@@ -341,33 +344,6 @@ begin
         Result := HATA_YOK;
       end else Result := HATA_ISL_KOD_KULLANIM;
     end;
-
-    {if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) or
-      (SatirIcerik.BolumTip2.BolumAnaTip = batBellek) then
-    begin
-
-      if not(baBellekSabitDeger in SatirIcerik.BolumTip1.BolumAyrinti) then
-      begin
-
-        SatirIcerik.BolumTip1.BolumAyrinti += [baBellekSabitDeger];
-        GSabitDeger := Veri2;
-        Result := HATA_YOK;
-      end
-      else
-      begin
-
-        Result := HATA_ISL_KOD_KULLANIM;
-      end;
-    end
-    else if(SatirIcerik.BolumTip2.BolumAnaTip = batYok) {and (ParcaNo = 3)} then
-    begin
-
-      //SendDebug('G12_Sayı1: ' + IntToStr(Veri2));
-      SatirIcerik.BolumTip1.BolumAnaTip := batSayisalDeger;
-      SatirIcerik.BolumTip1.BolumAyrinti += [baSabitDeger];
-      GSabitDeger := Veri2;
-      Result := HATA_YOK;
-    end else Result := HATA_ISL_KOD_KULLANIM;}
   end
   // son kontroller bu aşamada gerçekleştirilecek
   else if(VeriKontrolTip = vktSon) then
@@ -551,15 +527,33 @@ begin
         else if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
         begin
 
-          // 64 bitlik yazmacın 32 bitlik alanı kullanılıyorsa
-          if(YazmacListesi[GYazmac1].DesMim = dm64Bit) then KodEkle($41);
-
-          KodEkle($B8 + (YazmacListesi[GYazmac1].Deger and 7));
-          for i := 1 to 4 do
+          // 32 bitlik bellek alanına bellek değeri aktarılacaksa
+          if(SatirIcerik.BolumTip2.BolumAnaTip = batBellek) then
           begin
 
-            KodEkle(Byte(GSabitDeger));
-            GSabitDeger := GSabitDeger shr 8;
+            { TODO : mov  eax,[bellek_adresi] için geçici olarak eklendi. genişletilecek }
+            KodEkle($A1);
+            for i := 1 to 4 do
+            begin
+
+              KodEkle(Byte(GBellekSabitDeger));
+              GBellekSabitDeger := GBellekSabitDeger shr 8;
+            end;
+            Result := HATA_YOK;
+          end
+          else
+          begin
+
+            // 64 bitlik yazmacın 32 bitlik alanı kullanılıyorsa
+            if(YazmacListesi[GYazmac1].DesMim = dm64Bit) then KodEkle($41);
+
+            KodEkle($B8 + (YazmacListesi[GYazmac1].Deger and 7));
+            for i := 1 to 4 do
+            begin
+
+              KodEkle(Byte(GSabitDeger));
+              GSabitDeger := GSabitDeger shr 8;
+            end;
             Result := HATA_YOK;
           end;
         end
@@ -627,6 +621,28 @@ begin
           end else Result := HATA_64BIT_MIMARI_GEREKLI;
         end else Result := HATA_BILINMEYEN_HATA;
       end;
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP12_RCL) then
+    begin
+
+      SendDebug('RCL->Yazmaç: ' + YazmacListesi[GYazmac1].Ad);
+      SendDebug('RCL->Değer: ' + IntToStr(GSabitDeger));
+      Result := HATA_YOK;
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP12_RCR) then
+    begin
+
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP12_ROL) then
+    begin
+
+      KodEkle($D1);
+      KodEkle($C3);
+      Result := HATA_YOK;
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP12_ROR) then
+    begin
+
     end
     else if(SatirIcerik.Komut.GrupNo = GRUP12_XOR) then
     begin

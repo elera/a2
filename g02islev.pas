@@ -21,7 +21,7 @@ function Grup02Degisken(SatirNo: Integer; ParcaNo: Integer;
 
 implementation
 
-uses donusum, komutlar, kodlama, onekler;
+uses donusum, komutlar, kodlama, onekler, degerkodla, dbugintf;
 
 var
   SayiTipi: TVeriGenisligi;
@@ -142,7 +142,22 @@ begin
         Result := HATA_YOK;
       end else Result := HATA_SAYISAL_DEGER;
     end;
-  end else if(VeriKontrolTip = vktVirgul) then
+  end
+  else if(VeriKontrolTip = vktKayanNokta64) then
+  begin
+
+    if not(VirgulKullanildi) then
+
+      Result := HATA_TANIMLAMA
+    else
+    begin
+
+      VirgulKullanildi := False;
+
+      Result := KayanNoktaSayiDegeriniKodla(Veri1);
+    end;
+  end
+  else if(VeriKontrolTip = vktVirgul) then
   begin
 
     // üstüste virgül kontrol değerinin gelmesi durumunda hata oluştur

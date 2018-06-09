@@ -18,9 +18,6 @@ uses
   ExtCtrls, Menus, LCLType;
 
 type
-
-  { TfrmAnaSayfa }
-
   TfrmAnaSayfa = class(TForm)
     ilAnaMenu16: TImageList;
     miDosyaAcANSI: TMenuItem;
@@ -594,7 +591,8 @@ begin
     GAsm2.ProjeDosyaAdi := DosyaAdi;
     GAsm2.ProjeDosyaUzanti := DosyaUzanti;
 
-    SonKullanilanlarListesineEkle(ProjeDizin + DirectorySeparator + DosyaAdi + '.' + DosyaUzanti);
+    SonKullanilanlarListesineEkle(ProjeDizin + DirectorySeparator + DosyaAdi +
+      '.' + DosyaUzanti);
 
     // Öndeğer olarak a2 programı UTF-8 karakter setini kullanır
     DosyayiDuzenleyiciyeYukle(seDosya0, ProjeDizin + DirectorySeparator + DosyaAdi +
@@ -602,6 +600,8 @@ begin
 
     seDosya0.CaretX := 1;
     seDosya0.CaretY := 1;
+    seDosya0.SetFocus;
+
     DurumCubugunuGuncelle;
   end;
 end;
