@@ -6,7 +6,7 @@
 
   10. grup kodlama işlevi, SADECE işlem kodunun (opcode) işlendiği komutlardır
 
-  Güncelleme Tarihi: 06/06/2018
+  Güncelleme Tarihi: 16/06/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -140,6 +140,7 @@ begin
       GRUP10_EMMS:        Result := KodOlustur2($0F, $77);
       GRUP10_F2XM1:       Result := KodOlustur2($D9, $F0);
       GRUP10_FABS:        Result := KodOlustur2($D9, $E1);
+      GRUP10_FADDP:       Result := KodOlustur2($DE, $C1);
       GRUP10_FCHS:        Result := KodOlustur2($D9, $E0);
       GRUP10_FCLEX:       Result := KodOlustur3($9B, $DB, $E2);
       GRUP10_FCOS:        Result := KodOlustur2($D9, $FF);

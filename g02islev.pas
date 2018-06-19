@@ -6,7 +6,7 @@
 
   2. grup kodlama işlevi, DEĞİŞKEN ifadelerini yönetir
 
-  Güncelleme Tarihi: 23/04/2018
+  Güncelleme Tarihi: 16/06/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -143,7 +143,7 @@ begin
       end else Result := HATA_SAYISAL_DEGER;
     end;
   end
-  else if(VeriKontrolTip = vktKayanNokta64) then
+  else if(VeriKontrolTip = vktKayanNokta) then
   begin
 
     if not(VirgulKullanildi) then
@@ -154,7 +154,7 @@ begin
 
       VirgulKullanildi := False;
 
-      Result := KayanNoktaSayiDegeriniKodla(Veri1);
+      Result := KayanNoktaSayiDegeriniKodla(Veri1, SayiTipi);
     end;
   end
   else if(VeriKontrolTip = vktVirgul) then

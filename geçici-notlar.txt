@@ -1,1 +1,4 @@
 https://en.wikibooks.org/wiki/X86_Assembly/Floating_Point
+http://linasm.sourceforge.net/docs/instructions/fpu.php
+https://docs.oracle.com/cd/E18752_01/html/817-5477/eojdc.html
+http://www.wiki-zero.net/index.php?q=aHR0cHM6Ly9lbi53aWtpcGVkaWEub3JnL3dpa2kvWDg2X2luc3RydWN0aW9uX2xpc3Rpbmdz

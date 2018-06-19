@@ -4,7 +4,7 @@
 
   İşlev: genel sabit, değişken, yapı ve işlevleri içerir
 
-  Güncelleme Tarihi: 05/05/2018
+  Güncelleme Tarihi: 11/06/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -12,12 +12,12 @@ unit genel;
 
 interface
 
-uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler;
+uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler, araclar;
 
 const
   ProgramAdi = 'Assembler 2 (a2)';
   ProgramSurum = '0.0.15.2018';
-  SurumTarihi = '09.06.2018';
+  SurumTarihi = '19.06.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -75,7 +75,9 @@ const
   HATA_BILD_KULLANIM              = HATA_64BIT_MIMARI_GEREKLI + 1;
   HATA_TANIM_KULLANIM             = HATA_BILD_KULLANIM + 1;
   HATA_TANIMLAMA                  = HATA_TANIM_KULLANIM + 1;
-  HATA_DEVAM_EDEN_CALISMA         = HATA_TANIMLAMA + 1;
+  HATA_PROG_DOSYA_OLUSTURMA       = HATA_TANIMLAMA + 1;
+  HATA_PROJEYI_KAYDET             = HATA_PROG_DOSYA_OLUSTURMA + 1;
+  HATA_DEVAM_EDEN_CALISMA         = HATA_PROJEYI_KAYDET + 1;
 
   sHATA_BILINMEYEN_HATA           = 'Bilinmeyen hata';
   sHATA_BILINMEYEN_KOMUT          = 'Bilinmeyen komut';
@@ -104,6 +106,8 @@ const
   sHATA_BILD_KULLANIM             = 'Hatalı bildirim kullanımı';
   sHATA_TANIM_KULLANIM            = 'Hatalı tanım kullanımı';
   sHATA_TANIMLAMA                 = 'Hatalı tanımlama';
+  sHATA_PROG_DOSYA_OLUSTURMA      = 'Program dosyası oluşturulamıyor!';
+  sHATA_PROJEYI_KAYDET            = 'Projeyi derlemeden önce kaydediniz!';
   sHATA_DEVAM_EDEN_CALISMA        = 'Çalışmalar devam etmekte...';
 
 const
@@ -137,6 +141,7 @@ const
   );
 
 var
+  SistemMimari: TSistemMimari;              // programın derleme yaptığı sistem mimarisi
   GAsm2: TAsm2;                             // derleyici ana nesnesi
   GProgramAyarDizin: string;                // program ayar dizinini içerir
   GProgramCalismaDizin: string;             // programın çalıştığı dizin
@@ -181,7 +186,6 @@ var
   // <--------------------------------------------------------------------------
 
 function HataKodunuAl(HataKodu: Integer): string;
-function IslemKodununAtamasiniYap(Yazmac1, IslemKodu8, IslemKodu1632: Byte): Integer;
 
 implementation
 
@@ -193,36 +197,6 @@ begin
 
   if(HataKodu > TOPLAM_HATA_BILGI_UYARI) then HataKodu := HATA_BILINMEYEN_HATA;
   Result := BilgiDizisi[HataKodu].Aciklama;
-end;
-
-// burada Yazmac1 uzunluğuna göre işlem kod değeri belirleniyor. Yazmac2
-// değeri de burada değerlendirilsin
-function IslemKodununAtamasiniYap(Yazmac1, IslemKodu8, IslemKodu1632: Byte): Integer;
-begin
-
-  case YazmacListesi[Yazmac1].Uzunluk of
-    yu8bGY: KodEkle(IslemKodu8);
-    yu16bGY:
-    begin
-
-      // 16 bitlik yazmaçların 16 bit mimari haricinde kullanılması halinde
-      // 66 ön ekini kodun başına ekle
-      if(GAsm2.Mimari <> mim16Bit) then KodEkle($66);
-
-      KodEkle(IslemKodu1632);
-    end;
-    yu32bGY:
-    begin
-
-      // 32 bitlik yazmaçların 16 bit mimaride kullanılması halinde
-      // 66 ön ekini kodun başına ekle
-      if(GAsm2.Mimari = mim16Bit) then KodEkle($66);
-
-      KodEkle(IslemKodu1632);
-    end;
-  end;
-
-  Result := HATA_YOK;
 end;
 
 end.

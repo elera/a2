@@ -172,8 +172,50 @@ begin
   else if(VeriKontrolTip = vktSon) then
   begin
 
+    if(SatirIcerik.Komut.GrupNo = GRUP11_FLD) then
+    begin
+
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
+      begin
+
+        i4 := GBellekSabitDeger;
+
+        KodEkle($D9);
+        KodEkle($05);
+
+        for i := 1 to 4 do
+        begin
+
+          KodEkle(Byte(i4));
+          i4 := i4 shr 8;
+        end;
+
+        Result := HATA_YOK;
+      end else Result := HATA_DEVAM_EDEN_CALISMA;
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_FSTP) then
+    begin
+
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
+      begin
+
+        i4 := GBellekSabitDeger;
+
+        KodEkle($D9);
+        KodEkle($1D);
+
+        for i := 1 to 4 do
+        begin
+
+          KodEkle(Byte(i4));
+          i4 := i4 shr 8;
+        end;
+
+        Result := HATA_YOK;
+      end else Result := HATA_DEVAM_EDEN_CALISMA;
+    end
     // lodsb / lodsw / lodsd komutları - (not: tamamlanmadı)
-    if(SatirIcerik.Komut.GrupNo = GRUP11_LODSB) or
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_LODSB) or
       (SatirIcerik.Komut.GrupNo = GRUP11_LODSD) or
       (SatirIcerik.Komut.GrupNo = GRUP11_LODSW) then
     begin
@@ -469,9 +511,51 @@ begin
   end else Result := 1;
 end;
 
+// 5.2 - yazmaça sayısal değer ata
+// REGDeger = MOD[7..6] + REG[5..3] + RM[2..0]
+function SayisalDegerAta(IslemKodu, REGDeger: Byte; SatirIcerik: TSatirIcerik;
+  Yazmac, SabitDeger: Integer; SayisalDegerVar: Boolean): Integer;
+begin
+
+  // derlenecek kod mimarisi 64 bit ise...
+  if(GAsm2.Mimari = mim64Bit) and (YazmacListesi[Yazmac].Uzunluk = yu64bGY) then
+
+    // 0100W000 = W = 1 = 64 bit işlem kodu
+    KodEkle($48)
+
+  // derlenecek kod mimarisi 32 bit, yazmaç 32 bit değilse...
+  // 66 ön ekini kodun başına ekle
+  else if(GAsm2.Mimari = mim32Bit) and (YazmacListesi[Yazmac].Uzunluk <> yu32bGY) then
+
+    KodEkle($66)
+
+  // derlenecek kod mimarisi 16 bit, yazmaç 16 bit değilse...
+  else if(GAsm2.Mimari = mim16Bit) and (YazmacListesi[Yazmac].Uzunluk <> yu16bGY) then
+
+    KodEkle($66);
+
+  // yazmacın 8 bit olması halinde "IslemKodu" kullanılacak
+  // aksi durumda bir sonraki sıra değeri (IslemKodu + 1) kullanılacak
+  if(YazmacListesi[Yazmac].Uzunluk = yu8bGY) then
+
+    KodEkle(IslemKodu)
+  else KodEkle(IslemKodu + 1);
+
+  // İşlemKodu Hedef_Yazmaç, Kaynak_Yazmaç
+  // 11_HY0_KY0 -> 11 = $C0, HY0 = Hedef Yazmaç, KY0 = Kaynak Yazmaç
+  // -----------------------
+  // $C0 = 11000000b = yazmaç adresleme modu
+  KodEkle($C0 or (REGDeger shl 3) or (YazmacListesi[Yazmac].Deger and 7));
+
+  if(SayisalDegerVar) then KodEkle(SabitDeger);
+
+  Result := HATA_YOK;
+end;
+
+
 // çok önemli: göreceli değerlerle işlem yapılırken ilgili komut bir sonraki
-// adresi hesaplayamayacağından dolayı en az iki çevcrim yapılması gerekmektedir
-// kısaca: birinci aşamada sanal (ama gerçek uzunlukta) veri üretildiktenb sonra
+// adresi hesaplayamayacağından dolayı en az iki çevrim yapılması gerekmektedir
+// kısaca: birinci aşamada sanal (ama gerçek uzunlukta) veri üretildikten sonra
 // 2. aşamada gerçek kodlama gerçekleştirilecektir.
 procedure GoreceliDegerEkle;
 var

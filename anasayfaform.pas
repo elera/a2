@@ -18,6 +18,9 @@ uses
   ExtCtrls, Menus, LCLType;
 
 type
+
+  { TfrmAnaSayfa }
+
   TfrmAnaSayfa = class(TForm)
     ilAnaMenu16: TImageList;
     miDosyaAcANSI: TMenuItem;
@@ -95,6 +98,7 @@ type
     procedure MenuSonKullanilanlarListesiniGuncelle;
     procedure DosyayiDuzenleyiciyeYukle(Duzenleyici: TSynEdit;
       DosyaAdi: string; CP1254KarakterSetiniKullan: Boolean);
+    function KodlariDerle: Integer;
   public
   end;
 
@@ -107,10 +111,13 @@ implementation
 
 uses incele, genel, atamalar, dosya, derlemebilgisiform, atamalarform, asm2,
   ayarlar, yazmaclar, {$IFDEF Windows} windows, {$ENDIF} process, oneriler, komutlar, dbugintf,
-  paylasim, donusum, LConvEncoding, ayarlarform, kodlama;
+  paylasim, donusum, LConvEncoding, ayarlarform, kodlama, araclar;
 
 procedure TfrmAnaSayfa.FormCreate(Sender: TObject);
 begin
+
+  // programın üzerinde çalıştığı / derleme yaptığı sistemin mimarisi
+  SistemMimari := SistemMimarisiniAl;
 
   GDosyaKimlikNo := 1;
 
@@ -148,7 +155,13 @@ begin
   DuzenleyiciAlaniOlustur('test.asm');
   pcDosyalar.ActivePageIndex := 0;
 
-  sbDurum.Panels[1].Text := 'Sürüm: ' + ProgramSurum + ' - ' + SurumTarihi;
+  case SistemMimari of
+    sm32Bit: sbDurum.Panels[0].Text := 'Sistem: 32 Bit';
+    sm64Bit: sbDurum.Panels[0].Text := 'Sistem: 64 Bit';
+    smDiger: sbDurum.Panels[0].Text := 'Sistem: ?';
+  end;
+
+  sbDurum.Panels[2].Text := 'Sürüm: ' + ProgramSurum + ' - ' + SurumTarihi;
 
   SynAssemblerSyn.Objects.Clear;
   for i := 0 to TOPLAM_KOMUT - 1 do
@@ -329,135 +342,54 @@ end;
 // kod derleme menüsü
 procedure TfrmAnaSayfa.miKodDerleClick(Sender: TObject);
 var
-  MevcutSatirSayisi, ToplamSatirSayisi,
-  IslenenSatirSayisi: Integer;
-  Dosya, HamVeri: string;
-  IslevSonuc: Integer;
-  DerlemeCevrimindenCik: Boolean;
+  DerlemeSonucu: Integer;
 begin
 
-  DerlemeCevrimindenCik := False;
+  // düzenleyicideki kodları derle
+  DerlemeSonucu := KodlariDerle;
 
-  // mevcut etiketleri temizle
-  GAsm2.AtamaListesi.Temizle;
-
-  // ilk değer atamaları
-  GAsm2.DerlemeCevrimSayisi := 0;
-
-  while (DerlemeCevrimindenCik = False) do
+  // derleme esnasında hata var ise...
+  if(DerlemeSonucu > HATA_YOK) then
   begin
 
-    IslevSonuc := HATA_YOK;
+    if(DerlemeSonucu = HATA_PROJEYI_KAYDET) then
 
-    GEtiketHataSayisi := 0;
+      ShowMessage('Lütfen programı derlemeden önce kaydediniz!')
 
-    // bellek değişkenleri ve bellek içeriğini ilk değerlerle yükle
-    KodBellekDegerleriniIlklendir;
-
-    ToplamSatirSayisi := seDosya0.Lines.Count;
-    MevcutSatirSayisi := 0;
-    IslenenSatirSayisi := 0;
-
-    // son satıra gelinmediği ve hata olmadığı müddetçe devam et
-    while (MevcutSatirSayisi < ToplamSatirSayisi) and (IslevSonuc = HATA_YOK) do
+    else if(DerlemeSonucu = HATA_PROG_DOSYA_OLUSTURMA) then
     begin
 
-      HamVeri := seDosya0.Lines[MevcutSatirSayisi];
-
-      if(Length(Trim(HamVeri)) > 0) then
-      begin
-
-        // satır içerik değişkenlerini ilk değerlerle yükle
-        SatirIcerik.Komut.KomutTipi := ktBelirsiz;
-
-        SatirIcerik.DigerVeri := [];
-        SatirIcerik.Etiket := '';
-        SatirIcerik.Aciklama := '';
-
-        SatirIcerik.Komut.GrupNo := -1;
-        SatirIcerik.BolumTip1.BolumAnaTip := batYok;
-        SatirIcerik.BolumTip1.BolumAyrinti := [];
-        SatirIcerik.BolumTip2.BolumAnaTip := batYok;
-        SatirIcerik.BolumTip2.BolumAyrinti := [];
-
-        // ilgili satırın incelendiği / kodların üretildiği ana çağrı
-        IslevSonuc := KodUret(MevcutSatirSayisi, HamVeri);
-
-        // işlenen satır sayısını artır
-        Inc(IslenenSatirSayisi);
-      end;
-
-      // bir sonraki satıra geçiş yap
-      Inc(MevcutSatirSayisi);
-      Application.ProcessMessages;
-    end;
-
-    // hata olduğu için çıkış yap
-    if(IslevSonuc > HATA_YOK) then
-
-      DerlemeCevrimindenCik := True
-
-    // derleme başarılı olduğu için çıkış yap
-    else if(IslevSonuc = HATA_YOK) and (GAsm2.AtamaListesi.Temizle2 = 0) then
-
-      DerlemeCevrimindenCik := True;
-
-    // çevrim sayısını bir artır
-    GAsm2.DerlemeCevrimSayisi := GAsm2.DerlemeCevrimSayisi + 1;
-
-    Application.ProcessMessages;
-  end;
-
-  // derleme işleminin durumu, derleme sonrasında belirleniyor
-  GAsm2.DerlemeBasarili := (IslevSonuc = HATA_YOK);
-
-  // kodların yorumlanması ve çevrilmesinde herhangi bir hata yoksa
-  // ikili formatta (binary file) dosya oluştur
-  { TODO : oluşturulacak dosya ilk aşamada saf assembler kodların makine dili karşılıklarıdır
-    ileride PE / COFF ve diğer formatlarda program dosyaları oluşturulacaktır  }
-  if(GAsm2.DerlemeBasarili) then
-  begin
-
-    // dosya adının olması durumunda ...
-    if(Length(GAsm2.CikisDosyaAdi) > 0) then
-    begin
-
-      // dosya uzantısının olmaması durumunda dosyaya uzantı ekleme (özellikle linux için)
-      if(Length(GAsm2.CikisDosyaUzanti) > 0) then
-        Dosya := GAsm2.CikisDosyaAdi + '.' + GAsm2.CikisDosyaUzanti
-      else Dosya := GAsm2.CikisDosyaAdi;
-
-      if(ProgramDosyasiOlustur(GAsm2.ProjeDizin + DirectorySeparator + Dosya)) then
-      begin
-
-        frmDerlemeBilgisi.ProjeDosyaAdi := GAsm2.ProjeDosyaAdi + '.' + GAsm2.ProjeDosyaUzanti;
-        frmDerlemeBilgisi.DerlenenDosya := Dosya;
-        frmDerlemeBilgisi.DerlenenSatirSayisi := IslenenSatirSayisi;
-        frmDerlemeBilgisi.IkiliDosyaUzunluk := KodBellekU;
-        frmDerlemeBilgisi.DerlemeCevrimSayisi := GAsm2.DerlemeCevrimSayisi;
-        FormuOrtala(frmDerlemeBilgisi, True);
-      end else ShowMessage('Hata: ' + Dosya + ' dosyası oluşturulamadı!')
+      ShowMessage('Hata: ' + GAsm2.ProgramDosyaAdi + ' dosyası oluşturulamadı!')
     end
     else
+    // derleme başarılı
     begin
 
-      GAsm2.DerlemeBasarili := False;
-      ShowMessage('Lütfen programı derlemeden önce kaydediniz!');
+      ShowMessage('Hata: ' + HataKodunuAl(DerlemeSonucu)); // + ' - ' + GHataAciklama);
+      seDosya0.CaretX := 1;
+      seDosya0.CaretY := GAsm2.IslenenSatir;
     end;
   end
   else
   begin
 
-    ShowMessage('Hata: ' + HataKodunuAl(IslevSonuc)); // + ' - ' + GHataAciklama);
-    seDosya0.CaretX := 1;
-    seDosya0.CaretY := MevcutSatirSayisi;
-  end;
+    frmDerlemeBilgisi.ProjeDosyaAdi := GAsm2.ProjeDosyaAdi + '.' + GAsm2.ProjeDosyaUzanti;
+    frmDerlemeBilgisi.DerlenenDosya := GAsm2.ProgramDosyaAdi;
+    frmDerlemeBilgisi.DerlenenSatirSayisi := GAsm2.IslenenSatirSayisi;
+    frmDerlemeBilgisi.IkiliDosyaUzunluk := KodBellekU;
+    frmDerlemeBilgisi.DerlemeCevrimSayisi := GAsm2.DerlemeCevrimSayisi;
+    FormuOrtala(frmDerlemeBilgisi, True);
+  end
 end;
 
 procedure TfrmAnaSayfa.miKodCalistirClick(Sender: TObject);
 var
   Process: TProcessUTF8;
 begin
+
+  // kodlar daha önce derlenmiş veya program derleme aşamasında hata olmamış
+  // olsa bile düzenleyicideki kodları MUTLAKA bir kez derle
+  KodlariDerle;
 
   // program; exe olarak başarılı bir şekilde derlendiyse, çalıştır
   if(GAsm2.DerlemeBasarili) and (GAsm2.CikisDosyaUzanti = 'exe') then
@@ -550,7 +482,7 @@ begin
   end else pcDosyalar.Pages[0].Caption := '-';
 
   // klavye göstergesini (cursor) güncelle
-  sbDurum.Panels[0].Text := 'Satır: ' + IntToStr(seDosya0.CaretY) + ' - Sütun: ' +
+  sbDurum.Panels[1].Text := 'Satır: ' + IntToStr(seDosya0.CaretY) + ' - Sütun: ' +
     IntToStr(seDosya0.CaretX);
 end;
 
@@ -806,9 +738,120 @@ begin
 
       Application.ProcessMessages;
     end;
+
+    CloseFile(Dosya);
+  end;
+end;
+
+function TfrmAnaSayfa.KodlariDerle: Integer;
+var
+  ToplamSatirSayisi, i: Integer;
+  HamVeri: string;
+  IslevSonuc: Integer;
+  DerlemeCevrimindenCik: Boolean;
+begin
+
+  DerlemeCevrimindenCik := False;
+
+  // mevcut etiketleri temizle
+  GAsm2.AtamaListesi.Temizle;
+
+  // ilk değer atamaları
+  GAsm2.DerlemeCevrimSayisi := 0;
+
+  while (DerlemeCevrimindenCik = False) do
+  begin
+
+    IslevSonuc := HATA_YOK;
+
+    GEtiketHataSayisi := 0;
+
+    // bellek değişkenleri ve bellek içeriğini ilk değerlerle yükle
+    KodBellekDegerleriniIlklendir;
+
+    ToplamSatirSayisi := seDosya0.Lines.Count;
+    GAsm2.IslenenSatir := 0;
+    GAsm2.IslenenSatirSayisi := 0;
+
+    // son satıra gelinmediği ve hata olmadığı müddetçe devam et
+    while (GAsm2.IslenenSatir < ToplamSatirSayisi) and (IslevSonuc = HATA_YOK) do
+    begin
+
+      HamVeri := seDosya0.Lines[GAsm2.IslenenSatir];
+
+      if(Length(Trim(HamVeri)) > 0) then
+      begin
+
+        // satır içerik değişkenlerini ilk değerlerle yükle
+        SatirIcerik.Komut.KomutTipi := ktBelirsiz;
+
+        SatirIcerik.DigerVeri := [];
+        SatirIcerik.Etiket := '';
+        SatirIcerik.Aciklama := '';
+
+        SatirIcerik.Komut.GrupNo := -1;
+        SatirIcerik.BolumTip1.BolumAnaTip := batYok;
+        SatirIcerik.BolumTip1.BolumAyrinti := [];
+        SatirIcerik.BolumTip2.BolumAnaTip := batYok;
+        SatirIcerik.BolumTip2.BolumAyrinti := [];
+
+        // ilgili satırın incelendiği / kodların üretildiği ana çağrı
+        IslevSonuc := KodUret(GAsm2.IslenenSatir, HamVeri);
+
+        // işlenen satır sayısını artır
+        i := GAsm2.IslenenSatirSayisi;
+        Inc(i);
+        GAsm2.IslenenSatirSayisi := i;
+      end;
+
+      // bir sonraki satıra geçiş yap
+      i := GAsm2.IslenenSatir;
+      Inc(i);
+      GAsm2.IslenenSatir := i;
+      Application.ProcessMessages;
+    end;
+
+    // hata olduğu için çıkış yap
+    if(IslevSonuc > HATA_YOK) then
+
+      DerlemeCevrimindenCik := True
+
+    // derleme başarılı olduğu için çıkış yap
+    else if(IslevSonuc = HATA_YOK) and (GAsm2.AtamaListesi.Temizle2 = 0) then
+
+      DerlemeCevrimindenCik := True;
+
+    // çevrim sayısını bir artır
+    GAsm2.DerlemeCevrimSayisi := GAsm2.DerlemeCevrimSayisi + 1;
+
+    Application.ProcessMessages;
   end;
 
-  CloseFile(Dosya);
+  // derleme işleminin durumu, derleme sonrasında belirleniyor
+  GAsm2.DerlemeBasarili := (IslevSonuc = HATA_YOK);
+
+  // kodların yorumlanması ve çevrilmesinde herhangi bir hata yoksa
+  // ikili formatta (binary file) dosya oluştur
+  { TODO : oluşturulacak dosya ilk aşamada saf assembler kodların makine dili karşılıklarıdır
+    ileride PE / COFF ve diğer formatlarda program dosyaları oluşturulacaktır  }
+  if(GAsm2.DerlemeBasarili) then
+  begin
+
+    // dosya adının olması durumunda ...
+    if(Length(GAsm2.CikisDosyaAdi) > 0) then
+    begin
+
+      // dosya uzantısının olmaması durumunda dosyaya uzantı ekleme (özellikle linux için)
+      if(Length(GAsm2.CikisDosyaUzanti) > 0) then
+        GAsm2.ProgramDosyaAdi := GAsm2.CikisDosyaAdi + '.' + GAsm2.CikisDosyaUzanti
+      else GAsm2.ProgramDosyaAdi := GAsm2.CikisDosyaAdi;
+
+      if(ProgramDosyasiOlustur(GAsm2.ProjeDizin + DirectorySeparator + GAsm2.ProgramDosyaAdi)) then
+
+        Result := HATA_YOK
+      else Result := HATA_PROG_DOSYA_OLUSTURMA;
+    end else Result := HATA_PROJEYI_KAYDET;
+  end else Result := IslevSonuc;
 end;
 
 end.

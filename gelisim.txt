@@ -28,7 +28,7 @@
   (çalışmalar başladı)
 - göreceli (relative) adres hesaplama işlevi eklenecek (8/16/32/64 bit jxx komutları için)
 - KomutYorumla işlevi, dvAciklama tanımlamasındaki açıklama gereğince yeniden tanımlanacak
-- FLD, FST, RCL, RCR, ROL, ROR komut çalışmaları sürdürülecek
+- FLD, FST, komut çalışmaları sürdürülecek
 
 +-------------------------------------------------------------+-------------+
 |                     Çalışma Alanı                           | Tamamlanma  |
@@ -43,7 +43,7 @@
 +-------------------------------------------------------------+-------------+
 |  64 bit genel kod çevrim çalışmaları                        |      10     |
 +-------------------------------------------------------------+-------------+
-|  derleyici içerisinde kullanılan veri tip çalışmaları       |      60     |
+|  derleyici içerisinde kullanılan veri tip çalışmaları       |      70     |
 +-------------------------------------------------------------+-------------+
 |  8/16/32/64 bit ve kayan sayı (float, double) sayısal       |      50     |
 |  sistem çalışmaları                                         |             |

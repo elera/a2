@@ -4,7 +4,7 @@
 
   İşlev: derleyici içerisinde kullanılan tüm sınıfları yönetecek ana sınıf
 
-  Güncelleme Tarihi: 29/04/2018
+  Güncelleme Tarihi: 13/06/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -22,8 +22,11 @@ type
   private
     FMimari: TMimari;
     FProjeDizin, FProjeDosyaAdi, FProjeDosyaUzanti,
+    FProgramDosyaAdi,
     FCikisDosyaAdi, FCikisDosyaUzanti: string;
     FDerlemeBasarili: Boolean;
+    FIslenenSatirSayisi,            // işlenen toplam satır sayısı (boş satırlar dahil değildir)
+    FIslenenSatir: Integer;         // o anda işlenen satır (hata olduğunda hatanın olduğu satır)
     procedure SetProjeDosyaAdi(AProjeDosyaAdi: string);
     procedure SetProjeDosyaUzanti(AProjeDosyaUzanti: string);
   public
@@ -45,6 +48,9 @@ type
     property DerlemeBasarili: Boolean read FDerlemeBasarili write FDerlemeBasarili;
     property DerlemeCevrimSayisi: Integer read FDerlemeCevrimSayisi
       write FDerlemeCevrimSayisi;
+    property ProgramDosyaAdi: string read FProgramDosyaAdi write FProgramDosyaAdi;
+    property IslenenSatirSayisi: Integer read FIslenenSatirSayisi write FIslenenSatirSayisi;
+    property IslenenSatir: Integer read FIslenenSatir write FIslenenSatir;
   end;
 
 implementation

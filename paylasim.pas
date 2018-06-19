@@ -29,7 +29,7 @@ type
   // işlem kod ana ve alt bölümleri
   TVeriKontrolTip = (vktYok, vktDegisken, vktKarakterDizisi,
     vktSayi,                  // normal sayı
-    vktKayanNokta64,          // 64 bitlik kayan nokta (floating point)
+    vktKayanNokta,            // 32 / 64 bitlik kayan nokta (floating point)
     vktYazmac, vktOnEk, vktBosluk, vktVirgul, vktEsittir, vktArti,
     vktKPAc, vktKPKapat, vktOlcek, vktIlk, vktSon);
 

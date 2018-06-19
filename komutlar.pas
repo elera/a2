@@ -61,7 +61,8 @@ const
   GRUP10_EMMS     = GRUP10_DAS + 1;
   GRUP10_F2XM1    = GRUP10_EMMS + 1;
   GRUP10_FABS     = GRUP10_F2XM1 + 1;
-  GRUP10_FCHS     = GRUP10_FABS + 1;
+  GRUP10_FADDP    = GRUP10_FABS + 1;
+  GRUP10_FCHS     = GRUP10_FADDP + 1;
   GRUP10_FCLEX    = GRUP10_FCHS + 1;
   GRUP10_FCOS     = GRUP10_FCLEX + 1;
   GRUP10_FDECSTP  = GRUP10_FCOS + 1;
@@ -124,7 +125,8 @@ const
   GRUP11_DIV      = GRUP11_DEC + 1;
   GRUP11_FLD      = GRUP11_DIV + 1;
   GRUP11_FST      = GRUP11_FLD + 1;
-  GRUP11_INC      = GRUP11_FST + 1;
+  GRUP11_FSTP     = GRUP11_FST + 1;
+  GRUP11_INC      = GRUP11_FSTP + 1;
   GRUP11_INT      = GRUP11_INC + 1;
   GRUP11_JMP      = GRUP11_INT + 1;
   GRUP11_JNZ      = GRUP11_JMP + 1;
@@ -136,17 +138,31 @@ const
   GRUP11_POP      = GRUP11_PUSH + 1;
 
   // 12. grup komutlar
-  GRUP12_ADD      = $120001;
-  GRUP12_CMP      = GRUP12_ADD + 1;
-  GRUP12_LEA      = GRUP12_CMP + 1;
+  GRUP12_ADC      = $120001;
+  GRUP12_ADD      = GRUP12_ADC + 1;
+  GRUP12_AND      = GRUP12_ADD + 1;
+  GRUP12_CMP      = GRUP12_AND + 1;
+  GRUP12_IMUL     = GRUP12_CMP + 1;
+  GRUP12_LEA      = GRUP12_IMUL + 1;
   GRUP12_MOV      = GRUP12_LEA + 1;
-  GRUP12_OR       = GRUP12_MOV + 1;
+  GRUP12_MOVSX    = GRUP12_MOV + 1;
+  GRUP12_MOVZX    = GRUP12_MOVSX + 1;
+  GRUP12_OR       = GRUP12_MOVZX + 1;
   GRUP12_RCL      = GRUP12_OR + 1;
   GRUP12_RCR      = GRUP12_RCL + 1;
   GRUP12_ROL      = GRUP12_RCR + 1;
   GRUP12_ROR      = GRUP12_ROL + 1;
-  GRUP12_SUB      = GRUP12_ROR + 1;
-  GRUP12_XOR      = GRUP12_SUB + 1;
+  GRUP12_SAL      = GRUP12_ROR + 1;
+  GRUP12_SAR      = GRUP12_SAL + 1;
+  GRUP12_SBB      = GRUP12_SAR + 1;
+  GRUP12_SHL      = GRUP12_SBB + 1;
+  GRUP12_SHLD     = GRUP12_SHL + 1;
+  GRUP12_SHR      = GRUP12_SHLD + 1;
+  GRUP12_SHRD     = GRUP12_SHR + 1;
+  GRUP12_SUB      = GRUP12_SHRD + 1;
+  GRUP12_TEST     = GRUP12_SUB + 1;
+  GRUP12_XCHG     = GRUP12_TEST + 1;
+  GRUP12_XOR      = GRUP12_XCHG + 1;
 
   {
   GRUP01_CBW 		  = $10003;
@@ -156,7 +172,7 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
-  TOPLAM_KOMUT = 104;
+  TOPLAM_KOMUT = 120;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
   // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
@@ -188,6 +204,7 @@ const
   (Komut: 'emms';               GrupNo: GRUP10_EMMS;          KomutTipi: ktIslemKodu),
   (Komut: 'f2xm1';              GrupNo: GRUP10_F2XM1;         KomutTipi: ktIslemKodu),
   (Komut: 'fabs';               GrupNo: GRUP10_FABS;          KomutTipi: ktIslemKodu),
+  (Komut: 'faddp';              GrupNo: GRUP10_FADDP;         KomutTipi: ktIslemKodu),
   (Komut: 'fchs';               GrupNo: GRUP10_FCHS;          KomutTipi: ktIslemKodu),
   (Komut: 'fclex';              GrupNo: GRUP10_FCLEX;         KomutTipi: ktIslemKodu),
   (Komut: 'fcos';               GrupNo: GRUP10_FCOS;          KomutTipi: ktIslemKodu),
@@ -258,6 +275,7 @@ const
     (Komut: 'div';              GrupNo: GRUP11_DIV;           KomutTipi: ktIslemKodu),
     (Komut: 'fld';              GrupNo: GRUP11_FLD;           KomutTipi: ktIslemKodu),
     (Komut: 'fst';              GrupNo: GRUP11_FST;           KomutTipi: ktIslemKodu),
+    (Komut: 'fstp';             GrupNo: GRUP11_FSTP;          KomutTipi: ktIslemKodu),
     (Komut: 'inc';              GrupNo: GRUP11_INC;           KomutTipi: ktIslemKodu),
     (Komut: 'int';              GrupNo: GRUP11_INT;           KomutTipi: ktIslemKodu),
     (Komut: 'jmp';              GrupNo: GRUP11_JMP;           KomutTipi: ktIslemKodu),
@@ -270,16 +288,30 @@ const
     (Komut: 'pop';              GrupNo: GRUP11_POP;           KomutTipi: ktIslemKodu),
 
     // 12. grup komutlar
+    (Komut: 'adc';              GrupNo: GRUP12_ADC;           KomutTipi: ktIslemKodu),
     (Komut: 'add';              GrupNo: GRUP12_ADD;           KomutTipi: ktIslemKodu),
+    (Komut: 'and';              GrupNo: GRUP12_AND;           KomutTipi: ktIslemKodu),
     (Komut: 'cmp';              GrupNo: GRUP12_CMP;           KomutTipi: ktIslemKodu),
+    (Komut: 'imul';             GrupNo: GRUP12_IMUL;          KomutTipi: ktIslemKodu),
     (Komut: 'lea';              GrupNo: GRUP12_LEA;           KomutTipi: ktIslemKodu),
     (Komut: 'mov';              GrupNo: GRUP12_MOV;           KomutTipi: ktIslemKodu),
+    (Komut: 'movsx';            GrupNo: GRUP12_MOVSX;         KomutTipi: ktIslemKodu),
+    (Komut: 'movzx';            GrupNo: GRUP12_MOVZX;         KomutTipi: ktIslemKodu),
     (Komut: 'or';               GrupNo: GRUP12_OR;            KomutTipi: ktIslemKodu),
     (Komut: 'rcl';              GrupNo: GRUP12_RCL;           KomutTipi: ktIslemKodu),
     (Komut: 'rcr';              GrupNo: GRUP12_RCR;           KomutTipi: ktIslemKodu),
     (Komut: 'rol';              GrupNo: GRUP12_ROL;           KomutTipi: ktIslemKodu),
     (Komut: 'ror';              GrupNo: GRUP12_ROR;           KomutTipi: ktIslemKodu),
+    (Komut: 'sal';              GrupNo: GRUP12_SAL;           KomutTipi: ktIslemKodu),
+    (Komut: 'sar';              GrupNo: GRUP12_SAR;           KomutTipi: ktIslemKodu),
+    (Komut: 'sbb';              GrupNo: GRUP12_SBB;           KomutTipi: ktIslemKodu),
+    (Komut: 'shl';              GrupNo: GRUP12_SHL;           KomutTipi: ktIslemKodu),
+    (Komut: 'shld';             GrupNo: GRUP12_SHLD;          KomutTipi: ktIslemKodu),
+    (Komut: 'shr';              GrupNo: GRUP12_SHR;           KomutTipi: ktIslemKodu),
+    (Komut: 'shrd';             GrupNo: GRUP12_SHRD;          KomutTipi: ktIslemKodu),
     (Komut: 'sub';              GrupNo: GRUP12_SUB;           KomutTipi: ktIslemKodu),
+    (Komut: 'test';             GrupNo: GRUP12_TEST;          KomutTipi: ktIslemKodu),
+    (Komut: 'xchg';             GrupNo: GRUP12_XCHG;          KomutTipi: ktIslemKodu),
     (Komut: 'xor';              GrupNo: GRUP12_XOR;           KomutTipi: ktIslemKodu)
 
     );
@@ -321,11 +353,14 @@ var
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
+    @Grup11Islev, @Grup11Islev,
 
     // 12. grup komutlar
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
-    @Grup12Islev
+    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
+    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
+    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev
   );
 
 function KomutBilgisiAl(AKomut: string): TKomutDurum;

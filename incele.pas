@@ -235,7 +235,7 @@ var
       Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', AVeri2);
     end
     // kayan nokta verilerinin işlenmesi
-    else if(_AVeriKontrolTip = vktKayanNokta64)then
+    else if(_AVeriKontrolTip = vktKayanNokta)then
     begin
 
       SonVeriKontrolTip := _AVeriKontrolTip;
@@ -1068,7 +1068,7 @@ begin
           else if(VeriTipi = tvtKayanNokta64) then
           begin
 
-            GHataKodu := KomutYorumla(ParcaNo, vktKayanNokta64, Komut, 0);
+            GHataKodu := KomutYorumla(ParcaNo, vktKayanNokta, Komut, 0);
             if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
           end
           else if(VeriTipi = tvtSayi) then

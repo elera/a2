@@ -28,12 +28,11 @@ unit degerkodla;
 }
 interface
 
-uses paylasim, yazmaclar, genel, kodlama;
+uses paylasim, yazmaclar, genel, kodlama, onekler;
 
 function YazmacAtamasiYap(IslemKodu: Byte; Yazmac1: Integer): Integer;
-function YazmactanYazmacaAtamaYap(SatirIcerik: TSatirIcerik; Yazmac1,
-  Yazmac2: Integer): Integer;
-function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string): Integer;
+function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string;
+  SayiTipi: TVeriGenisligi): Integer;
 
 implementation
 
@@ -49,68 +48,35 @@ begin
   Result := HATA_YOK;
 end;
 
-// işlem kodunun "İşlemKodu Yazmaç1, Yazmaç2" olması halinde gerekli
-// kodlar bu işlev tarafından oluşturulur.
-// Yazmac1: adreslemede kullanılacak 1. yazmacın sıra değeri
-// Yazmac2: adreslemede kullanılacak 2. yazmacın sıra değeri
-function YazmactanYazmacaAtamaYap(SatirIcerik: TSatirIcerik; Yazmac1,
-  Yazmac2: Integer): Integer;
+function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string;
+  SayiTipi: TVeriGenisligi): Integer;
 var
-  DesMim1, DesMim2: TDestekleyenMimari;
-  i: Byte;
-begin
-
-  DesMim1 := YazmacListesi[Yazmac1].DesMim;
-  DesMim2 := YazmacListesi[Yazmac2].DesMim;
-
-  // 1. yazmaçlar tüm mimariler tarafından destekleniyorsa
-  if(DesMim1 = dmTum) and (DesMim2 = dmTum) then
-  begin
-
-    // yazmaç uzunlukları birbirine eşit ise ...
-    if(YazmacListesi[Yazmac1].Uzunluk = YazmacListesi[Yazmac2].Uzunluk) then
-    begin
-
-      // İşlemKodu Hedef_Yazmaç, Kaynak_Yazmaç
-      // 11_HY0_KY0 -> 11 = $C0, HY0 = Hedef Yazmaç, KY0 = Kaynak Yazmaç
-      // -----------------------
-      // $C0 = 11000000b = yazmaç adresleme modu
-      i := $C0 or ((YazmacListesi[Yazmac2].Deger and 7) shl 3) or
-        (YazmacListesi[Yazmac1].Deger and 7);
-      KodEkle(i);
-      Result := HATA_YOK;
-    end else Result := HATA_ISL_KOD_KULLANIM;
-  end
-
-  // 2. yazmaçlar SADECE 64 bit mimariler tarafından destekleniyorsa
-  else if(DesMim1 = dm64Bit) and (DesMim2 = dm64Bit) then
-  begin
-
-    Result := HATA_DEVAM_EDEN_CALISMA;
-
-    { TODO : REX çalışmaları buraya eklenecek }
-    {if(GAsm2.Mimari = mim64Bit) then
-    begin
-
-      KodEkle($31);
-      Result := IslemKodunDegiskenKodlariniOlustur(SatirIcerik);
-    end else Result := HATA_64BIT_MIMARI_GEREKLI;}
-  end
-end;
-
-function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string): Integer;
-var
-  KNSayi: Double;
+  KNSayi32: Single;
+  KNSayi64: Double;
   p: PByte;
   i: Integer;
 begin
 
-  KNSayi := StrToFloat(StringReplace(KayanNoktaSayi, '.',  ',' ,[]));
-  p := @KNSayi;
+  if(SayiTipi = vgB4) then
+  begin
 
-  for i := 0 to 7 do begin KodEkle(p^); Inc(p); end;
+    KNSayi32 := StrToFloat(StringReplace(KayanNoktaSayi, '.',  ',' ,[]));
+    p := @KNSayi32;
 
-  Result := HATA_YOK;
+    for i := 0 to 3 do begin KodEkle(p^); Inc(p); end;
+
+    Result := HATA_YOK;
+  end
+  else if(SayiTipi = vgB8) then
+  begin
+
+    KNSayi64 := StrToFloat(StringReplace(KayanNoktaSayi, '.',  ',' ,[]));
+    p := @KNSayi64;
+
+    for i := 0 to 7 do begin KodEkle(p^); Inc(p); end;
+
+    Result := HATA_YOK;
+  end else Result := HATA_VERI_TIPI;
 end;
 
 end.

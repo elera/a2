@@ -105,7 +105,18 @@ kod_başlangıç:
 
 ; grafiksel arabirim kodları
 ;-------------------------------------------------------------------------------
+        ; test amaçlı
+        finit
+        fld     [Val1]
+        fld     [Val2]
+        faddp
+        fstp    [Val3]
+
         mov     eax,[SayisalDeger]
+        mov     cl,3
+        shl     eax,cl
+        mov     ebx,eax
+        mov     eax,ebx
         mov     edi,PencereMesaj+9
 
 sonraki_basamak:
@@ -140,7 +151,10 @@ veri_başlangıç:
 PencereBaşlık:	db	'Assembler 2 (a2)', 0
 PencereBaşlık2:	db	'Assembler 2 (a2)-2', 0
 PencereMesaj:	db	'0000000000', 0
-SayisalDeger    dd      09062018
+SayisalDeger    dd      1
+Val1            dd      0.1
+Val2            dd      0.2
+Val3            dd      0
 
 ; program içerisinde kullanılacak sistem işlevleri (import table)
 ;-------------------------------------------------------------------------------

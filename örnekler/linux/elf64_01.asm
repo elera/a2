@@ -64,10 +64,7 @@ kod_başlangıç:
         syscall
 
         mov     rax,3Ch
-
-        ;xor rdi,rdi
-        db      48h, 31h, 0ffh
-
+        xor     rdi,rdi
         syscall
 
 veri_başlangıç:

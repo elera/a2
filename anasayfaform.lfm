@@ -1,10 +1,10 @@
 object frmAnaSayfa: TfrmAnaSayfa
-  Left = 239
+  Left = 341
   Height = 494
-  Top = 125
+  Top = 162
   Width = 731
   Caption = 'Assembler 2 (a2)'
-  ClientHeight = 474
+  ClientHeight = 471
   ClientWidth = 731
   Menu = mmAnaMenu
   OnClose = FormClose
@@ -12,13 +12,18 @@ object frmAnaSayfa: TfrmAnaSayfa
   OnDropFiles = FormDropFiles
   OnShow = FormShow
   Position = poScreenCenter
-  LCLVersion = '1.8.4.0'
+  LCLVersion = '1.8.2.0'
   object sbDurum: TStatusBar
     Left = 0
-    Height = 23
-    Top = 451
+    Height = 25
+    Top = 446
     Width = 731
     Panels = <    
+      item
+        Alignment = taCenter
+        Text = 'Sistem: 32 Bit'
+        Width = 100
+      end    
       item
         Alignment = taCenter
         Text = 'Sütun: 1 - Satır: 1'
@@ -169,7 +174,7 @@ object frmAnaSayfa: TfrmAnaSayfa
   end
   object pcDosyalar: TPageControl
     Left = 0
-    Height = 422
+    Height = 417
     Top = 29
     Width = 731
     ActivePage = tsDosya0
@@ -179,14 +184,14 @@ object frmAnaSayfa: TfrmAnaSayfa
     TabOrder = 2
     object tsDosya0: TTabSheet
       Caption = '-'
-      ClientHeight = 394
-      ClientWidth = 723
+      ClientHeight = 382
+      ClientWidth = 725
       ImageIndex = 9
       inline seDosya0: TSynEdit
         Left = 0
-        Height = 394
+        Height = 382
         Top = 0
-        Width = 723
+        Width = 725
         Align = alClient
         Font.Height = -11
         Font.Name = 'Courier New'
@@ -1204,7 +1209,7 @@ object frmAnaSayfa: TfrmAnaSayfa
           0000000000000000000000000000000000000000000000000000
         }
         ImageIndex = 3
-        ShortCut = 120
+        ShortCut = 16504
         OnClick = miKodDerleClick
       end
       object miKodCalistir: TMenuItem
@@ -1246,6 +1251,7 @@ object frmAnaSayfa: TfrmAnaSayfa
           0000000000000000000000000000000000000000000000000000
         }
         ImageIndex = 4
+        ShortCut = 120
         OnClick = miKodCalistirClick
       end
       object miKodAyrim0: TMenuItem
