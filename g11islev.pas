@@ -20,6 +20,8 @@ uses Classes, SysUtils, genel, paylasim;
 function Grup11Islev(SatirNo: Integer; ParcaNo: Integer; VeriKontrolTip:
   TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
 procedure GoreceliDegerEkle;
+function IslemKodunaYazmacDegeriEkle(IslemKodu, Yazmac: Byte;
+  SatirIcerik: TSatirIcerik): Integer;
 
 implementation
 
@@ -62,6 +64,7 @@ begin
   else if(VeriKontrolTip = vktYazmac) then
   begin
 
+    // örn: push eax
     if(SatirIcerik.BolumTip1.BolumAnaTip = batYok) then
     begin
 
@@ -69,8 +72,27 @@ begin
       SatirIcerik.BolumTip1.BolumAyrinti += [baHedefYazmac];
       GYazmac1 := Veri2;
       Result := HATA_YOK;
-    end else Result := HATA_ISL_KOD_KULLANIM; // geçici
+    end
+    else if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
+    begin
 
+      // örn: push [eax]
+      if not(baBellekYazmac1 in SatirIcerik.BolumTip1.BolumAyrinti) then
+      begin
+
+        SatirIcerik.BolumTip1.BolumAyrinti += [baBellekYazmac1];
+        GYazmac1 := Veri2;
+        Result := HATA_YOK;
+      end
+      // örn: push [eax+ebx]
+      else if not(baBellekYazmac2 in SatirIcerik.BolumTip1.BolumAyrinti) then
+      begin
+
+        SatirIcerik.BolumTip1.BolumAyrinti += [baBellekYazmac2];
+        GYazmac2 := Veri2;
+        Result := HATA_YOK;
+      end else Result := HATA_ISL_KOD_KULLANIM;
+    end;
   end
   else if(VeriKontrolTip = vktKPAc) then
   begin
@@ -172,7 +194,184 @@ begin
   else if(VeriKontrolTip = vktSon) then
   begin
 
-    if(SatirIcerik.Komut.GrupNo = GRUP11_FLD) then
+    if(SatirIcerik.Komut.GrupNo = GRUP11_POP) then
+    begin
+
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) then
+      begin
+
+        // 64 bitlik yazmaçlar 64 bitlik ortamda kullanılıyorsa
+        if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) and (GAsm2.Mimari = mim64Bit) then
+        begin
+
+          Result := IslemKodunaYazmacDegeriEkle($58, GYazmac1, SatirIcerik);
+        end
+        // 16 veya 32 bit genel yazmaç 64 bitlik ortam haricinde kullanılıyorsa
+        else if(((YazmacListesi[GYazmac1].Uzunluk = yu16bGY) or
+          (YazmacListesi[GYazmac1].Uzunluk = yu32bGY)) and (GAsm2.Mimari <> mim64Bit)) then
+        begin
+
+          Result := IslemKodunaYazmacDegeriEkle($58, GYazmac1, SatirIcerik);
+        end else Result := HATA_ISL_KOD_KULLANIM;
+      end
+      { TODO : bu aşamadaki çalışma g12islev bellek çalışmasıyla birleştirilecek }
+      { TODO : bu kısımdaki bellek çalışması diğer bellek çalışmalarının da öncüsü olacak }
+      else if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
+      begin
+
+        if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
+        begin
+
+          KodEkle($8F);
+          KodEkle(YazmacListesi[GYazmac1].Deger);
+          Result := HATA_YOK;
+        end else Result := HATA_DEVAM_EDEN_CALISMA;
+      end else Result := HATA_DEVAM_EDEN_CALISMA;
+
+      {if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
+      begin
+
+        i4 := GBellekSabitDeger;
+
+        KodEkle($D9);
+        KodEkle($05);
+
+        for i := 1 to 4 do
+        begin
+
+          KodEkle(Byte(i4));
+          i4 := i4 shr 8;
+        end;
+
+        Result := HATA_YOK;
+      end else Result := HATA_DEVAM_EDEN_CALISMA;}
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_PUSH) then
+    begin
+
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) then
+      begin
+
+        // 16 bitlik bölüm (segment) yazmacı ise
+        if(YazmacListesi[GYazmac1].Uzunluk = yu16bBY) then
+        begin
+
+          // fs ve gs bölüm yazmacı her mimaride kullanılabilir
+          if(YazmacListesi[GYazmac1].Ad = 'fs') then
+          begin
+
+            KodEkle($0F);
+            KodEkle($A0);
+            Result := HATA_YOK;
+          end
+          else if(YazmacListesi[GYazmac1].Ad = 'gs') then
+          begin
+
+            KodEkle($0F);
+            KodEkle($A8);
+            Result := HATA_YOK;
+          end
+          else
+          begin
+
+            // aşağıdaki 4 yazmaç 64 mimari haricinde kullanılabilir
+            if(GAsm2.Mimari = mim64Bit) then
+
+              Result := HATA_HATALI_MIMARI64
+            else
+            begin
+
+              case YazmacListesi[GYazmac1].Ad of
+                'cs': begin KodEkle($0E); Result := HATA_YOK; end;
+                'ss': begin KodEkle($16); Result := HATA_YOK; end;
+                'ds': begin KodEkle($1E); Result := HATA_YOK; end;
+                'es': begin KodEkle($06); Result := HATA_YOK; end;
+                else Result := HATA_ISL_KULLANIM;
+              end;
+            end;
+          end;
+        end
+        else
+        begin
+
+          // 64 bitlik yazmaçlar 64 bitlik ortamda kullanılıyorsa
+          if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) and (GAsm2.Mimari = mim64Bit) then
+          begin
+
+            Result := IslemKodunaYazmacDegeriEkle($50, GYazmac1, SatirIcerik);
+          end
+          // 16 veya 32 bit genel yazmaç 64 bitlik ortam haricinde kullanılıyorsa
+          else if(((YazmacListesi[GYazmac1].Uzunluk = yu16bGY) or
+            (YazmacListesi[GYazmac1].Uzunluk = yu32bGY)) and (GAsm2.Mimari <> mim64Bit)) then
+          begin
+
+            Result := IslemKodunaYazmacDegeriEkle($50, GYazmac1, SatirIcerik);
+          end else Result := HATA_ISL_KOD_KULLANIM;
+        end;
+      end
+      else if(SatirIcerik.BolumTip1.BolumAnaTip = batSayisalDeger) then
+      begin
+
+        i4 := GSabitDeger;
+        SayiTipi := SayiTipiniAl(i4);
+
+        // eğer önek sayı değerinden büyükse sayı değerinin veri
+        // genişliğini önek olarak ayarla
+        if(GSabitDegerVG > SayiTipi) then SayiTipi := GSabitDegerVG;
+
+        // 64 bitlik sayıyı hiçbir mimari desteklememektedir
+        if(SayiTipi = vgB8) then
+
+          Result := HATA_ISL_KOD_KULLANIM
+        // 32 bitlik sayıyı 16 bitlik mimari desteklememektedir
+        else if(SayiTipi = vgB4) and (GAsm2.Mimari = mim16Bit) then
+
+          Result := HATA_ISL_KOD_KULLANIM
+        else
+        begin
+
+          case SayiTipi of
+            //stHatali: // şu aşamada değerlendirilmesi gereksiz
+            vgB1: begin KodEkle($6A); end;
+            vgB2: begin KodEkle($68); end;
+            vgB4: begin KodEkle($68); end;
+            // 64 bitlik sayı değeri geçerli değildir
+          end;
+
+          case SayiTipi of
+            //stHatali: // şu aşamada değerlendirilmesi gereksiz
+            vgB1: begin VeriGenisligi := 1; end;
+            vgB2: begin VeriGenisligi := 2; end;
+            vgB4: begin VeriGenisligi := 4; end;
+            // 64 bitlik sayı değeri geçerli değildir
+          end;
+
+          // sayısal veriyi belleğe yaz
+          SayisalVeri := i4;
+          for i := 1 to VeriGenisligi do
+          begin
+
+            KodEkle(Byte(SayisalVeri));
+            SayisalVeri := SayisalVeri shr 8;
+          end;
+          Result := HATA_YOK;
+        end;
+      end
+      { TODO : bu aşamadaki çalışma g12islev bellek çalışmasıyla birleştirilecek }
+      { TODO : bu kısımdaki bellek çalışması diğer bellek çalışmalarının da öncüsü olacak }
+      else if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
+      begin
+
+        if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
+        begin
+
+          KodEkle($FF);
+          KodEkle((6 shl 3) + YazmacListesi[GYazmac1].Deger);
+          Result := HATA_YOK;
+        end else Result := HATA_DEVAM_EDEN_CALISMA;
+      end else Result := HATA_DEVAM_EDEN_CALISMA;
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_FLD) then
     begin
 
       if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
@@ -192,6 +391,52 @@ begin
 
         Result := HATA_YOK;
       end else Result := HATA_DEVAM_EDEN_CALISMA;
+    end
+    // sgdt ve sidt işlem kodlarına yazmaç bellek adresleme eklenecek
+    // ve ortak noktada birleştirilecek
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_SGDT) then
+    begin
+
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
+      begin
+
+        KodEkle($0F);
+        KodEkle($01);
+        KodEkle($05);
+
+        i4 := GBellekSabitDeger;
+
+        for i := 1 to 4 do
+        begin
+
+          KodEkle(Byte(i4));
+          i4 := i4 shr 8;
+        end;
+
+        Result := HATA_YOK;
+      end else Result := HATA_ISL_KULLANIM;
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_SIDT) then
+    begin
+
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
+      begin
+
+        KodEkle($0F);
+        KodEkle($01);
+        KodEkle((1 shl 3) or 5);
+
+        i4 := GBellekSabitDeger;
+
+        for i := 1 to 4 do
+        begin
+
+          KodEkle(Byte(i4));
+          i4 := i4 shr 8;
+        end;
+
+        Result := HATA_YOK;
+      end else Result := HATA_ISL_KULLANIM;
     end
     else if(SatirIcerik.Komut.GrupNo = GRUP11_FSTP) then
     begin
@@ -263,6 +508,57 @@ begin
 
       Result := HATA_YOK;
     end
+    // int komutu
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_RET) or
+      (SatirIcerik.Komut.GrupNo = GRUP11_RETF) or
+      (SatirIcerik.Komut.GrupNo = GRUP11_RETN) then
+    begin
+
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batSayisalDeger) then
+      begin
+
+        i4 := GSabitDeger;
+        SayiTipi := SayiTipiniAl(i4);
+
+        // 16 bit öndeğere sahip ret / retn komutu
+        if(SayiTipi = vgB1) or (SayiTipi = vgB2) then
+        begin
+
+          if(SatirIcerik.Komut.GrupNo = GRUP11_RET) or
+            (SatirIcerik.Komut.GrupNo = GRUP11_RETN) then
+          begin
+
+            KodEkle($C2);
+            KodEkle(Byte(i4));
+            i4 := i4 shr 8;
+            KodEkle(Byte(i4));
+          end
+          else if(SatirIcerik.Komut.GrupNo = GRUP11_RETF) then
+          begin
+
+            KodEkle($CA);
+            KodEkle(Byte(i4));
+            i4 := i4 shr 8;
+            KodEkle(Byte(i4));
+          end;
+
+          Result := HATA_YOK;
+        end else Result := HATA_ISL_KOD_KULLANIM;
+      end
+      else if(SatirIcerik.BolumTip1.BolumAnaTip = batYok) then
+      begin
+
+        if(SatirIcerik.Komut.GrupNo = GRUP11_RET) or
+          (SatirIcerik.Komut.GrupNo = GRUP11_RETN) then
+
+          KodEkle($C3)
+        else if(SatirIcerik.Komut.GrupNo = GRUP11_RETF) then
+
+          KodEkle($CB);
+
+        Result := HATA_YOK;
+      end;
+    end
     else if(SatirIcerik.Komut.GrupNo = GRUP11_JMP) then
     begin
 
@@ -315,7 +611,7 @@ begin
     else if(SatirIcerik.Komut.GrupNo = GRUP11_CALL) then
     begin
 
-      // call [bellek_adresi] ; bellek adresine çağrı
+      // call [bellek_adresi] ; bellek adresine direkt adres çağrısı
       if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
       begin
 
@@ -331,17 +627,18 @@ begin
             KodEkle(Byte(GBellekSabitDeger));
             GBellekSabitDeger := GBellekSabitDeger shr 8;
           end;
+
+          Result := HATA_YOK;
         end;
       end
-      else
-      // call bellek_adresi  ; komut sonrasından itibaren ilgili noktaya çağrı
+      // call bellek_adresi  ; komut sonrasından itibaren ilgili noktaya göreceli çağrı
+      else if(SatirIcerik.BolumTip1.BolumAnaTip = batSayisalDeger) then
       begin
 
-        KodEkle($FF);
-        KodEkle($15);
+        KodEkle($E8);
 
-        i4 := GSabitDeger - MevcutBellekAdresi;
-        i4 := i4 - 6 + 2;
+        i4 := (GSabitDeger - MevcutBellekAdresi);
+        i4 := i4 - 5 + 1;
 
         for i := 1 to 4 do
         begin
@@ -349,164 +646,52 @@ begin
           KodEkle(Byte(i4));
           i4 := i4 shr 8;
         end;
-      end;
 
-      Result := HATA_YOK;
-    end
-    // PUSH komutu
-    // sayısal değer tamam
-    else if(SatirIcerik.Komut.GrupNo = GRUP11_PUSH) or
-      (SatirIcerik.Komut.GrupNo = GRUP11_POP) then
-    begin
-
-      if(SatirIcerik.BolumTip1.BolumAnaTip = batSayisalDeger) or
-        (SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
-      begin
-
-        // pop işlevinin sayısal değer ile kullanımı yoktur
-        if(SatirIcerik.Komut.GrupNo = GRUP11_POP) then
-
-          Result := HATA_ISL_KULLANIM
-        else
-        begin
-
-          if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
-          begin
-
-            i4 := GBellekSabitDeger;
-            SayiTipi := SayiTipiniAl(i4);
-
-            // eğer önek sayı değerinden büyükse sayı değerinin veri
-            // genişliğini önek olarak ayarla
-            if(GBellekSabitDegerVG > SayiTipi) then SayiTipi := GSabitDegerVG;
-          end
-          else
-          begin
-
-            i4 := GSabitDeger;
-            SayiTipi := SayiTipiniAl(i4);
-
-            // eğer önek sayı değerinden büyükse sayı değerinin veri
-            // genişliğini önek olarak ayarla
-            if(GSabitDegerVG > SayiTipi) then SayiTipi := GSabitDegerVG;
-          end;
-
-          // 64 bitlik sayıyı hiçbir mimari desteklememektedir
-          if(SayiTipi = vgB8) then
-
-            Result := 1
-          // 32 bitlik sayıyı 16 bitlik mimari desteklememektedir
-          else if(SayiTipi = vgB4) and (GAsm2.Mimari = mim16Bit) then
-
-            Result := 1
-          else
-          begin
-
-            // bellek değerinin yığına push işlemi
-            // örnek: push [112233h]
-            if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
-            begin
-
-              KodEkle($FF);
-              KodEkle((6 shl 3) or 5);
-            end
-            else
-            begin
-
-              // diğer durumlarda ilgili mimariye göre sayısal atamalar
-              // yapılmaktadır. burada ön ek kavramı devreye girmekte ve
-              // $66 ve diğer kontrollerin uygulanması gerekmektedir
-              // bilgi: henüz uygulanmadı
-              case SayiTipi of
-                //stHatali: // şu aşamada değerlendirilmesi gereksiz
-                vgB1: begin KodEkle($6A); end;
-                vgB2: begin KodEkle($68); end;
-                vgB4: begin KodEkle($68); end;
-                // 64 bitlik sayı değeri geçerli değildir
-              end;
-            end;
-
-            case SayiTipi of
-              //stHatali: // şu aşamada değerlendirilmesi gereksiz
-              vgB1: begin VeriGenisligi := 1; end;
-              vgB2: begin VeriGenisligi := 2; end;
-              vgB4: begin VeriGenisligi := 4; end;
-              // 64 bitlik sayı değeri geçerli değildir
-            end;
-
-            // sayısal veriyi belleğe yaz
-            SayisalVeri := i4;
-            for i := 1 to VeriGenisligi do
-            begin
-
-              KodEkle(Byte(SayisalVeri));
-              SayisalVeri := SayisalVeri shr 8;
-            end;
-
-            Result := HATA_YOK;
-          end;
-        end;
-      end
-      else if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) then
-      begin
-
-        { TODO : diğer yazmaç genişlikleri için herhangi bir problem yok.
-          test edilerek işleve dahil edilmeli }
-        if(SatirIcerik.Komut.GrupNo = GRUP11_PUSH) then
-        begin
-
-          if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
-          begin
-
-            KodEkle($50 + (YazmacListesi[GYazmac1].Deger and 7));
-            Result := HATA_YOK;
-          end else Result := HATA_DEVAM_EDEN_CALISMA;
-        end
-        else if(SatirIcerik.Komut.GrupNo = GRUP11_POP) then
-        begin
-
-          if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
-          begin
-
-            KodEkle($58 + (YazmacListesi[GYazmac1].Deger and 7));
-            Result := HATA_YOK;
-          end else Result := HATA_DEVAM_EDEN_CALISMA;
-        end
+        Result := HATA_YOK;
       end;
     end
-    // öndeğerin yazmaç olarak değerlendirilmesi
-    // INC ve DEC komutları incelenmiştir
-    else if(baHedefYazmac in SatirIcerik.BolumTip1.BolumAyrinti) then
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_DEC) or
+      (SatirIcerik.Komut.GrupNo = GRUP11_INC) then
     begin
 
       if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) then
       begin
 
-        if(SatirIcerik.Komut.GrupNo = GRUP11_INC) then
+        if(SatirIcerik.Komut.GrupNo = GRUP11_DEC) then
         begin
 
-          YazmacAtamasiYap($40, GYazmac1);
-          Result := HATA_YOK;
+          Result := IslemKodunaYazmacDegeriEkle($48, GYazmac1, SatirIcerik);
         end
-        else if(SatirIcerik.Komut.GrupNo = GRUP11_DEC) then
+        else if(SatirIcerik.Komut.GrupNo = GRUP11_INC) then
         begin
 
-          YazmacAtamasiYap($48, GYazmac1);
-          Result := HATA_YOK;
-        end
-        // div komutu
-        // F7 /6
-        // = $F7 + 00 110 000
-        else if(SatirIcerik.Komut.GrupNo = GRUP11_DIV) then
-        begin
-
-          //SendDebug('G13_Yazmaç: ' + YazmacListesi[GYazmac1].Ad);
-
-          KodEkle($F7);
-          KodEkle($C0 + $30 + (YazmacListesi[GYazmac1].Deger and 7));
-          Result := HATA_YOK;
+          Result := IslemKodunaYazmacDegeriEkle($40, GYazmac1, SatirIcerik);
         end;
-      end;
+      end
+      else if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
+      begin
+
+        // 8 / 16 bitlik değerler de eklenecek
+        if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
+        begin
+
+          KodEkle($FF);
+          KodEkle(YazmacListesi[GYazmac1].Deger);
+          Result := HATA_YOK;
+        end else Result := HATA_DEVAM_EDEN_CALISMA;
+      end else Result := HATA_DEVAM_EDEN_CALISMA;
+    end
+    // div komutu
+    // F7 /6
+    // = $F7 + 00 110 000
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_DIV) then
+    begin
+
+      //SendDebug('G13_Yazmaç: ' + YazmacListesi[GYazmac1].Ad);
+
+      KodEkle($F7);
+      KodEkle($C0 + $30 + (YazmacListesi[GYazmac1].Deger and 7));
+      Result := HATA_YOK;
     end else Result := 1;
   end else Result := 1;
 end;
@@ -604,6 +789,45 @@ begin
     KodEkle(Byte(SayisalVeri));
     SayisalVeri := SayisalVeri shr 8;
   end;
+end;
+
+// push r32 -> 50+rd kodlama işlemlerini yönetir
+function IslemKodunaYazmacDegeriEkle(IslemKodu, Yazmac: Byte;
+  SatirIcerik: TSatirIcerik): Integer;
+var
+  DesMim1, DesMim2: TDestekleyenMimari;
+  i: Byte;
+begin
+
+  // 64 bitlik işlem kodları yalnızca 64 bitlik mimaride kullanılabilir
+  if(GAsm2.Mimari <> mim64Bit) and (YazmacListesi[Yazmac].Uzunluk = yu64bGY) then
+  begin
+
+    Result := HATA_64BIT_MIMARI_GEREKLI;
+    Exit;
+  end;
+
+  // derlenecek kod mimarisi 64 bit ise...
+  {if(GAsm2.Mimari = mim64Bit) and (YazmacListesi[Yazmac].Uzunluk = yu64bGY) then
+
+    // 0100W000 = W = 1 = 64 bit işlem kodu
+    KodEkle($48)}
+
+  // derlenecek kod mimarisi 32 bit, yazmaç 32 bit değilse...
+  // 66 ön ekini kodun başına ekle
+  if(GAsm2.Mimari = mim32Bit) and (YazmacListesi[Yazmac].Uzunluk <> yu32bGY) then
+
+    KodEkle($66)
+
+  // derlenecek kod mimarisi 16 bit, yazmaç 16 bit değilse...
+  else if(GAsm2.Mimari = mim16Bit) and (YazmacListesi[Yazmac].Uzunluk <> yu16bGY) then
+
+    KodEkle($66);
+
+  DesMim1 := YazmacListesi[Yazmac].DesMim;
+
+  KodEkle(IslemKodu + (YazmacListesi[Yazmac].Deger and 7));
+  Result := HATA_YOK;
 end;
 
 end.

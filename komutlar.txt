@@ -150,8 +150,9 @@ rcr
 rdtsc
 rdtscp
 *rep
-*ret
-*retn
+ret
+retf
+retn
 rol
 ror
 sal
@@ -159,12 +160,12 @@ sar
 *sbb
 *scasb
 *scasd
-*sgdt
+sgdt
 shl
 *shld
 shr
 *shrd
-*sidt
+sidt
 stc
 sti
 *stosb

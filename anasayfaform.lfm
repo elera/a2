@@ -1,10 +1,10 @@
 object frmAnaSayfa: TfrmAnaSayfa
-  Left = 341
+  Left = 390
   Height = 494
-  Top = 162
+  Top = 167
   Width = 731
   Caption = 'Assembler 2 (a2)'
-  ClientHeight = 471
+  ClientHeight = 474
   ClientWidth = 731
   Menu = mmAnaMenu
   OnClose = FormClose
@@ -12,11 +12,11 @@ object frmAnaSayfa: TfrmAnaSayfa
   OnDropFiles = FormDropFiles
   OnShow = FormShow
   Position = poScreenCenter
-  LCLVersion = '1.8.2.0'
+  LCLVersion = '1.8.4.0'
   object sbDurum: TStatusBar
     Left = 0
-    Height = 25
-    Top = 446
+    Height = 23
+    Top = 451
     Width = 731
     Panels = <    
       item
@@ -174,7 +174,7 @@ object frmAnaSayfa: TfrmAnaSayfa
   end
   object pcDosyalar: TPageControl
     Left = 0
-    Height = 417
+    Height = 422
     Top = 29
     Width = 731
     ActivePage = tsDosya0
@@ -184,14 +184,14 @@ object frmAnaSayfa: TfrmAnaSayfa
     TabOrder = 2
     object tsDosya0: TTabSheet
       Caption = '-'
-      ClientHeight = 382
-      ClientWidth = 725
+      ClientHeight = 394
+      ClientWidth = 723
       ImageIndex = 9
       inline seDosya0: TSynEdit
         Left = 0
-        Height = 382
+        Height = 394
         Top = 0
-        Width = 725
+        Width = 723
         Align = alClient
         Font.Height = -11
         Font.Name = 'Courier New'

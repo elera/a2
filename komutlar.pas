@@ -136,6 +136,11 @@ const
   GRUP11_LODSW    = GRUP11_LODSD + 1;
   GRUP11_PUSH     = GRUP11_LODSW + 1;
   GRUP11_POP      = GRUP11_PUSH + 1;
+  GRUP11_RET      = GRUP11_POP + 1;
+  GRUP11_RETF     = GRUP11_RET + 1;
+  GRUP11_RETN     = GRUP11_RETF + 1;
+  GRUP11_SGDT     = GRUP11_RETN + 1;
+  GRUP11_SIDT     = GRUP11_SGDT + 1;
 
   // 12. grup komutlar
   GRUP12_ADC      = $120001;
@@ -172,7 +177,7 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
-  TOPLAM_KOMUT = 120;
+  TOPLAM_KOMUT = 125;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
   // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
@@ -286,6 +291,11 @@ const
     (Komut: 'lodsw';            GrupNo: GRUP11_LODSW;         KomutTipi: ktIslemKodu),
     (Komut: 'push';             GrupNo: GRUP11_PUSH;          KomutTipi: ktIslemKodu),
     (Komut: 'pop';              GrupNo: GRUP11_POP;           KomutTipi: ktIslemKodu),
+    (Komut: 'ret';              GrupNo: GRUP11_RET;           KomutTipi: ktIslemKodu),
+    (Komut: 'retf';             GrupNo: GRUP11_RETF;          KomutTipi: ktIslemKodu),
+    (Komut: 'retn';             GrupNo: GRUP11_RETN;          KomutTipi: ktIslemKodu),
+    (Komut: 'sgdt';             GrupNo: GRUP11_SGDT;          KomutTipi: ktIslemKodu),
+    (Komut: 'sidt';             GrupNo: GRUP11_SIDT;          KomutTipi: ktIslemKodu),
 
     // 12. grup komutlar
     (Komut: 'adc';              GrupNo: GRUP12_ADC;           KomutTipi: ktIslemKodu),
@@ -350,6 +360,7 @@ var
     @Grup01Islev,           // iretd}
 
     // 11. grup komutlar
+    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,

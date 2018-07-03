@@ -17,7 +17,7 @@ uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler, araclar;
 const
   ProgramAdi = 'Assembler 2 (a2)';
   ProgramSurum = '0.0.15.2018';
-  SurumTarihi = '19.06.2018';
+  SurumTarihi = '03.07.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);

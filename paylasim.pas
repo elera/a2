@@ -38,6 +38,11 @@ type
   TDigerVeriler = (dvEtiket, dvAciklama);
   TDigerVeri = set of TDigerVeriler;
 
+  // bir işlem kodunda öndeğerler
+  // ya     ret         gibi batYok'tur
+  // ya     push 1      gibi batSayisalDeger'dir
+  // ya     push eax    gibi batYazmac'tır
+  // ya da  push [eax]  gibi batBellek'tir
   TBolumAnaTip = (batYok, batSayisalDeger, batYazmac, batBellek);
 
 type

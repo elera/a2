@@ -754,15 +754,15 @@ begin
                 else if(VeriTipi = tvtTanimsiz) then
                 begin
 
-                  {YazmacDurum := YazmacBilgisiAl(Komut);
+                  YazmacDurum := YazmacBilgisiAl(Komut);
                   if(YazmacDurum.Sonuc > -1) then
                   begin
 
                     VeriTipi := tvtYazmac;
-                    SendDebug('Yazmaç: ' + YazmacListesi[YazmacDurum.Sonuc].Ad);
-                    GHataKodu := KomutYorumla(ParcaNo, vktYazmac, '', SayisalDeger);
+                    //SendDebug('Yazmaç: ' + YazmacListesi[YazmacDurum.Sonuc].Ad);
+                    GHataKodu := KomutYorumla(ParcaNo, vktYazmac, '', YazmacDurum.Sonuc);
                   end
-                  else}
+                  else
                   begin
 
                     //SendDebug('ValX: ' + Komut);
