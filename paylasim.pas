@@ -45,7 +45,7 @@ type
   // ya da  push [eax]  gibi batBellek'tir
   TBolumAnaTip = (batYok, batSayisalDeger, batYazmac, batBellek);
 
-type
+type                  // baHedefYazmac ve baKaynakYazmac değerleri birleştirilebişir
   TBolumAyrintilar = (baHedefYazmac, baKaynakYazmac, baBellekYazmac1, baBellekYazmac2,
     baOlcek, baSabitDeger, baBellekSabitDeger);
   TBolumAyrinti = set of TBolumAyrintilar;

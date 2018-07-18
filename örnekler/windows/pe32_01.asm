@@ -105,9 +105,10 @@ kod_başlangıç:
 
 ; grafiksel arabirim kodları
 ;-------------------------------------------------------------------------------
-        mov     eax,Sayi1
-        inc     [eax]
-        inc     [eax]
+        inc     B1 [Sayi1]
+        inc     B1 [Sayi2]
+        inc     B1 [Sayi3]
+        inc     B1 [Sayi4]
         mov     eax,[Sayi1]
         mov     ebx,2
         call    topla
@@ -151,8 +152,10 @@ kod.tabaka = 200h
 veri_başlangıç:
 PencereBaşlık:	db	'Assembler 2 (a2)', 0
 PencereMesaj:	db	'0000000000', 0
-Sayi1           dd      1
-Sayi2           dd      2
+Sayi1           db      0
+Sayi2           db      0
+Sayi3           db      0
+Sayi4           db      0
 
 ; program içerisinde kullanılacak sistem işlevleri (import table)
 ;-------------------------------------------------------------------------------

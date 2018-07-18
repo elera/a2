@@ -97,7 +97,15 @@ const
   GRUP10_LAHF     = GRUP10_INTO + 1;
   GRUP10_LEAVE    = GRUP10_LAHF + 1;
   GRUP10_LOCK     = GRUP10_LEAVE + 1;
-  GRUP10_POPA	    = GRUP10_LOCK + 1;
+  GRUP10_LODSB    = GRUP10_LOCK + 1;
+  GRUP10_LODSD    = GRUP10_LODSB + 1;
+  GRUP10_LODSW    = GRUP10_LODSD + 1;
+  GRUP10_LODSQ    = GRUP10_LODSW + 1;
+  GRUP10_MOVSB    = GRUP10_LODSQ + 1;
+  GRUP10_MOVSD    = GRUP10_MOVSB + 1;
+  GRUP10_MOVSW    = GRUP10_MOVSD + 1;
+  GRUP10_MOVSQ    = GRUP10_MOVSW + 1;
+  GRUP10_POPA	    = GRUP10_MOVSQ + 1;
   GRUP10_POPAD    = GRUP10_POPA + 1;
   GRUP10_POPF	    = GRUP10_POPAD + 1;
   GRUP10_POPFD	  = GRUP10_POPF + 1;
@@ -120,7 +128,8 @@ const
   GRUP10_WBINVD   = GRUP10_SYSENTER + 1;
 
   // 11. grup komutlar
-  GRUP11_CALL     = $110001;
+  GRUP11_BSWAP    = $110001;
+  GRUP11_CALL     = GRUP11_BSWAP + 1;
   GRUP11_DEC      = GRUP11_CALL + 1;
   GRUP11_DIV      = GRUP11_DEC + 1;
   GRUP11_FLD      = GRUP11_DIV + 1;
@@ -128,13 +137,41 @@ const
   GRUP11_FSTP     = GRUP11_FST + 1;
   GRUP11_INC      = GRUP11_FSTP + 1;
   GRUP11_INT      = GRUP11_INC + 1;
-  GRUP11_JMP      = GRUP11_INT + 1;
-  GRUP11_JNZ      = GRUP11_JMP + 1;
-  GRUP11_JZ       = GRUP11_JNZ + 1;
-  GRUP11_LODSB    = GRUP11_JZ + 1;
-  GRUP11_LODSD    = GRUP11_LODSB + 1;
-  GRUP11_LODSW    = GRUP11_LODSD + 1;
-  GRUP11_PUSH     = GRUP11_LODSW + 1;
+  GRUP11_JA       = GRUP11_INT + 1;
+  GRUP11_JAE      = GRUP11_JA + 1;
+  GRUP11_JB       = GRUP11_JAE + 1;
+  GRUP11_JBE      = GRUP11_JB + 1;
+  GRUP11_JC       = GRUP11_JBE + 1;
+  GRUP11_JCXZ     = GRUP11_JC + 1;
+  GRUP11_JECXZ    = GRUP11_JCXZ + 1;
+  GRUP11_JRCXZ    = GRUP11_JECXZ + 1;
+  GRUP11_JE       = GRUP11_JRCXZ + 1;
+  GRUP11_JG       = GRUP11_JE + 1;
+  GRUP11_JGE      = GRUP11_JG + 1;
+  GRUP11_JL       = GRUP11_JGE + 1;
+  GRUP11_JLE      = GRUP11_JL + 1;
+  GRUP11_JMP      = GRUP11_JLE + 1;
+  GRUP11_JNA      = GRUP11_JMP + 1;
+  GRUP11_JNAE     = GRUP11_JNA + 1;
+  GRUP11_JNB      = GRUP11_JNAE + 1;
+  GRUP11_JNBE     = GRUP11_JNB + 1;
+  GRUP11_JNC      = GRUP11_JNBE + 1;
+  GRUP11_JNE      = GRUP11_JNC + 1;
+  GRUP11_JNG      = GRUP11_JNE + 1;
+  GRUP11_JNGE     = GRUP11_JNG + 1;
+  GRUP11_JNL      = GRUP11_JNGE + 1;
+  GRUP11_JNLE     = GRUP11_JNL + 1;
+  GRUP11_JNO      = GRUP11_JNLE + 1;
+  GRUP11_JNP      = GRUP11_JNO + 1;
+  GRUP11_JNS      = GRUP11_JNP + 1;
+  GRUP11_JNZ      = GRUP11_JNS + 1;
+  GRUP11_JO       = GRUP11_JNZ + 1;
+  GRUP11_JP       = GRUP11_JO + 1;
+  GRUP11_JPE      = GRUP11_JP + 1;
+  GRUP11_JPO      = GRUP11_JPE + 1;
+  GRUP11_JS       = GRUP11_JPO + 1;
+  GRUP11_JZ       = GRUP11_JS + 1;
+  GRUP11_PUSH     = GRUP11_JZ + 1;
   GRUP11_POP      = GRUP11_PUSH + 1;
   GRUP11_RET      = GRUP11_POP + 1;
   GRUP11_RETF     = GRUP11_RET + 1;
@@ -177,7 +214,7 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
-  TOPLAM_KOMUT = 125;
+  TOPLAM_KOMUT = 162;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
   // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
@@ -245,6 +282,14 @@ const
   (Komut: 'lahf';               GrupNo: GRUP10_LAHF;          KomutTipi: ktIslemKodu),
   (Komut: 'leave';              GrupNo: GRUP10_LEAVE;         KomutTipi: ktIslemKodu),
   (Komut: 'lock';               GrupNo: GRUP10_LOCK;          KomutTipi: ktIslemKodu),
+  (Komut: 'lodsb';              GrupNo: GRUP10_LODSB;         KomutTipi: ktIslemKodu),
+  (Komut: 'lodsd';              GrupNo: GRUP10_LODSD;         KomutTipi: ktIslemKodu),
+  (Komut: 'lodsw';              GrupNo: GRUP10_LODSW;         KomutTipi: ktIslemKodu),
+  (Komut: 'lodsq';              GrupNo: GRUP10_LODSQ;         KomutTipi: ktIslemKodu),
+  (Komut: 'movsb';              GrupNo: GRUP10_MOVSB;         KomutTipi: ktIslemKodu),
+  (Komut: 'movsd';              GrupNo: GRUP10_MOVSD;         KomutTipi: ktIslemKodu),
+  (Komut: 'movsw';              GrupNo: GRUP10_MOVSW;         KomutTipi: ktIslemKodu),
+  (Komut: 'movsq';              GrupNo: GRUP10_MOVSQ;         KomutTipi: ktIslemKodu),
   (Komut: 'popa';               GrupNo: GRUP10_POPA;          KomutTipi: ktIslemKodu),
   (Komut: 'popad';              GrupNo: GRUP10_POPAD;         KomutTipi: ktIslemKodu),
   (Komut: 'popf';               GrupNo: GRUP10_POPF;          KomutTipi: ktIslemKodu),
@@ -275,6 +320,7 @@ const
     (Komut: 'iretd';      GrupNo: GRUP01_IRETD;    KomutTipi: ktIslemKodu),}
 
     // 11. grup komutlar
+    (Komut: 'bswap';            GrupNo: GRUP11_BSWAP;         KomutTipi: ktIslemKodu),
     (Komut: 'call';             GrupNo: GRUP11_CALL;          KomutTipi: ktIslemKodu),
     (Komut: 'dec';              GrupNo: GRUP11_DEC;           KomutTipi: ktIslemKodu),
     (Komut: 'div';              GrupNo: GRUP11_DIV;           KomutTipi: ktIslemKodu),
@@ -283,12 +329,40 @@ const
     (Komut: 'fstp';             GrupNo: GRUP11_FSTP;          KomutTipi: ktIslemKodu),
     (Komut: 'inc';              GrupNo: GRUP11_INC;           KomutTipi: ktIslemKodu),
     (Komut: 'int';              GrupNo: GRUP11_INT;           KomutTipi: ktIslemKodu),
+    (Komut: 'ja';               GrupNo: GRUP11_JA;            KomutTipi: ktIslemKodu),
+    (Komut: 'jae';              GrupNo: GRUP11_JAE;           KomutTipi: ktIslemKodu),
+    (Komut: 'jb';               GrupNo: GRUP11_JB;            KomutTipi: ktIslemKodu),
+    (Komut: 'jbe';              GrupNo: GRUP11_JBE;           KomutTipi: ktIslemKodu),
+    (Komut: 'jc';               GrupNo: GRUP11_JC;            KomutTipi: ktIslemKodu),
+    (Komut: 'jcxz';             GrupNo: GRUP11_JCXZ;          KomutTipi: ktIslemKodu),
+    (Komut: 'jecxz';            GrupNo: GRUP11_JECXZ;         KomutTipi: ktIslemKodu),
+    (Komut: 'jrcxz';            GrupNo: GRUP11_JRCXZ;         KomutTipi: ktIslemKodu),
+    (Komut: 'je';               GrupNo: GRUP11_JE;            KomutTipi: ktIslemKodu),
+    (Komut: 'jg';               GrupNo: GRUP11_JG;            KomutTipi: ktIslemKodu),
+    (Komut: 'jge';              GrupNo: GRUP11_JGE;           KomutTipi: ktIslemKodu),
+    (Komut: 'jl';               GrupNo: GRUP11_JL;            KomutTipi: ktIslemKodu),
+    (Komut: 'jle';              GrupNo: GRUP11_JLE;           KomutTipi: ktIslemKodu),
     (Komut: 'jmp';              GrupNo: GRUP11_JMP;           KomutTipi: ktIslemKodu),
+    (Komut: 'jna';              GrupNo: GRUP11_JNA;           KomutTipi: ktIslemKodu),
+    (Komut: 'jnae';             GrupNo: GRUP11_JNAE;          KomutTipi: ktIslemKodu),
+    (Komut: 'jnb';              GrupNo: GRUP11_JNB;           KomutTipi: ktIslemKodu),
+    (Komut: 'jnbe';             GrupNo: GRUP11_JNBE;          KomutTipi: ktIslemKodu),
+    (Komut: 'jnc';              GrupNo: GRUP11_JNC;           KomutTipi: ktIslemKodu),
+    (Komut: 'jne';              GrupNo: GRUP11_JNE;           KomutTipi: ktIslemKodu),
+    (Komut: 'jng';              GrupNo: GRUP11_JNG;           KomutTipi: ktIslemKodu),
+    (Komut: 'jnge';             GrupNo: GRUP11_JNGE;          KomutTipi: ktIslemKodu),
+    (Komut: 'jnl';              GrupNo: GRUP11_JNL;           KomutTipi: ktIslemKodu),
+    (Komut: 'jnle';             GrupNo: GRUP11_JNLE;          KomutTipi: ktIslemKodu),
+    (Komut: 'jno';              GrupNo: GRUP11_JNO;           KomutTipi: ktIslemKodu),
+    (Komut: 'jnp';              GrupNo: GRUP11_JNP;           KomutTipi: ktIslemKodu),
+    (Komut: 'jns';              GrupNo: GRUP11_JNS;           KomutTipi: ktIslemKodu),
     (Komut: 'jnz';              GrupNo: GRUP11_JNZ;           KomutTipi: ktIslemKodu),
+    (Komut: 'jo';               GrupNo: GRUP11_JO;            KomutTipi: ktIslemKodu),
+    (Komut: 'jp';               GrupNo: GRUP11_JP;            KomutTipi: ktIslemKodu),
+    (Komut: 'jpe';              GrupNo: GRUP11_JPE;           KomutTipi: ktIslemKodu),
+    (Komut: 'jpo';              GrupNo: GRUP11_JPO;           KomutTipi: ktIslemKodu),
+    (Komut: 'js';               GrupNo: GRUP11_JS;            KomutTipi: ktIslemKodu),
     (Komut: 'jz';               GrupNo: GRUP11_JZ;            KomutTipi: ktIslemKodu),
-    (Komut: 'lodsb';            GrupNo: GRUP11_LODSB;         KomutTipi: ktIslemKodu),
-    (Komut: 'lodsd';            GrupNo: GRUP11_LODSD;         KomutTipi: ktIslemKodu),
-    (Komut: 'lodsw';            GrupNo: GRUP11_LODSW;         KomutTipi: ktIslemKodu),
     (Komut: 'push';             GrupNo: GRUP11_PUSH;          KomutTipi: ktIslemKodu),
     (Komut: 'pop';              GrupNo: GRUP11_POP;           KomutTipi: ktIslemKodu),
     (Komut: 'ret';              GrupNo: GRUP11_RET;           KomutTipi: ktIslemKodu),
@@ -351,7 +425,9 @@ var
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev,
+    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
+    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
+    @Grup10Islev,
     {
     @Grup01Islev,           // cbw
     @Grup01Islev,           // cdq
@@ -364,7 +440,13 @@ var
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev,
+    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
+    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
+    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
+    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
+    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
+    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
+    @Grup11Islev,
 
     // 12. grup komutlar
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,

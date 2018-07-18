@@ -41,7 +41,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="29">
+    <Units Count="30">
       <Unit0>
         <Filename Value="a2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -170,6 +170,10 @@
         <Filename Value="araclar.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit28>
+      <Unit29>
+        <Filename Value="adresleme.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit29>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

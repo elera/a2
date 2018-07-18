@@ -19,14 +19,13 @@ uses Classes, SysUtils, genel, paylasim;
 
 function Grup11Islev(SatirNo: Integer; ParcaNo: Integer; VeriKontrolTip:
   TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
-procedure GoreceliDegerEkle;
 function IslemKodunaYazmacDegeriEkle(IslemKodu, Yazmac: Byte;
   SatirIcerik: TSatirIcerik): Integer;
 
 implementation
 
 uses kodlama, Dialogs, asm2, komutlar, yazmaclar, donusum, dbugintf, onekler,
-  degerkodla;
+  degerkodla, adresleme;
 
   // ünite içi genel kullanımlık yerel değişkenler
 var
@@ -194,7 +193,68 @@ begin
   else if(VeriKontrolTip = vktSon) then
   begin
 
-    if(SatirIcerik.Komut.GrupNo = GRUP11_POP) then
+    if(SatirIcerik.Komut.GrupNo = GRUP11_BSWAP) then
+    begin
+
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) then
+      begin
+
+        KodEkle($0F);
+
+        // 1. yazmaç, 32 bitlik ise
+        if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
+        begin
+
+          // 1.1. yazmaç, 32 bitlik mimaride tanımlanan 32 bitlik yazmaç ise (ör: eax)
+          if(YazmacListesi[GYazmac1].DesMim = dmTum) then
+          begin
+
+            KodEkle($C8 + YazmacListesi[GYazmac1].Deger);
+            Result := HATA_YOK;
+          end
+          // 1.1. yazmaç, 64 bitlik mimaride tanımlanan 32 bitlik yazmaç ise (ör: r8d)
+          else if(YazmacListesi[GYazmac1].DesMim = dm64Bit) then
+          begin
+
+            // 1.1.1 64 bitlik yazmaç 64 bitlik mimaride kullanılıyorsa
+            if(GAsm2.Mimari = mim64Bit) then
+            begin
+
+              KodEkle($41);
+              KodEkle($C8 + (8 - YazmacListesi[GYazmac1].Deger));
+              Result := HATA_YOK;
+            end else Result := HATA_64BIT_MIMARI_GEREKLI;
+          end;
+        end
+        // 2. yazmaç, 64 bitlik ise
+        else if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) then
+        begin
+
+          // 64 bitlik yazmaç 64 bitlik mimaride kullanılıyorsa
+          if(GAsm2.Mimari = mim64Bit) then
+          begin
+
+            // 2.1. yazmaç, 64 bitlik yazmacın ilk 8 yazmacın haricinde ise
+            if(YazmacListesi[GYazmac1].Deger > 7) then
+            begin
+
+              KodEkle($49);
+              KodEkle($C8 + (8 - YazmacListesi[GYazmac1].Deger));
+              Result := HATA_YOK;
+            end
+            // 2.2. yazmaç, 64 bitlik yazmacın ilk 8 yazmaçtan biri ise
+            else
+            begin
+
+              KodEkle($48);
+              KodEkle($C8 + YazmacListesi[GYazmac1].Deger);
+              Result := HATA_YOK;
+            end;
+          end else Result := HATA_64BIT_MIMARI_GEREKLI;
+        end else Result := HATA_ISL_KOD_KULLANIM;
+      end else Result := HATA_YAZMAC_GEREKLI;
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_POP) then
     begin
 
       if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) then
@@ -459,37 +519,6 @@ begin
         Result := HATA_YOK;
       end else Result := HATA_DEVAM_EDEN_CALISMA;
     end
-    // lodsb / lodsw / lodsd komutları - (not: tamamlanmadı)
-    else if(SatirIcerik.Komut.GrupNo = GRUP11_LODSB) or
-      (SatirIcerik.Komut.GrupNo = GRUP11_LODSD) or
-      (SatirIcerik.Komut.GrupNo = GRUP11_LODSW) then
-    begin
-
-      // herhangi bir öndeğer kullanılmamışsa
-      if(SatirIcerik.BolumTip1.BolumAyrinti = []) and (SatirIcerik.BolumTip2.BolumAyrinti = []) then
-      begin
-
-        case SatirIcerik.Komut.GrupNo of
-          GRUP11_LODSB: KodEkle($AC);
-
-          // $66 önekinin 16 / 32 / 64 / bitlik ortamlarda kullanımı aşağıdaki gibidir.
-          GRUP11_LODSD:
-          begin
-
-            if(GAsm2.Mimari = mim16Bit) then KodEkle($66);
-            KodEkle($AD);
-          end;
-          GRUP11_LODSW:
-          begin
-
-            if(GAsm2.Mimari <> mim16Bit) then KodEkle($66);
-            KodEkle($AD);
-          end;
-        end;
-
-        Result := HATA_YOK;
-      end else Result := HATA_DEVAM_EDEN_CALISMA;
-    end
     // int komutu
     else if(SatirIcerik.Komut.GrupNo = GRUP11_INT) then
     begin
@@ -559,52 +588,6 @@ begin
         Result := HATA_YOK;
       end;
     end
-    else if(SatirIcerik.Komut.GrupNo = GRUP11_JMP) then
-    begin
-
-      // GSabitDeger verisi byte olarak değerlendirildi.
-      // diğer (16 / 32 / 64 bit) veriler de değerlendiirlecek
-      if(GSabitDeger < (MevcutBellekAdresi + 2)) then
-        ii := -((MevcutBellekAdresi + 2) - GSabitDeger)
-      else ii := GSabitDeger - (MevcutBellekAdresi + 2);
-
-      KodEkle($EB);
-
-      KodEkle(ii);
-      Result := HATA_YOK;
-    end
-    // jcc komutları
-    else if(SatirIcerik.Komut.GrupNo = GRUP11_JNZ) or
-      (SatirIcerik.Komut.GrupNo = GRUP11_JZ) then
-    begin
-
-      // ÖNEMLİ: tüm göreceli (relative) yönlendirmeler burada yapılacaktır.
-      // işlem kodları en üst değer olmaktan çıkarılarak yerine
-      // öndeğer (parametre) önceliği yerleştirilecektir
-
-      {if(SatirIcerik.Komut.GrupNo = GRUP11_JNZ) then
-        KodEkle($75)
-      else if(SatirIcerik.Komut.GrupNo = GRUP11_JZ) then
-        KodEkle($74);
-
-      GoreceliDegerEkle;}
-
-
-      // bu komutlar bir komut grubu olup, bulunulan konumdan kaç adım ileri veya
-      // geri (relative) adrese dallanma yapılacağını bildirir
-      // not: şu aşamada 8 bitlik katı kodlama uygulanmıştır
-      if(GSabitDeger < (MevcutBellekAdresi + 2)) then
-        ii := -((MevcutBellekAdresi + 2) - GSabitDeger)
-      else ii := GSabitDeger - (MevcutBellekAdresi + 2);
-
-      if(SatirIcerik.Komut.GrupNo = GRUP11_JNZ) then
-        KodEkle($75)
-      else if(SatirIcerik.Komut.GrupNo = GRUP11_JZ) then
-        KodEkle($74);
-
-      KodEkle(ii);
-      Result := HATA_YOK;
-    end
     // call komutu
     // FF /2
     // = $FF + 00 010 101 (101 = displacement)
@@ -671,14 +654,7 @@ begin
       else if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
       begin
 
-        // 8 / 16 bitlik değerler de eklenecek
-        if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
-        begin
-
-          KodEkle($FF);
-          KodEkle(YazmacListesi[GYazmac1].Deger);
-          Result := HATA_YOK;
-        end else Result := HATA_DEVAM_EDEN_CALISMA;
+        Result := BellekAdresle1($FE, SatirIcerik);
       end else Result := HATA_DEVAM_EDEN_CALISMA;
     end
     // div komutu
@@ -687,13 +663,66 @@ begin
     else if(SatirIcerik.Komut.GrupNo = GRUP11_DIV) then
     begin
 
-      //SendDebug('G13_Yazmaç: ' + YazmacListesi[GYazmac1].Ad);
-
       KodEkle($F7);
       KodEkle($C0 + $30 + (YazmacListesi[GYazmac1].Deger and 7));
       Result := HATA_YOK;
-    end else Result := 1;
-  end else Result := 1;
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_JMP) then
+    begin
+
+      // GSabitDeger verisi byte olarak değerlendirildi.
+      // diğer (16 / 32 / 64 bit) veriler de değerlendiirlecek
+      if(GSabitDeger < (MevcutBellekAdresi + 2)) then
+        ii := -((MevcutBellekAdresi + 2) - GSabitDeger)
+      else ii := GSabitDeger - (MevcutBellekAdresi + 2);
+
+      KodEkle($EB);
+
+      KodEkle(ii);
+      Result := HATA_YOK;
+    end
+    // jcc komutları
+    else
+    begin
+
+      case SatirIcerik.Komut.GrupNo of
+        GRUP11_JA     : Result := GoreceliDegerEkle(GRUP11_JA, $77);
+        GRUP11_JAE    : Result := GoreceliDegerEkle(GRUP11_JAE, $73);
+        GRUP11_JB     : Result := GoreceliDegerEkle(GRUP11_JB, $72);
+        GRUP11_JBE    : Result := GoreceliDegerEkle(GRUP11_JBE, $76);
+        GRUP11_JC     : Result := GoreceliDegerEkle(GRUP11_JC, $72);
+        GRUP11_JCXZ   : Result := GoreceliDegerEkle(GRUP11_JCXZ, $E3);
+        GRUP11_JECXZ  : Result := GoreceliDegerEkle(GRUP11_JECXZ, $E3);
+        GRUP11_JRCXZ  : Result := GoreceliDegerEkle(GRUP11_JRCXZ, $E3);
+        GRUP11_JE     : Result := GoreceliDegerEkle(GRUP11_JE, $74);
+        GRUP11_JG     : Result := GoreceliDegerEkle(GRUP11_JG, $7F);
+        GRUP11_JGE    : Result := GoreceliDegerEkle(GRUP11_JGE, $7D);
+        GRUP11_JL     : Result := GoreceliDegerEkle(GRUP11_JL, $7C);
+        GRUP11_JLE    : Result := GoreceliDegerEkle(GRUP11_JLE, $7E);
+        GRUP11_JNA    : Result := GoreceliDegerEkle(GRUP11_JNA, $77);
+        GRUP11_JNAE   : Result := GoreceliDegerEkle(GRUP11_JNAE, $76);
+        GRUP11_JNB    : Result := GoreceliDegerEkle(GRUP11_JNB, $73);
+        GRUP11_JNBE   : Result := GoreceliDegerEkle(GRUP11_JNBE, $77);
+        GRUP11_JNC    : Result := GoreceliDegerEkle(GRUP11_JNC, $73);
+        GRUP11_JNE    : Result := GoreceliDegerEkle(GRUP11_JNE, $75);
+        GRUP11_JNG    : Result := GoreceliDegerEkle(GRUP11_JNG, $7E);
+        GRUP11_JNGE   : Result := GoreceliDegerEkle(GRUP11_JNGE, $7C);
+        GRUP11_JNL    : Result := GoreceliDegerEkle(GRUP11_JNL, $7D);
+        GRUP11_JNLE   : Result := GoreceliDegerEkle(GRUP11_JNLE, $7F);
+        GRUP11_JNO    : Result := GoreceliDegerEkle(GRUP11_JNO, $71);
+        GRUP11_JNP    : Result := GoreceliDegerEkle(GRUP11_JNP, $7B);
+        GRUP11_JNS    : Result := GoreceliDegerEkle(GRUP11_JNS, $79);
+        GRUP11_JNZ    : Result := GoreceliDegerEkle(GRUP11_JNZ, $75);
+        GRUP11_JO     : Result := GoreceliDegerEkle(GRUP11_JO, $70);
+        GRUP11_JP     : Result := GoreceliDegerEkle(GRUP11_JP, $7A);
+        GRUP11_JPE    : Result := GoreceliDegerEkle(GRUP11_JPE, $7A);
+        GRUP11_JPO    : Result := GoreceliDegerEkle(GRUP11_JPO, $7B);
+        GRUP11_JS     : Result := GoreceliDegerEkle(GRUP11_JS, $78);
+        GRUP11_JZ     : Result := GoreceliDegerEkle(GRUP11_JZ, $74);
+        else Result := 1;
+      end;
+    end;
+  end;
 end;
 
 // 5.2 - yazmaça sayısal değer ata
@@ -735,60 +764,6 @@ begin
   if(SayisalDegerVar) then KodEkle(SabitDeger);
 
   Result := HATA_YOK;
-end;
-
-
-// çok önemli: göreceli değerlerle işlem yapılırken ilgili komut bir sonraki
-// adresi hesaplayamayacağından dolayı en az iki çevrim yapılması gerekmektedir
-// kısaca: birinci aşamada sanal (ama gerçek uzunlukta) veri üretildikten sonra
-// 2. aşamada gerçek kodlama gerçekleştirilecektir.
-procedure GoreceliDegerEkle;
-var
-  SayiTipi: TVeriGenisligi;
-  SayisalVeri, VeriGenisligi, i: Integer;
-  ii: Byte;
-  i4: Integer;
-begin
-
-  SayiTipi := SayiTipiniAl(SayisalVeri);
-
-  // eğer önek sayı değerinden büyükse sayı değerinin veri
-  // genişliğini önek olarak ayarla
-  if(GSabitDegerVG > SayiTipi) then SayiTipi := GSabitDegerVG;
-
-  case SayiTipi of
-    vgB1: ii := 1;
-    vgB2: ii := 2;
-    vgB4: ii := 4;
-    vgB8: ii := 8;
-  end;
-
-  // bu komutlar bir komut grubu olup, bulunulan konumdan kaç adım ileri veya
-  // geri (relative) adrese dallanma yapılacağını bildirir
-  // not: şu aşamada 8 bitlik katı kodlama uygulanmıştır
-  if(GSabitDeger < (MevcutBellekAdresi - 1)) then
-    SayisalVeri := -((MevcutBellekAdresi - 1) - GSabitDeger)
-  else SayisalVeri := GSabitDeger - (MevcutBellekAdresi - 1);
-
-  SayiTipi := SayiTipiniAl(SayisalVeri);
-
-  // eğer önek sayı değerinden büyükse sayı değerinin veri
-  // genişliğini önek olarak ayarla
-  if(GSabitDegerVG > SayiTipi) then SayiTipi := GSabitDegerVG;
-
-  case SayiTipi of
-    vgB1: ii := 1;
-    vgB2: ii := 2;
-    vgB4: ii := 4;
-    vgB8: ii := 8;
-  end;
-
-  for i := 1 to ii do
-  begin
-
-    KodEkle(Byte(SayisalVeri));
-    SayisalVeri := SayisalVeri shr 8;
-  end;
 end;
 
 // push r32 -> 50+rd kodlama işlemlerini yönetir

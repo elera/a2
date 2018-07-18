@@ -175,6 +175,14 @@ begin
       GRUP10_INTO:        Result := KodOlustur11($CE);
       GRUP10_LAHF:        Result := KodOlustur11($9F);
       GRUP10_LEAVE:       Result := KodOlustur1($C9);
+      GRUP10_LODSB:       Result := KodOlustur1($AC);
+      GRUP10_LODSD:       Result := KodOlustur4(mim32Bit, $AD);
+      GRUP10_LODSW:       Result := KodOlustur4(mim16Bit, $AD);
+      GRUP10_LODSQ:       Result := KodOlustur4(mim64Bit, $AD);
+      GRUP10_MOVSB:       Result := KodOlustur1($A4);
+      GRUP10_MOVSD:       Result := KodOlustur4(mim32Bit, $A5);
+      GRUP10_MOVSW:       Result := KodOlustur4(mim16Bit, $A5);
+      GRUP10_MOVSQ:       Result := KodOlustur4(mim64Bit, $A5);
       GRUP10_LOCK:        Result := KodOlustur1($F0);
       GRUP10_POPA:        Result := KodOlustur11($61);
       GRUP10_POPAD:       Result := KodOlustur11($61);

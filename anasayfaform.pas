@@ -69,7 +69,7 @@ type
     tbDosyaKaydet: TToolButton;
     tbDosyaYeni: TToolButton;
     tbDosyaCikis: TToolButton;
-    procedure DuzenleyiciAlaniOlustur(DosyaAdi: string);
+    procedure DuzenleyiciAlaniOlustur;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDropFiles(Sender: TObject; const FileNames: array of String);
@@ -98,7 +98,7 @@ type
     procedure MenuSonKullanilanlarListesiniGuncelle;
     procedure DosyayiDuzenleyiciyeYukle(Duzenleyici: TSynEdit;
       DosyaAdi: string; CP1254KarakterSetiniKullan: Boolean);
-    function KodlariDerle: Integer;
+    function KodlariDerle(AktifDuzenleyici: TSynEdit): Integer;
   public
   end;
 
@@ -152,7 +152,8 @@ var
 begin
 
   // test amaçlı düzenleyici alanı oluştur
-  DuzenleyiciAlaniOlustur('test.asm');
+  //DuzenleyiciAlaniOlustur;
+
   pcDosyalar.ActivePageIndex := 0;
 
   case SistemMimari of
@@ -218,7 +219,7 @@ begin
   GAsm2.Destroy;
 end;
 
-procedure TfrmAnaSayfa.DuzenleyiciAlaniOlustur(DosyaAdi: string);
+procedure TfrmAnaSayfa.DuzenleyiciAlaniOlustur;
 var
   tsDosya: TTabSheet;
   seDosya: TSynEdit;
@@ -230,7 +231,7 @@ begin
   tsDosya := pcDosyalar.AddTabSheet;
   tsDosya.Tag := GDosyaKimlikNo;
   tsDosya.Name := Format('tsDosya%d', [GDosyaKimlikNo]);
-  tsDosya.Caption := DosyaAdi;
+  tsDosya.Caption := Format('dosya%d.asm', [GDosyaKimlikNo]);
   tsDosya.ImageIndex := 9;
 
   seDosya := TSynEdit.Create(Self);
@@ -242,6 +243,7 @@ begin
   seDosya.Font.Name := 'Courier New';
   seDosya.Font.Size := GProgramAyarlari.DuzenleyiciYaziBoyut;
   seDosya.Gutter.Width := 55;
+  seDosya.Options := [eoBracketHighlight, eoGroupUndo, eoTabsToSpaces, eoTrimTrailingSpaces];
   seDosya.Text := 'db	04Dh';
 
   pcDosyalar.ActivePageIndex := ToplamDuzenleyici;
@@ -269,6 +271,9 @@ begin
 
   // kod sayfasını temizle
   seDosya0.Clear;
+
+  // yeni düzenleyici alanı oluştur - çalışmalar devam etmekte
+  //DuzenleyiciAlaniOlustur;
 
   // ana nesneyi ilklendir
   GAsm2.Ilklendir;
@@ -343,10 +348,21 @@ end;
 procedure TfrmAnaSayfa.miKodDerleClick(Sender: TObject);
 var
   DerlemeSonucu: Integer;
+  AktifDuzenleyici: TSynEdit;
 begin
 
+  if(pcDosyalar.PageCount = 0) then
+  begin
+
+    ShowMessage('Lütfen derlenecek kodları düzenleyicide açınız!');
+    Exit;
+  end;
+
+  AktifDuzenleyici := FindComponent('seDosya' + IntToStr(pcDosyalar.Pages[
+    pcDosyalar.ActivePageIndex].Tag)) as TSynEdit;
+
   // düzenleyicideki kodları derle
-  DerlemeSonucu := KodlariDerle;
+  DerlemeSonucu := KodlariDerle(AktifDuzenleyici);
 
   // derleme esnasında hata var ise...
   if(DerlemeSonucu > HATA_YOK) then
@@ -385,11 +401,22 @@ end;
 procedure TfrmAnaSayfa.miKodCalistirClick(Sender: TObject);
 var
   Process: TProcessUTF8;
+  AktifDuzenleyici: TSynEdit;
 begin
+
+  if(pcDosyalar.PageCount = 0) then
+  begin
+
+    ShowMessage('Lütfen derlenecek kodları düzenleyicide açınız!');
+    Exit;
+  end;
+
+  AktifDuzenleyici := FindComponent('seDosya' + IntToStr(pcDosyalar.Pages[
+    pcDosyalar.ActivePageIndex].Tag)) as TSynEdit;
 
   // kodlar daha önce derlenmiş veya program derleme aşamasında hata olmamış
   // olsa bile düzenleyicideki kodları MUTLAKA bir kez derle
-  KodlariDerle;
+  KodlariDerle(AktifDuzenleyici);
 
   // program; exe olarak başarılı bir şekilde derlendiyse, çalıştır
   if(GAsm2.DerlemeBasarili) and (GAsm2.CikisDosyaUzanti = 'exe') then
@@ -517,6 +544,8 @@ begin
   begin
 
     // tüm dahili değişkenleri ilk değerlerle yükle
+
+    { TODO : GAsm2 değişken değer atamaları çoklu tab özelliğinin etkinleştirilmesi amacıyla derleme / çalıştırma aşamasına taşınacak }
     GAsm2.Ilklendir;
 
     GAsm2.ProjeDizin := ProjeDizin;
@@ -743,7 +772,7 @@ begin
   end;
 end;
 
-function TfrmAnaSayfa.KodlariDerle: Integer;
+function TfrmAnaSayfa.KodlariDerle(AktifDuzenleyici: TSynEdit): Integer;
 var
   ToplamSatirSayisi, i: Integer;
   HamVeri: string;
@@ -769,7 +798,7 @@ begin
     // bellek değişkenleri ve bellek içeriğini ilk değerlerle yükle
     KodBellekDegerleriniIlklendir;
 
-    ToplamSatirSayisi := seDosya0.Lines.Count;
+    ToplamSatirSayisi := AktifDuzenleyici.Lines.Count;
     GAsm2.IslenenSatir := 0;
     GAsm2.IslenenSatirSayisi := 0;
 
@@ -777,7 +806,7 @@ begin
     while (GAsm2.IslenenSatir < ToplamSatirSayisi) and (IslevSonuc = HATA_YOK) do
     begin
 
-      HamVeri := seDosya0.Lines[GAsm2.IslenenSatir];
+      HamVeri := AktifDuzenleyici.Lines[GAsm2.IslenenSatir];
 
       if(Length(Trim(HamVeri)) > 0) then
       begin

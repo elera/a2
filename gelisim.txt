@@ -29,6 +29,9 @@
 - göreceli (relative) adres hesaplama işlevi eklenecek (8/16/32/64 bit jxx komutları için)
 - KomutYorumla işlevi, dvAciklama tanımlamasındaki açıklama gereğince yeniden tanımlanacak
 - FLD, FST, komut çalışmaları sürdürülecek
+- lodsx ve stosx komutları test edilecek
+- 16 sayısal değerini kaarkter katarına dönüştürecek işlev yazılacak
+- lodsx, movsx, stosx işlevleri test edilecek
 
 +-------------------------------------------------------------+-------------+
 |                     Çalışma Alanı                           | Tamamlanma  |
@@ -41,7 +44,7 @@
 +-------------------------------------------------------------+-------------+
 |  32 bit genel kod çevrim çalışmaları                        |      40     |
 +-------------------------------------------------------------+-------------+
-|  64 bit genel kod çevrim çalışmaları                        |      10     |
+|  64 bit genel kod çevrim çalışmaları                        |      30     |
 +-------------------------------------------------------------+-------------+
 |  derleyici içerisinde kullanılan veri tip çalışmaları       |      70     |
 +-------------------------------------------------------------+-------------+

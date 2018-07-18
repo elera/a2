@@ -909,7 +909,8 @@ begin
             end;
           end
           else
-          // ön ek SADECE işlem kodunda kullanılabilir ?
+          // ön ek değer hem adreslemede hem de sayısal değer veri genişliği
+          // için kullanılmaktadır
           begin
 
             { TODO : GBellekSabitDegerVG değeri de burada değerlendirilecek }

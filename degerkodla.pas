@@ -33,10 +33,11 @@ uses paylasim, yazmaclar, genel, kodlama, onekler;
 function YazmacAtamasiYap(IslemKodu: Byte; Yazmac1: Integer): Integer;
 function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string;
   SayiTipi: TVeriGenisligi): Integer;
+function SayisalDegerKodla(ASayisalDeger: QWord; AVeriGenisligi: TVeriGenisligi = vgHatali): Integer;
 
 implementation
 
-uses sysutils;
+uses sysutils, donusum;
 
 // 1.2 - işlem kodu kullanımı
 { TODO : çalışma genişletilecek ve tamamlanacak }
@@ -77,6 +78,53 @@ begin
 
     Result := HATA_YOK;
   end else Result := HATA_VERI_TIPI;
+end;
+
+function SayisalDegerKodla(ASayisalDeger: QWord; AVeriGenisligi: TVeriGenisligi = vgHatali): Integer;
+var
+  SayisalDeger: QWord;
+  VeriGenisligi: TVeriGenisligi;
+  i, iVeriGenisligi: Integer;
+begin
+
+  SayisalDeger := ASayisalDeger;
+
+  // veri genişiliği belirlenmemişse, veri genişliğini belirle
+  if(AVeriGenisligi = vgHatali) then
+  begin
+
+    VeriGenisligi := SayiTipiniAl(ASayisalDeger);
+  end
+  else
+  begin
+
+    VeriGenisligi := AVeriGenisligi;
+  end;
+
+  // veri genişliği hatalı ise hata kodu ile işlevden çık
+  if(VeriGenisligi = vgHatali) then
+  begin
+
+    Result := HATA_VERI_TIPI;
+    Exit;
+  end;
+
+  case VeriGenisligi of
+    vgB1: begin iVeriGenisligi := 1; end;
+    vgB2: begin iVeriGenisligi := 2; end;
+    vgB4: begin iVeriGenisligi := 4; end;
+    vgB8: begin iVeriGenisligi := 8; end;
+  end;
+
+  // sayısal veriyi belleğe yaz
+  for i := 1 to iVeriGenisligi do
+  begin
+
+    KodEkle(Byte(SayisalDeger));
+    SayisalDeger := SayisalDeger shr 8;
+  end;
+
+  Result := HATA_YOK;
 end;
 
 end.

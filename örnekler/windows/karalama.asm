@@ -3,4 +3,6 @@ kod.adres = %BURASI+10h
 merhaba:
 
 
-        push    [eax]
+;        push    [eax]
+
+inc     B1 [esp]
