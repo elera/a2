@@ -21,7 +21,7 @@ function Grup02Degisken(SatirNo: Integer; ParcaNo: Integer;
 
 implementation
 
-uses donusum, komutlar, kodlama, onekler, degerkodla, dbugintf;
+uses donusum, komutlar, kodlama, onekler, dbugintf;
 
 var
   SayiTipi: TVeriGenisligi;

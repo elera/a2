@@ -41,7 +41,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="30">
+    <Units Count="28">
       <Unit0>
         <Filename Value="a2.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -159,21 +159,13 @@
         <ResourceBaseClass Value="Form"/>
       </Unit25>
       <Unit26>
-        <Filename Value="degerkodla.pas"/>
+        <Filename Value="makrolar.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit26>
       <Unit27>
-        <Filename Value="makrolar.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit27>
-      <Unit28>
         <Filename Value="araclar.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit28>
-      <Unit29>
-        <Filename Value="adresleme.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit29>
+      </Unit27>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

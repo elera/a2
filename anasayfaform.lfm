@@ -1,5 +1,5 @@
 object frmAnaSayfa: TfrmAnaSayfa
-  Left = 390
+  Left = 416
   Height = 494
   Top = 167
   Width = 731

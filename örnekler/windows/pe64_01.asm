@@ -156,15 +156,22 @@ kod.mimari = '64Bit'
 kod.adres = 401000h
 kod_başlangıç:
 ;-------------------------------------------------------------------------------
-        sub     rsp,28h
-        mov     r9d,0
-        lea     r8,[PencereBaşlık]
-        lea     rdx,[PencereMesaj]
-        mov     rcx,0
-        call    user32_işlevler.messageboxa
+        sub     rsp,28h         ; 28h = byte
+        ;mov     r9d,0
+        db      41h, 0B9h, 0, 0, 0, 0
+        ;lea     r8,[PencereBaşlık]
+        db      4Ch, 8Dh, 5
+        dd      0FEFh
+        ;lea     rdx,[PencereMesaj]
+        db      48h, 8Dh, 15h
+        dd      0FF9h
+        mov     rcx,0           ; 0 değeri 32 bitliktir
+        ;call    user32_işlevler.messageboxa
+        db      0FFh, 15h, 2Fh, 20h, 00, 00
 
-        mov     ecx,eax
-        call    kernel32_işlevler.exit_process
+        ;mov     ecx,eax
+        db      89h, 0C1h, 0FFh, 15h, 0Fh, 20h, 0, 0
+        ;call    kernel32_işlevler.exit_process
 
 
 kod.tabaka = 200h
@@ -175,7 +182,7 @@ kod.adres = 402000h
 veri_başlangıç:
 ;-------------------------------------------------------------------------------
 PencereBaşlık:	db	'Assembler 2 (a2)', 0
-PencereMesaj:	db	'14.04.2018', 0
+PencereMesaj:	db	'30.07.2018', 0
 
 kod.tabaka = 200h
 veri_bitiş:

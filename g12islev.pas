@@ -30,7 +30,7 @@ function BellekBolgesineSayisalDegerAta(SatirIcerik: TSatirIcerik; Yazmac1,
 
 implementation
 
-uses dbugintf, yazmaclar, kodlama, komutlar, asm2, degerkodla, genel, donusum;
+uses dbugintf, yazmaclar, kodlama, komutlar, asm2, genel, donusum;
 
 // ünite içi genel kullanımlık yerel değişkenler
 var
@@ -520,18 +520,15 @@ begin
         if(YazmacListesi[GYazmac1].Uzunluk = yu8bGY) then
         begin
 
-          KodEkle($B0 + (YazmacListesi[GYazmac1].Deger and 7));
-          KodEkle(Byte(GSabitDeger));
-          Result := HATA_YOK;
+          Result := IslemKoduIleYazmacDegeriniBirlestir($B0, $B8, 0, SatirIcerik);
+          if(Result = HATA_YOK) then SayisalDegerEkle(GSabitDeger, vgB1);
         end
         // 16 bitlik veri
         else if(YazmacListesi[GYazmac1].Uzunluk = yu16bGY) then
         begin
 
-          KodEkle($B8 + (YazmacListesi[GYazmac1].Deger and 7));
-          KodEkle(Byte(GSabitDeger));
-          KodEkle(Byte(GSabitDeger shr 8));
-          Result := HATA_YOK;
+          Result := IslemKoduIleYazmacDegeriniBirlestir($B0, $B8, 0, SatirIcerik);
+          if(Result = HATA_YOK) then SayisalDegerEkle(GSabitDeger, vgB2);
         end
         // 32 bitlik veri
         else if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
@@ -554,30 +551,13 @@ begin
           else
           begin
 
-            // 64 bitlik yazmacın 32 bitlik alanı kullanılıyorsa
-            if(YazmacListesi[GYazmac1].DesMim = dm64Bit) then KodEkle($41);
-
-            KodEkle($B8 + (YazmacListesi[GYazmac1].Deger and 7));
-            for i := 1 to 4 do
-            begin
-
-              KodEkle(Byte(GSabitDeger));
-              GSabitDeger := GSabitDeger shr 8;
-            end;
-            Result := HATA_YOK;
+            Result := IslemKoduIleYazmacDegeriniBirlestir($B0, $B8, 0, SatirIcerik);
+            if(Result = HATA_YOK) then SayisalDegerEkle(GSabitDeger, vgB4);
           end;
         end
         // 64 bitlik yazmaça sabit değer aktarma işlemi
         else if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) then
         begin
-
-          // REX önek = 0100WR0B
-          // aşağıdaki ifadeler test amaçlıdır
-          // test komutu: mov rcx,0
-          // REX
-          if(YazmacListesi[GYazmac1].Deger > 7) then
-            KodEkle($4C)
-          else KodEkle($48);
 
           if(GAsm2.Mimari = mim64Bit) then
           begin
@@ -608,8 +588,8 @@ begin
             else if(SatirIcerik.Komut.GrupNo = GRUP12_MOV) then
             begin
 
-              KodEkle($C7);
-              KodEkle($C0 + (YazmacListesi[GYazmac1].Deger and 7));
+              // 64 bitlik başvuru hatalı olabilir. test edilecek
+              Result := IslemKoduIleYazmacDegeriniBirlestir($C6, $C7,  0, SatirIcerik);
 
               for i := 1 to 4 do
               begin
@@ -623,8 +603,7 @@ begin
             else if(SatirIcerik.Komut.GrupNo = GRUP12_SUB) then
             begin
 
-              KodEkle($83);
-              KodEkle($C0 or $28 or (YazmacListesi[GYazmac1].Deger and 7));
+              Result := IslemKoduIleYazmacDegeriniBirlestir($80, $83, 5, SatirIcerik);
               KodEkle(Byte(GSabitDeger));
               Result := HATA_YOK;
             end;

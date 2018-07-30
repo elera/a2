@@ -24,8 +24,7 @@ function IslemKodunaYazmacDegeriEkle(IslemKodu, Yazmac: Byte;
 
 implementation
 
-uses kodlama, Dialogs, asm2, komutlar, yazmaclar, donusum, dbugintf, onekler,
-  degerkodla, adresleme;
+uses kodlama, Dialogs, asm2, komutlar, yazmaclar, donusum, dbugintf, onekler;
 
   // ünite içi genel kullanımlık yerel değişkenler
 var
@@ -221,7 +220,7 @@ begin
             begin
 
               KodEkle($41);
-              KodEkle($C8 + (8 - YazmacListesi[GYazmac1].Deger));
+              KodEkle($C8 + (YazmacListesi[GYazmac1].Deger - 8));
               Result := HATA_YOK;
             end else Result := HATA_64BIT_MIMARI_GEREKLI;
           end;
@@ -253,6 +252,15 @@ begin
           end else Result := HATA_64BIT_MIMARI_GEREKLI;
         end else Result := HATA_ISL_KOD_KULLANIM;
       end else Result := HATA_YAZMAC_GEREKLI;
+    end
+    else if(SatirIcerik.Komut.GrupNo = GRUP11_NOT) then
+    begin
+
+      if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) then
+      begin
+
+        Result := IslemKoduVeYazmacDegeriniKodla($F6, $F7, 2, SatirIcerik);
+      end else Result := HATA_DEVAM_EDEN_CALISMA;
     end
     else if(SatirIcerik.Komut.GrupNo = GRUP11_POP) then
     begin
@@ -654,7 +662,7 @@ begin
       else if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
       begin
 
-        Result := BellekAdresle1($FE, SatirIcerik);
+        Result := BellekAdresle1($FE, 0, SatirIcerik);
       end else Result := HATA_DEVAM_EDEN_CALISMA;
     end
     // div komutu

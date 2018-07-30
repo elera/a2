@@ -132,7 +132,6 @@ movsb
 movsd
 movsw
 movsq
-*movsw
 *movsx
 *movzx
 *mul
