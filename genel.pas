@@ -17,7 +17,7 @@ uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler, araclar;
 const
   ProgramAdi = 'Assembler 2 (a2)';
   ProgramSurum = '0.0.15.2018';
-  SurumTarihi = '30.07.2018';
+  SurumTarihi = '01.08.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -77,7 +77,8 @@ const
   HATA_TANIMLAMA                  = HATA_TANIM_KULLANIM + 1;
   HATA_PROG_DOSYA_OLUSTURMA       = HATA_TANIMLAMA + 1;
   HATA_PROJEYI_KAYDET             = HATA_PROG_DOSYA_OLUSTURMA + 1;
-  HATA_DEVAM_EDEN_CALISMA         = HATA_PROJEYI_KAYDET + 1;
+  HATA_VERI_GENISLIGI             = HATA_PROJEYI_KAYDET + 1;
+  HATA_DEVAM_EDEN_CALISMA         = HATA_VERI_GENISLIGI + 1;
 
   sHATA_BILINMEYEN_HATA           = 'Bilinmeyen hata';
   sHATA_BILINMEYEN_KOMUT          = 'Bilinmeyen komut';
@@ -108,6 +109,7 @@ const
   sHATA_TANIMLAMA                 = 'Hatalı tanımlama';
   sHATA_PROG_DOSYA_OLUSTURMA      = 'Program dosyası oluşturulamıyor!';
   sHATA_PROJEYI_KAYDET            = 'Projeyi derlemeden önce kaydediniz!';
+  sHATA_VERI_GENISLIGI            = 'Veri genişliği hatalı.';
   sHATA_DEVAM_EDEN_CALISMA        = 'Çalışmalar devam etmekte...';
 
 const

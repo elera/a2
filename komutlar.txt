@@ -75,7 +75,7 @@ fyl2xp1
 hlt
 *idiv
 *imul
-*in
+in
 *inc
 int
 int3
@@ -139,7 +139,7 @@ movsq
 *nop
 *not
 *or
-*out
+out
 *pop
 popa
 popad

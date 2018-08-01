@@ -1,7 +1,7 @@
-kod.mimari = '16Bit'
+kod.mimari = '64Bit'
 kod.adres = 400000h
 kod.adres = %BURASI+10h
 merhaba:
 
 
-not     si
+in      eax,dx

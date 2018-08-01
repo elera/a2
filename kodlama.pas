@@ -16,7 +16,8 @@ unit kodlama;
   1.1 - push  1		          ; sayısal değer
 
   1.2 - push  eax		        ; yazmaç
-  işlev: IslemKoduVeYazmacDegeriniKodla
+  işlev-1: IslemKoduVeYazmacDegeriniKodla
+  işlev-2: IslemKoduIleYazmacDegeriniBirlestir
 
   1.3 - push  [eax]	        ; yazmaç ile bellek adresleme
   1.4 - push  [1234h]       ; sayısal değer ile bellek adresleme
@@ -79,8 +80,9 @@ function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string;
 function SayisalDegerKodla(ASayisalDeger: QWord; AVeriGenisligi: TVeriGenisligi = vgHatali): Integer;
 function BellekAdresle1(IslemKodu, MODRMDegeri: Byte; SatirIcerik: TSatirIcerik): Integer;
 function GoreceliDegerEkle(Komut: Integer; KomutIK: Byte): Integer;
-function IslemKoduIleYazmacDegeriniBirlestir(IK8, IKDiger, ModRMDeger: Byte; SI: TSatirIcerik): Integer;
+function IslemKoduIleYazmacDegeriniBirlestir2(IK8, IKDiger, ModRMDeger: Byte; SI: TSatirIcerik): Integer;
 function IslemKoduVeYazmacDegeriniKodla(IK8, IKDiger, ModRMDeger: Byte; SI: TSatirIcerik): Integer;
+function IslemKoduIleYazmacDegeriniBirlestir(IslemKodu, Yazmac: Byte; SatirIcerik: TSatirIcerik): Integer;
 function IslemKoduVeYazmacDegeriniKodla2(IK8, IKDiger, ModRMDeger: Byte; SI: TSatirIcerik): Integer;
 function SayisalDegerEkle(SayisalDeger: QWord; VeriGenisligi: TVeriGenisligi): Integer;
 
@@ -362,7 +364,7 @@ end;
 
 // 2.1 - mov   eax,1
 // $B8+ rw iw
-function IslemKoduIleYazmacDegeriniBirlestir(IK8, IKDiger, ModRMDeger: Byte; SI: TSatirIcerik): Integer;
+function IslemKoduIleYazmacDegeriniBirlestir2(IK8, IKDiger, ModRMDeger: Byte; SI: TSatirIcerik): Integer;
 begin
 
   if(YazmacListesi[GYazmac1].Uzunluk = yu8bGY) then
@@ -506,6 +508,45 @@ begin
 
     Result := HATA_YOK;
   end;
+end;
+
+// işlev tamamlanmadı
+// push r32 -> 50+rd kodlama işlemlerini yönetir
+function IslemKoduIleYazmacDegeriniBirlestir(IslemKodu, Yazmac: Byte; SatirIcerik: TSatirIcerik): Integer;
+var
+  DesMim1, DesMim2: TDestekleyenMimari;
+  i: Byte;
+begin
+
+  // 64 bitlik işlem kodları yalnızca 64 bitlik mimaride kullanılabilir
+  if(GAsm2.Mimari <> mim64Bit) and (YazmacListesi[Yazmac].Uzunluk = yu64bGY) then
+  begin
+
+    Result := HATA_64BIT_MIMARI_GEREKLI;
+    Exit;
+  end;
+
+  // derlenecek kod mimarisi 64 bit ise...
+  {if(GAsm2.Mimari = mim64Bit) and (YazmacListesi[Yazmac].Uzunluk = yu64bGY) then
+
+    // 0100W000 = W = 1 = 64 bit işlem kodu
+    KodEkle($48)}
+
+  // derlenecek kod mimarisi 32 bit, yazmaç 32 bit değilse...
+  // 66 ön ekini kodun başına ekle
+  if(GAsm2.Mimari = mim32Bit) and (YazmacListesi[Yazmac].Uzunluk <> yu32bGY) then
+
+    KodEkle($66)
+
+  // derlenecek kod mimarisi 16 bit, yazmaç 16 bit değilse...
+  else if(GAsm2.Mimari = mim16Bit) and (YazmacListesi[Yazmac].Uzunluk <> yu16bGY) then
+
+    KodEkle($66);
+
+  DesMim1 := YazmacListesi[Yazmac].DesMim;
+
+  KodEkle(IslemKodu + (YazmacListesi[Yazmac].Deger and 7));
+  Result := HATA_YOK;
 end;
 
 // 2.2 - mov   eax,ebx

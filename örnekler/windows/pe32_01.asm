@@ -105,13 +105,28 @@ kod_başlangıç:
 
 ; grafiksel arabirim kodları
 ;-------------------------------------------------------------------------------
-        inc     B1 [Sayi1]
-        inc     B1 [Sayi2]
-        inc     B1 [Sayi3]
-        inc     B1 [Sayi4]
-        mov     eax,[Sayi1]
-        mov     ebx,2
+
+        mov     eax,100
+        mov     ebx,200
         call    topla
+        call    SayısalDeğeriKaraktereÇevir
+
+        ; mesaj kutusunu görüntüle
+        push    0
+        push    PencereBaşlık
+        push    PencereMesaj
+        push    0
+        call    [MessageBoxAİşlevi]
+
+        ; programdan çık
+        push    0
+        call    [ExitProcessİşlevi]
+
+SayısalDeğeriKaraktereÇevir:
+
+        ; test amaçlı
+        dec     eax
+        inc     eax
 
         mov     edi,PencereMesaj+9
 
@@ -129,17 +144,7 @@ sonraki_basamak:
         dec     edi
         cmp     eax,0
         jnz     sonraki_basamak
-
-        ; mesaj kutusunu görüntüle
-        push    0
-        push    PencereBaşlık
-        push    PencereMesaj
-        push    0
-        call    [MessageBoxAİşlevi]
-
-        ; programdan çık
-        push    0
-        call    [ExitProcessİşlevi]
+        ret
 
 ; toplama işlemi
 ; eax = 1. sayı, ebx = 2. sayı
@@ -152,10 +157,8 @@ kod.tabaka = 200h
 veri_başlangıç:
 PencereBaşlık:	db	'Assembler 2 (a2)', 0
 PencereMesaj:	db	'0000000000', 0
-Sayi1           db      0
-Sayi2           db      0
-Sayi3           db      0
-Sayi4           db      0
+Sayi1           dd      100
+Sayi2           dd      200
 
 ; program içerisinde kullanılacak sistem işlevleri (import table)
 ;-------------------------------------------------------------------------------

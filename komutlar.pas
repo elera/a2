@@ -186,12 +186,14 @@ const
   GRUP12_AND      = GRUP12_ADD + 1;
   GRUP12_CMP      = GRUP12_AND + 1;
   GRUP12_IMUL     = GRUP12_CMP + 1;
-  GRUP12_LEA      = GRUP12_IMUL + 1;
+  GRUP12_IN       = GRUP12_IMUL + 1;
+  GRUP12_LEA      = GRUP12_IN + 1;
   GRUP12_MOV      = GRUP12_LEA + 1;
   GRUP12_MOVSX    = GRUP12_MOV + 1;
   GRUP12_MOVZX    = GRUP12_MOVSX + 1;
   GRUP12_OR       = GRUP12_MOVZX + 1;
-  GRUP12_RCL      = GRUP12_OR + 1;
+  GRUP12_OUT      = GRUP12_OR + 1;
+  GRUP12_RCL      = GRUP12_OUT + 1;
   GRUP12_RCR      = GRUP12_RCL + 1;
   GRUP12_ROL      = GRUP12_RCR + 1;
   GRUP12_ROR      = GRUP12_ROL + 1;
@@ -215,7 +217,7 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
-  TOPLAM_KOMUT = 163;
+  TOPLAM_KOMUT = 165;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
   // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
@@ -379,11 +381,13 @@ const
     (Komut: 'and';              GrupNo: GRUP12_AND;           KomutTipi: ktIslemKodu),
     (Komut: 'cmp';              GrupNo: GRUP12_CMP;           KomutTipi: ktIslemKodu),
     (Komut: 'imul';             GrupNo: GRUP12_IMUL;          KomutTipi: ktIslemKodu),
+    (Komut: 'in';               GrupNo: GRUP12_IN;            KomutTipi: ktIslemKodu),
     (Komut: 'lea';              GrupNo: GRUP12_LEA;           KomutTipi: ktIslemKodu),
     (Komut: 'mov';              GrupNo: GRUP12_MOV;           KomutTipi: ktIslemKodu),
     (Komut: 'movsx';            GrupNo: GRUP12_MOVSX;         KomutTipi: ktIslemKodu),
     (Komut: 'movzx';            GrupNo: GRUP12_MOVZX;         KomutTipi: ktIslemKodu),
     (Komut: 'or';               GrupNo: GRUP12_OR;            KomutTipi: ktIslemKodu),
+    (Komut: 'out';              GrupNo: GRUP12_OUT;           KomutTipi: ktIslemKodu),
     (Komut: 'rcl';              GrupNo: GRUP12_RCL;           KomutTipi: ktIslemKodu),
     (Komut: 'rcr';              GrupNo: GRUP12_RCR;           KomutTipi: ktIslemKodu),
     (Komut: 'rol';              GrupNo: GRUP12_ROL;           KomutTipi: ktIslemKodu),
@@ -455,7 +459,8 @@ var
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
-    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev
+    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
+    @Grup12Islev, @Grup12Islev
   );
 
 function KomutBilgisiAl(AKomut: string): TKomutDurum;

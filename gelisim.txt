@@ -24,13 +24,16 @@
 - tvtTanimsiz verileri tekrar incelenerek yazmaç ve karakterdizisi olarak ayrılacak
 - vktYazmac tanımlarının problemleri giderildikten sonra vktKarakterDizisi veri yapısı tamamlanacak
 - ParcaNo değerinin diğer kontrollerden önce ya da sonra artırılması düzenlenecek
-- Tab kontrol üzerine birden fazla dosya açılması, her bir tab üzerindeki dosyanın derlenebilme özelliği eklenecek
-  (çalışmalar başladı)
+- Tab kontrol üzerine birden fazla dosya açılması, her bir tab üzerindeki dosyanın derlenebilme özelliği eklenecek (çalışmalar başladı)
 - göreceli (relative) adres hesaplama işlevi eklenecek (8/16/32/64 bit jxx komutları için)
 - KomutYorumla işlevi, dvAciklama tanımlamasındaki açıklama gereğince yeniden tanımlanacak
 - FLD, FST, komut çalışmaları sürdürülecek
 - 16 sayısal değerini kaarkter katarına dönüştürecek işlev yazılacak
 - lodsx, movsx, stosx işlevleri test edilecek
+- 11 aşamalı kodlama sistemi (kodlama.pas) programa dahil edilecek
+- tarih damgası otomatikleştirilecek
+- pex+ format bölüm yapıları (kod, data, vs section) oluşturulacak
+- diğer kodların mevcut dosyaya eklenmesi (include) sağlanacak
 
 +-------------------------------------------------------------+-------------+
 |                     Çalışma Alanı                           | Tamamlanma  |

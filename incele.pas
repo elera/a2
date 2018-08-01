@@ -561,6 +561,19 @@ begin
                 i := Yazmac.Sonuc;
                 SonVeriKontrolTip := vktYazmac;
                 GHataKodu := KomutYorumla(ParcaNo, vktYazmac, '', i);
+              end
+              // eğer veri sayısal bir değer ise...
+              else if(VeriTipi = tvtSayi) then
+              begin
+
+                GHataKodu := SayisalVeriyiIsle('');
+                GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
+
+                GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktSayi, '', SayisalDeger);
+
+                //GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktVirgul, '', 0);
+
+                GAsm2.Matematik.Temizle;
               end;
             end;
 
@@ -583,11 +596,9 @@ begin
               GHataKodu := SayisalVeriyiIsle('');
               GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
 
-              GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktSayi,
-                '', SayisalDeger);
+              GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktSayi, '', SayisalDeger);
 
-              GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktVirgul,
-                '', 0);
+              GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktVirgul, '', 0);
 
               GAsm2.Matematik.Temizle;
 
