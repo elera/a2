@@ -16,7 +16,7 @@ type
   // veri genişliği
   // B1 = 1 Byte, B1B2 = 1 Byte verinin 2 Byte olarak tanımlanması
   { TODO : vgB1B2 ve diğer tanımlanacak veriler TOnEk kısmında da tanımlanabilir }
-  TVeriGenisligi = (vgHatali, vgB1, vgB1B2, vgB2, vgB4, vgB8);
+  TVeriGenisligi = (vgHatali, vgB1, vgB1B2, vgB2, vgB4, vgB8, vgB10);
 
 type
   TOnEk = record
@@ -26,12 +26,13 @@ type
 
 { önek listesi }
 const
-  TOPLAM_ONEK = 4;
+  TOPLAM_ONEK = 5;
   OnEkListesi: array[0..TOPLAM_ONEK - 1] of TOnEk = (
     (Ad: 'b1';    Deger: vgB1),
     (Ad: 'b2';    Deger: vgB2),
     (Ad: 'b4';    Deger: vgB4),
-    (Ad: 'b8';    Deger: vgB8));
+    (Ad: 'b8';    Deger: vgB8),
+    (Ad: 'b10';   Deger: vgB10));
 
 function OnEkBilgisiAl(AOnEk: string): TOnEk;
 

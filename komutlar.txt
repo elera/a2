@@ -40,7 +40,7 @@ fincstp
 finit
 *fistp
 *fisub
-*fld
+fld
 fld1
 fldl2e
 fldl2t
@@ -68,7 +68,7 @@ fsqrt
 ftst
 *fucompp
 fxam
-*fxch
+fxch
 fxtract
 fyl2x
 fyl2xp1
@@ -152,18 +152,18 @@ pushad
 pushf
 pushfd
 pushfq
-rcl
-rcr
+*rcl
+*rcr
 rdtsc
 rdtscp
 *rep
 ret
 retf
 retn
-rol
-ror
-sal
-sar
+*rol
+*ror
+*sal
+*sar
 *sbb
 *scasb
 *scasd
@@ -173,9 +173,9 @@ setb
 setbe
 .... set verileri devam etmektedir
 sgdt
-shl
+*shl
 *shld
-shr
+*shr
 *shrd
 sidt
 stc

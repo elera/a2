@@ -6,7 +6,7 @@
 
   2. grup kodlama işlevi, DEĞİŞKEN ifadelerini yönetir
 
-  Güncelleme Tarihi: 16/06/2018
+  Güncelleme Tarihi: 05/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -47,6 +47,7 @@ begin
       GRUP02_DW:  begin VeriGenisligi := 2; SayiTipi := vgB2;   end;
       GRUP02_DD:  begin VeriGenisligi := 4; SayiTipi := vgB4;   end;
       GRUP02_DQ:  begin VeriGenisligi := 8; SayiTipi := vgB8;   end;
+      GRUP02_DT:  begin VeriGenisligi := 10;SayiTipi := vgB10;  end;
     end;
 
     // virgül kullanıldı olarak belirlenerek ilk gelecek verinin sayısal

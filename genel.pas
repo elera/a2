@@ -4,7 +4,7 @@
 
   İşlev: genel sabit, değişken, yapı ve işlevleri içerir
 
-  Güncelleme Tarihi: 11/06/2018
+  Güncelleme Tarihi: 11/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -12,12 +12,13 @@ unit genel;
 
 interface
 
-uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler, araclar;
+uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler, araclar,
+  SynEdit, dosya;
 
 const
   ProgramAdi = 'Assembler 2 (a2)';
-  ProgramSurum = '0.0.15.2018';
-  SurumTarihi = '01.08.2018';
+  ProgramSurum = '0.0.16.2018';
+  SurumTarihi = '11.08.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -146,7 +147,7 @@ var
   SistemMimari: TSistemMimari;              // programın derleme yaptığı sistem mimarisi
   GAsm2: TAsm2;                             // derleyici ana nesnesi
   GProgramAyarDizin: string;                // program ayar dizinini içerir
-  GProgramCalismaDizin: string;             // programın çalıştığı dizin
+  GSonKullanilanDizin: string;              // programın dosya açma / kaydetme için kullandığı en son dizin
   GProgramAyarlari: TProgramAyarlari;       // program ayar değerlerini içerir
   // ("bellek db 10" örneğinde bellek değeri) değişken ilk değeri veya
   // ("bellek = 10" örneğinde bellek değeri) tanım ilk değeri
@@ -173,7 +174,8 @@ var
   GSabitDeger: Integer;                     // bellek / yazmaç için sayısal değer
   GSabitDegerVG: TVeriGenisligi;
   GYazmacB1OlcekM, GYazmacB2OlcekM: Boolean;// bellek yazmaçlarının ölçek değerleri var mı?
-  GDosyaKimlikNo: Integer;                  // tab alanında açılan her dosya için kullanılan kimlik
+  GAktifDuzenleyici: TSynEdit = nil;        // aktif düzenleyici nesne değerini barındırır
+  GAktifDosya: TDosya = nil;                // aktif düzenleyicideki aktif dosya
 
   // -------------------------------------------------------------------------->
   // etiket veya tanım ataması yapılırken işleme dahil olunan etiket ve / veya tanım

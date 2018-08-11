@@ -16,11 +16,6 @@ uses Classes, SysUtils, paylasim, onekler;
 
 function Grup12Islev(SatirNo: Integer; ParcaNo: Integer;
   VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
-function YazmacaYazmacAta(IslemKodu, REGDeger: Byte; SatirIcerik: TSatirIcerik; Yazmac1,
-  Yazmac2: Integer): Integer;
-function YazmacaSayisalDegerAta(IslemKodu, REGDeger: Byte; SatirIcerik: TSatirIcerik;
-  Yazmac: Integer; SayisalDegerVar: Boolean; SabitDeger: Integer;
-  SabitDegerVG: TVeriGenisligi): Integer;
 function YazmacaBellekBolgesiAta(SatirIcerik: TSatirIcerik; Yazmac1,
   Yazmac2: Integer): Integer;
 function BellekBolgesineYazmacAta(SatirIcerik: TSatirIcerik; Yazmac1,
@@ -30,7 +25,7 @@ function BellekBolgesineSayisalDegerAta(SatirIcerik: TSatirIcerik; Yazmac1,
 
 implementation
 
-uses dbugintf, yazmaclar, kodlama, komutlar, asm2, genel, donusum;
+uses dbugintf, yazmaclar, kodlama, komutlar, asm2, genel, donusum, dosya;
 
 // ünite içi genel kullanımlık yerel değişkenler
 var
@@ -391,14 +386,14 @@ begin
             else if(YazmacListesi[GYazmac1].Ad = 'ax') then
             begin
 
-              if(GAsm2.Mimari <> mim16Bit) then KodEkle($66);
+              if(GAktifDosya.Mimari <> mim16Bit) then KodEkle($66);
               KodEkle($E5);
               Result := SayisalDegerEkle(GSabitDeger, vgB1);
             end
             else if(YazmacListesi[GYazmac1].Ad = 'eax') then
             begin
 
-              if(GAsm2.Mimari =  mim16Bit) then KodEkle($66);
+              if(GAktifDosya.Mimari =  mim16Bit) then KodEkle($66);
               KodEkle($E5);
               Result := SayisalDegerEkle(GSabitDeger, vgB1);
             end else Result := HATA_ISL_KOD_KULLANIM;
@@ -423,14 +418,14 @@ begin
             else if(YazmacListesi[GYazmac1].Ad = 'ax') then
             begin
 
-              if(GAsm2.Mimari <> mim16Bit) then KodEkle($66);
+              if(GAktifDosya.Mimari <> mim16Bit) then KodEkle($66);
               KodEkle($ED);
               Result := HATA_YOK;
             end
             else if(YazmacListesi[GYazmac1].Ad = 'eax') then
             begin
 
-              if(GAsm2.Mimari =  mim16Bit) then KodEkle($66);
+              if(GAktifDosya.Mimari =  mim16Bit) then KodEkle($66);
               KodEkle($ED);
               Result := HATA_YOK;
             end else Result := HATA_ISL_KOD_KULLANIM;
@@ -460,14 +455,14 @@ begin
             else if(YazmacListesi[GYazmac2].Ad = 'ax') then
             begin
 
-              if(GAsm2.Mimari <> mim16Bit) then KodEkle($66);
+              if(GAktifDosya.Mimari <> mim16Bit) then KodEkle($66);
               KodEkle($E7);
               Result := SayisalDegerEkle(GSabitDeger, vgB1);
             end
             else if(YazmacListesi[GYazmac2].Ad = 'eax') then
             begin
 
-              if(GAsm2.Mimari =  mim16Bit) then KodEkle($66);
+              if(GAktifDosya.Mimari =  mim16Bit) then KodEkle($66);
               KodEkle($E7);
               Result := SayisalDegerEkle(GSabitDeger, vgB1);
             end else Result := HATA_ISL_KOD_KULLANIM;
@@ -492,14 +487,14 @@ begin
             else if(YazmacListesi[GYazmac2].Ad = 'ax') then
             begin
 
-              if(GAsm2.Mimari <> mim16Bit) then KodEkle($66);
+              if(GAktifDosya.Mimari <> mim16Bit) then KodEkle($66);
               KodEkle($EF);
               Result := HATA_YOK;
             end
             else if(YazmacListesi[GYazmac2].Ad = 'eax') then
             begin
 
-              if(GAsm2.Mimari =  mim16Bit) then KodEkle($66);
+              if(GAktifDosya.Mimari =  mim16Bit) then KodEkle($66);
               KodEkle($EF);
               Result := HATA_YOK;
             end else Result := HATA_ISL_KOD_KULLANIM;
@@ -521,39 +516,40 @@ begin
         GRUP12_TEST:  begin Result := HATA_DEVAM_EDEN_CALISMA; Exit; end;
       end;
 
-      // yazmaçtan yazmaca atama işlemi
+      // yazmaçtan yazmaca koşulsuz atamalar buraya eklenecek
       if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) and
         (SatirIcerik.BolumTip2.BolumAnaTip = batYazmac) then
       begin
 
+        // RCL ve diğer komutlar tamamlanmadı!
         case SatirIcerik.Komut.GrupNo of
-          GRUP12_RCL: Result := YazmacaYazmacAta($D2, $02, SatirIcerik,
+          {YazmacYazmacKodla işlevleri YazmacKodla olarak değiştirilecek
+          GRUP12_RCL: Result := YazmacYazmacKodla($D2, $02, SatirIcerik,
             GYazmac1, GYazmac2);
-          GRUP12_RCR: Result := YazmacaYazmacAta($D2, $03, SatirIcerik,
+          GRUP12_RCR: Result := YazmacYazmacKodla($D2, $03, SatirIcerik,
             GYazmac1, GYazmac2);
-          GRUP12_ROL: Result := YazmacaYazmacAta($D2, $00, SatirIcerik,
+          GRUP12_ROL: Result := YazmacYazmacKodla($D2, $00, SatirIcerik,
             GYazmac1, GYazmac2);
-          GRUP12_ROR: Result := YazmacaYazmacAta($D2, $01, SatirIcerik,
+          GRUP12_ROR: Result := YazmacYazmacKodla($D2, $01, SatirIcerik,
             GYazmac1, GYazmac2);
           // 2 işlem kodu da aynı. merak etme, hata yok!
           GRUP12_SAL,
-          GRUP12_SHL: Result := YazmacaYazmacAta($D2, $04, SatirIcerik,
+          GRUP12_SHL: Result := YazmacYazmacKodla($D2, $04, SatirIcerik,
             GYazmac1, GYazmac2);
-          GRUP12_SAR: Result := YazmacaYazmacAta($D2, $07, SatirIcerik,
+          GRUP12_SAR: Result := YazmacYazmacKodla($D2, $07, SatirIcerik,
             GYazmac1, GYazmac2);
-          GRUP12_SHR: Result := YazmacaYazmacAta($D2, $05, SatirIcerik,
-            GYazmac1, GYazmac2);
+          GRUP12_SHR: Result := YazmacYazmacKodla($D2, $05, SatirIcerik,
+            GYazmac1, GYazmac2);}
 
-          GRUP12_ADD:   Result := YazmacaYazmacAta($00, -1, SatirIcerik, GYazmac1, GYazmac2);
-          GRUP12_AND:   Result := YazmacaYazmacAta($20, -1, SatirIcerik, GYazmac1, GYazmac2);
-          GRUP12_CMP:   Result := YazmacaYazmacAta($38, -1, SatirIcerik, GYazmac1, GYazmac2);
+          GRUP12_ADD:   Result := YazmacKodla($00, $01, GYazmac1, GYazmac2, SatirIcerik);
+          GRUP12_AND:   Result := YazmacKodla($20, $21, GYazmac1, GYazmac2, SatirIcerik);
+          GRUP12_CMP:   Result := YazmacKodla($38, $39, GYazmac1, GYazmac2, SatirIcerik);
           // GRUP12_LEA: bu komutun yazmaçtan yazmaça ataması yok
-          GRUP12_MOV:   Result := YazmacaYazmacAta($88, -1, SatirIcerik, GYazmac1, GYazmac2);
-          GRUP12_OR:    Result := YazmacaYazmacAta($08, -1, SatirIcerik, GYazmac1, GYazmac2);
-          GRUP12_SUB:   Result := YazmacaYazmacAta($28, -1, SatirIcerik, GYazmac1, GYazmac2);
-          // xchg çalışması devam etmekte
-          //GRUP12_XCHG:  Result := YazmacaYazmacAta($86, SatirIcerik, GYazmac1, GYazmac2);
-          GRUP12_XOR:   Result := YazmacaYazmacAta($30, -1, SatirIcerik, GYazmac1, GYazmac2);
+          GRUP12_MOV:   Result := YazmacKodla($88, $89, GYazmac1, GYazmac2, SatirIcerik);
+          GRUP12_OR:    Result := YazmacKodla($08, $09, GYazmac1, GYazmac2, SatirIcerik);
+          GRUP12_SUB:   Result := YazmacKodla($28, $29, GYazmac1, GYazmac2, SatirIcerik);
+          GRUP12_XCHG:  Result := YazmacKodla($86, $87, GYazmac1, GYazmac2, SatirIcerik);
+          GRUP12_XOR:   Result := YazmacKodla($30, $31, GYazmac1, GYazmac2, SatirIcerik);
           else Result := HATA_ISL_KOD_KULLANIM;
         end;
       end
@@ -578,22 +574,14 @@ begin
         begin
 
           case SatirIcerik.Komut.GrupNo of
-            GRUP12_RCL: Result := YazmacaSayisalDegerAta($D0, $02, SatirIcerik,
-              GYazmac1, False, GSabitDeger, GSabitDegerVG);
-            GRUP12_RCR: Result := YazmacaSayisalDegerAta($D0, $03, SatirIcerik,
-              GYazmac1, False, GSabitDeger, GSabitDegerVG);
-            GRUP12_ROL: Result := YazmacaSayisalDegerAta($D0, $00, SatirIcerik,
-              GYazmac1, False, GSabitDeger, GSabitDegerVG);
-            GRUP12_ROR: Result := YazmacaSayisalDegerAta($D0, $01, SatirIcerik,
-              GYazmac1, False, GSabitDeger, GSabitDegerVG);
-            // 2 işlem kodu da aynı. merak etme, hata yok!
-            GRUP12_SAL,
-            GRUP12_SHL: Result := YazmacaSayisalDegerAta($D0, $04, SatirIcerik,
-              GYazmac1, False, GSabitDeger, GSabitDegerVG);
-            GRUP12_SAR: Result := YazmacaSayisalDegerAta($D0, $07, SatirIcerik,
-              GYazmac1, False, GSabitDeger, GSabitDegerVG);
-            GRUP12_SHR: Result := YazmacaSayisalDegerAta($D0, $05, SatirIcerik,
-              GYazmac1, False, GSabitDeger, GSabitDegerVG);
+            GRUP12_RCL: Result := YazmacKodla($D0, $D1, GYazmac1, 2, SatirIcerik);
+            GRUP12_RCR: Result := YazmacKodla($D0, $D1, GYazmac1, 3, SatirIcerik);
+            GRUP12_ROL: Result := YazmacKodla($D0, $D1, GYazmac1, 0, SatirIcerik);
+            GRUP12_ROR: Result := YazmacKodla($D0, $D1, GYazmac1, 1, SatirIcerik);
+            GRUP12_SAL, // SAL ve SHL işlem kodları aynı. merak etme, hata yok!
+            GRUP12_SHL: Result := YazmacKodla($D0, $D1, GYazmac1, 4, SatirIcerik);
+            GRUP12_SAR: Result := YazmacKodla($D0, $D1, GYazmac1, 7, SatirIcerik);
+            GRUP12_SHR: Result := YazmacKodla($D0, $D1, GYazmac1, 5, SatirIcerik);
           end;
         end
         // sabit değer 1 byte değerinin değerlendirilmesi
@@ -601,65 +589,67 @@ begin
         begin
 
           case SatirIcerik.Komut.GrupNo of
-            GRUP12_RCL: Result := YazmacaSayisalDegerAta($C0, $02, SatirIcerik,
-              GYazmac1, True, GSabitDeger, GSabitDegerVG);
-            GRUP12_RCR: Result := YazmacaSayisalDegerAta($C0, $03, SatirIcerik,
-              GYazmac1, True, GSabitDeger, GSabitDegerVG);
-            GRUP12_ROL: Result := YazmacaSayisalDegerAta($C0, $00, SatirIcerik,
-              GYazmac1, True, GSabitDeger, GSabitDegerVG);
-            GRUP12_ROR: Result := YazmacaSayisalDegerAta($C0, $01, SatirIcerik,
-              GYazmac1, True, GSabitDeger, GSabitDegerVG);
-            // 2 işlem kodu da aynı. merak etme, hata yok!
-            GRUP12_SAL,
-            GRUP12_SHL: Result := YazmacaSayisalDegerAta($C0, $04, SatirIcerik,
-              GYazmac1, True, GSabitDeger, GSabitDegerVG);
-            GRUP12_SAR: Result := YazmacaSayisalDegerAta($C0, $07, SatirIcerik,
-              GYazmac1, True, GSabitDeger, GSabitDegerVG);
-            GRUP12_SHR: Result := YazmacaSayisalDegerAta($C0, $05, SatirIcerik,
-              GYazmac1, True, GSabitDeger, GSabitDegerVG);
+            GRUP12_RCL: Result := YazmacKodla($C0, $C1, GYazmac1, 2, SatirIcerik);
+            GRUP12_RCR: Result := YazmacKodla($C0, $C1, GYazmac1, 3, SatirIcerik);
+            GRUP12_ROL: Result := YazmacKodla($C0, $C1, GYazmac1, 0, SatirIcerik);
+            GRUP12_ROR: Result := YazmacKodla($C0, $C1, GYazmac1, 1, SatirIcerik);
+            GRUP12_SAL, // SAL ve SHL işlem kodları aynı. merak etme, hata yok!
+            GRUP12_SHL: Result := YazmacKodla($C0, $C1, GYazmac1, 4, SatirIcerik);
+            GRUP12_SAR: Result := YazmacKodla($C0, $C1, GYazmac1, 7, SatirIcerik);
+            GRUP12_SHR: Result := YazmacKodla($C0, $C1, GYazmac1, 5, SatirIcerik);
           end;
-        end
 
-        //else Result := HATA_DEVAM_EDEN_CALISMA;
+          if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger, vgB1);
+        end
       end
       // uygulanan komut
-      // add     dl,'0'
-      // db      80h, 0C2h, 30h
-      else if(SatirIcerik.Komut.GrupNo = GRUP12_ADD) then
+      // cmp     eax,1
+      // db      83h, 0F8h, 00h
+      else if(SatirIcerik.Komut.GrupNo = GRUP12_CMP) then
       begin
 
         // 32 bitlik yazmaca 8 bitlik veri aktarılıyor
-        // bu çalışma diğer veri tiplerine genişletilecek
-        if(YazmacListesi[GYazmac1].Uzunluk = yu8bGY) then
+        if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
         begin
 
-          Result := YazmacaSayisalDegerAta($80, $00, SatirIcerik, GYazmac1,
-            True, GSabitDeger, GSabitDegerVG);
-          //Result := HATA_YOK;
+          KodEkle($83);
+          KodEkle($C0 + (7 shl 3) + (YazmacListesi[GYazmac1].Deger and 7));
+          KodEkle(GSabitDeger);
+          Result := HATA_YOK;
+        end else Result := HATA_BILINMEYEN_HATA;
+      end
+      else if(SatirIcerik.Komut.GrupNo = GRUP12_ADD) then
+      begin
+
+        if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) and
+          (SatirIcerik.BolumTip2.BolumAnaTip = batSayisalDeger) then
+        begin
+
+          if(YazmacListesi[GYazmac1].Uzunluk = yu8bGY) then
+          begin
+
+            Result := YazmacKodla($80, $81, GYazmac1, 0, SatirIcerik);
+            if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger, vgB1);
+          end
+          else if(YazmacListesi[GYazmac1].Uzunluk = yu16bGY) then
+          begin
+
+            Result := YazmacKodla($80, $81, GYazmac1, 0, SatirIcerik);
+            if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger, vgB2);
+          end
+          // 32 ve 64 bitlik yazmaç 32 bitlik değer kullanıyor
+          else if(YazmacListesi[GYazmac1].Uzunluk = yu16bGY) then
+          begin
+
+            Result := YazmacKodla($80, $81, GYazmac1, 0, SatirIcerik);
+            if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger, vgB4);
+          end
         end else Result := HATA_BILINMEYEN_HATA;
       end
       else
       begin
 
-        // uygulanan komut
-        // cmp     eax,1
-        // db      83h, 0F8h, 00h
-        if(SatirIcerik.Komut.GrupNo = GRUP12_CMP) then
-        begin
-
-          // 32 bitlik yazmaca 8 bitlik veri aktarılıyor
-          if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
-          begin
-
-            // buradaki istisna değerlendirilecek
-            //Result := YazmacaSayisalDegerAta($80, SatirIcerik, GYazmac1, GSabitDeger);
-            KodEkle($83);
-            KodEkle($C0 + (7 shl 3) + (YazmacListesi[GYazmac1].Deger and 7));
-            KodEkle(GSabitDeger);
-            Result := HATA_YOK;
-          end else Result := HATA_BILINMEYEN_HATA;
-        end
-        else if(SatirIcerik.Komut.GrupNo = GRUP12_MOV) or
+        if(SatirIcerik.Komut.GrupNo = GRUP12_MOV) or
           (SatirIcerik.Komut.GrupNo = GRUP12_SUB) or
           (SatirIcerik.Komut.GrupNo = GRUP12_LEA) then
         begin
@@ -708,7 +698,7 @@ begin
           else if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) then
           begin
 
-            if(GAsm2.Mimari = mim64Bit) then
+            if(GAktifDosya.Mimari = mim64Bit) then
             begin
 
               if(SatirIcerik.Komut.GrupNo = GRUP12_LEA) then
@@ -752,7 +742,7 @@ begin
               else if(SatirIcerik.Komut.GrupNo = GRUP12_SUB) then
               begin
 
-                Result := IslemKoduIleYazmacDegeriniBirlestir2($80, $83, 5, SatirIcerik);
+                Result := YazmacKodla($80, $83, GYazmac1, 5, SatirIcerik);
                 KodEkle(Byte(GSabitDeger));
                 Result := HATA_YOK;
               end;
@@ -772,133 +762,6 @@ begin
       end;
     end;
   end;
-end;
-
-// 5 aşamalı işlem kodu atama işlevleri
-
-// 5.1 - yazmaça yazmaç ata
-// işlem kodunun "İşlemKodu Yazmaç1, Yazmaç2" olması halinde gerekli
-// kodlar bu işlev tarafından oluşturulur.
-// Yazmac1: adreslemede kullanılacak 1. yazmacın sıra değeri
-// Yazmac2: adreslemede kullanılacak 2. yazmacın sıra değeri
-function YazmacaYazmacAta(IslemKodu, REGDeger: Byte; SatirIcerik: TSatirIcerik; Yazmac1,
-  Yazmac2: Integer): Integer;
-var
-  DesMim1, DesMim2: TDestekleyenMimari;
-  i: Byte;
-begin
-
-  // 64 bitlik işlem kodları yalnızca 64 bitlik mimaride kullanılabilir
-  if(GAsm2.Mimari <> mim64Bit) and (YazmacListesi[Yazmac1].Uzunluk = yu64bGY) then
-  begin
-
-    Result := HATA_64BIT_MIMARI_GEREKLI;
-    Exit;
-  end;
-
-  // derlenecek kod mimarisi 64 bit ise...
-  if(GAsm2.Mimari = mim64Bit) and (YazmacListesi[Yazmac1].Uzunluk = yu64bGY) then
-
-    // 0100W000 = W = 1 = 64 bit işlem kodu
-    KodEkle($48)
-
-  // derlenecek kod mimarisi 32 bit, yazmaç 32 bit değilse...
-  // 66 ön ekini kodun başına ekle
-  else if(GAsm2.Mimari = mim32Bit) and (YazmacListesi[Yazmac1].Uzunluk <> yu32bGY) then
-
-    KodEkle($66)
-
-  // derlenecek kod mimarisi 16 bit, yazmaç 16 bit değilse...
-  else if(GAsm2.Mimari = mim16Bit) and (YazmacListesi[Yazmac1].Uzunluk <> yu16bGY) then
-
-    KodEkle($66);
-
-  DesMim1 := YazmacListesi[Yazmac1].DesMim;
-  DesMim2 := YazmacListesi[Yazmac2].DesMim;
-
-  // yazmaç uzunlukları birbirine eşit ise ...
-  // mov  eax,ebx
-  if(YazmacListesi[Yazmac1].Uzunluk = YazmacListesi[Yazmac2].Uzunluk) then
-  begin
-
-    // yazmacın 8 bit olması halinde "IslemKodu" kullanılacak
-    // aksi durumda bir sonraki sıra değeri (IslemKodu + 1) kullanılacak
-    if(YazmacListesi[Yazmac1].Uzunluk = yu8bGY) then
-
-      KodEkle(IslemKodu)
-    else KodEkle(IslemKodu + 1);
-
-    // İşlemKodu Hedef_Yazmaç, Kaynak_Yazmaç
-    // 11_HY0_KY0 -> 11 = $C0, HY0 = Hedef Yazmaç, KY0 = Kaynak Yazmaç
-    // -----------------------
-    // $C0 = 11000000b = yazmaç adresleme modu
-    i := $C0 or ((YazmacListesi[Yazmac2].Deger and 7) shl 3) or
-      (YazmacListesi[Yazmac1].Deger and 7);
-    KodEkle(i);
-    Result := HATA_YOK;
-  end
-  // yazmaç uzunlukları birbirinden farklı ise ...
-  // rol  eax,cl gibi
-  else if(YazmacListesi[Yazmac1].Uzunluk <> YazmacListesi[Yazmac2].Uzunluk) then
-  begin
-
-    // yazmacın 8 bit olması halinde "IslemKodu" kullanılacak
-    // aksi durumda bir sonraki sıra değeri (IslemKodu + 1) kullanılacak
-    if(YazmacListesi[Yazmac1].Uzunluk = yu8bGY) then
-
-      KodEkle(IslemKodu)
-    else KodEkle(IslemKodu + 1);
-
-    // İşlemKodu Hedef_Yazmaç, Kaynak_Yazmaç
-    // 11_HY0_KY0 -> 11 = $C0, HY0 = Hedef Yazmaç, KY0 = Kaynak Yazmaç
-    // -----------------------
-    // $C0 = 11000000b = yazmaç adresleme modu
-    i := $C0 or ((REGDeger and 7) shl 3) or (YazmacListesi[Yazmac1].Deger and 7);
-    KodEkle(i);
-    Result := HATA_YOK;
-  end else Result := HATA_ISL_KOD_KULLANIM;
-end;
-
-// 5.2 - yazmaça sayısal değer ata
-// REGDeger = MOD[7..6] + REG[5..3] + RM[2..0]
-function YazmacaSayisalDegerAta(IslemKodu, REGDeger: Byte; SatirIcerik: TSatirIcerik;
-  Yazmac: Integer; SayisalDegerVar: Boolean; SabitDeger: Integer;
-  SabitDegerVG: TVeriGenisligi): Integer;
-begin
-
-  // derlenecek kod mimarisi 64 bit ise...
-  if(GAsm2.Mimari = mim64Bit) and (YazmacListesi[Yazmac].Uzunluk = yu64bGY) then
-
-    // 0100W000 = W = 1 = 64 bit işlem kodu
-    KodEkle($48)
-
-  // derlenecek kod mimarisi 32 bit, yazmaç 32 bit değilse...
-  // 66 ön ekini kodun başına ekle
-  else if(GAsm2.Mimari = mim32Bit) and (YazmacListesi[Yazmac].Uzunluk <> yu32bGY) then
-
-    KodEkle($66)
-
-  // derlenecek kod mimarisi 16 bit, yazmaç 16 bit değilse...
-  else if(GAsm2.Mimari = mim16Bit) and (YazmacListesi[Yazmac].Uzunluk <> yu16bGY) then
-
-    KodEkle($66);
-
-  // yazmacın 8 bit olması halinde "IslemKodu" kullanılacak
-  // aksi durumda bir sonraki sıra değeri (IslemKodu + 1) kullanılacak
-  if(YazmacListesi[Yazmac].Uzunluk = yu8bGY) then
-
-    KodEkle(IslemKodu)
-  else KodEkle(IslemKodu + 1);
-
-  // İşlemKodu Hedef_Yazmaç, Kaynak_Yazmaç
-  // 11_HY0_KY0 -> 11 = $C0, HY0 = Hedef Yazmaç, KY0 = Kaynak Yazmaç
-  // -----------------------
-  // $C0 = 11000000b = yazmaç adresleme modu
-  KodEkle($C0 or (REGDeger shl 3) or (YazmacListesi[Yazmac].Deger and 7));
-
-  if(SayisalDegerVar) then KodEkle(SabitDeger);
-
-  Result := HATA_YOK;
 end;
 
 // 5.3 - yazmaça bellek değeri ata

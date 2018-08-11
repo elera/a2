@@ -169,8 +169,8 @@ kod_başlangıç:
         ;call    user32_işlevler.messageboxa
         db      0FFh, 15h, 2Fh, 20h, 00, 00
 
-        ;mov     ecx,eax
-        db      89h, 0C1h, 0FFh, 15h, 0Fh, 20h, 0, 0
+        mov     ecx,eax
+        db      0FFh, 15h, 0Fh, 20h, 0, 0
         ;call    kernel32_işlevler.exit_process
 
 

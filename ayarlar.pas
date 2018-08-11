@@ -4,7 +4,7 @@
 
   İşlev: program ayarlarını saklama / yönetme işlevlerini içerir
 
-  Güncelleme Tarihi: 23/04/2018
+  Güncelleme Tarihi: 11/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -27,7 +27,8 @@ type
     DuzenleyiciYaziBoyut: Integer;
 
     // ayarlar
-    SonKullanilanDosyayiAc: Boolean;
+    AcikDosyalariTabAlanindaAc: Boolean;
+
     // son kullanılan dosyalar
     SonKullanilanDosyalar: array[0..4] of string;
   end;
@@ -37,14 +38,16 @@ procedure INIDosyasinaYaz(ProgramAyarlari: TProgramAyarlari);
 
 implementation
 
-uses IniFiles, genel;
+uses IniFiles, genel, dosya, Classes, paylasim;
 
 // ini dosyasından program ayarlarını oku
 function INIDosyasiniOku: TProgramAyarlari;
 var
   INIDosyasi: TINIFile;
-  FileName: string;
-  i: Integer;
+  FileName, s: string;
+  i, j: Integer;
+  DosyaAcik: Boolean;
+  sl: TStringList;
 begin
 
   FileName := GProgramAyarDizin + 'a2.ini';
@@ -71,8 +74,8 @@ begin
     INIDosyasi.WriteInteger('Duzenleyici', 'YaziBoyut', Result.DuzenleyiciYaziBoyut);
 
     // program ayar ilk değer atamaları
-    Result.SonKullanilanDosyayiAc := True;
-    INIDosyasi.WriteBool('ProgramAyar', 'SonKullanilanDosyayiAc', Result.SonKullanilanDosyayiAc);
+    Result.AcikDosyalariTabAlanindaAc := True;
+    INIDosyasi.WriteBool('ProgramAyar', 'AcikDosyalariTabAlanindaAc', Result.AcikDosyalariTabAlanindaAc);
 
     // son kullanılan dosyalar ilk değer atamaları
     for i := 0 to 4 do Result.SonKullanilanDosyalar[i] := '';
@@ -100,14 +103,39 @@ begin
     Result.DuzenleyiciYaziBoyut := INIDosyasi.ReadInteger('Duzenleyici',
       'YaziBoyut', 8);
 
-    Result.SonKullanilanDosyayiAc := INIDosyasi.ReadBool('ProgramAyar',
-      'SonKullanilanDosyayiAc', True);
+    Result.AcikDosyalariTabAlanindaAc := INIDosyasi.ReadBool('ProgramAyar',
+      'AcikDosyalariTabAlanindaAc', True);
 
+    // son kullanılan dosya bilgilerini al
     for i := 0 to 4 do
     begin
 
       Result.SonKullanilanDosyalar[i] := INIDosyasi.ReadString('SonKullanılanDosyalar',
         'Dosya' + IntToStr(i + 1), '');
+    end;
+
+    // tab alanında açık olup, listeye kaydedilen dosyaların listesini al
+    if(Result.AcikDosyalariTabAlanindaAc) then
+    begin
+
+      sl := TStringList.Create;
+
+      INIDosyasi.ReadSectionValues('AcikDosyalar', sl);
+      for i := 0 to sl.Count - 1 do
+      begin
+
+        j := Pos('=', sl[i]);
+        if(j > 0) then
+        begin
+
+          s := Copy(sl[i], j + 1, Length(sl[i]) - j);
+
+          // DosyaAcik değerinin hata döndürmesinin burada kontrol edilmesi önemli değil
+          GAsm2.Dosyalar.Ekle(s, False, DosyaAcik);
+        end;
+      end;
+
+      FreeAndNil(sl);
     end;
 
     INIDosyasi.Free;
@@ -119,12 +147,14 @@ procedure INIDosyasinaYaz(ProgramAyarlari: TProgramAyarlari);
 var
   INIDosyasi: TINIFile;
   FileName: string;
-  i: Integer;
+  i, j: Integer;
 begin
 
   FileName := GProgramAyarDizin + 'a2.ini';
 
   INIDosyasi := TINIFile.Create(FileName);
+  INIDosyasi.EraseSection('SonKullanılanDosyalar');
+  INIDosyasi.EraseSection('AcikDosyalar');
 
   INIDosyasi.WriteInteger('Pencere', 'Sol', ProgramAyarlari.PencereSol);
   INIDosyasi.WriteInteger('Pencere', 'Ust', ProgramAyarlari.PencereUst);
@@ -134,14 +164,36 @@ begin
 
   INIDosyasi.WriteInteger('Duzenleyici', 'YaziBoyut', ProgramAyarlari.DuzenleyiciYaziBoyut);
 
-  INIDosyasi.WriteBool('ProgramAyar', 'SonKullanilanDosyayiAc',
-    ProgramAyarlari.SonKullanilanDosyayiAc);
+  INIDosyasi.WriteBool('ProgramAyar', 'AcikDosyalariTabAlanindaAc',
+    ProgramAyarlari.AcikDosyalariTabAlanindaAc);
 
+  // son kullanılan 5 dosyayı ayar dosyasına kaydet
   for i := 0 to 4 do
   begin
 
     INIDosyasi.WriteString('SonKullanılanDosyalar', 'Dosya' + IntToStr(i + 1),
       ProgramAyarlari.SonKullanilanDosyalar[i]);
+  end;
+
+  // tab alanında açık olan dosyaları ayar dosyasına kaydet
+  if(ProgramAyarlari.AcikDosyalariTabAlanindaAc) then
+  begin
+
+    j := 1;
+    for i := 0 to GAsm2.Dosyalar.Toplam - 1 do
+    begin
+
+      if(GAsm2.Dosyalar.Eleman[i].Durum = ddKaydedildi) then
+      begin
+
+        INIDosyasi.WriteString('AcikDosyalar', 'Dosya' + IntToStr(j),
+          GAsm2.Dosyalar.Eleman[i].ProjeDizin + DirectorySeparator +
+          GAsm2.Dosyalar.Eleman[i].ProjeDosyaAdi + '.' +
+          GAsm2.Dosyalar.Eleman[i].ProjeDosyaUzanti);
+
+        Inc(j);
+      end;
+    end;
   end;
 
   INIDosyasi.UpdateFile;

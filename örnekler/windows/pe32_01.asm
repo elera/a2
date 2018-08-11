@@ -106,9 +106,19 @@ kod_başlangıç:
 ; grafiksel arabirim kodları
 ;-------------------------------------------------------------------------------
 
-        mov     eax,100
-        mov     ebx,200
+        mov     eax,5*40
+        mov     ebx,2*9
         call    topla
+        mov     esi,500
+        mov     edi,300
+        add     esi,edi
+        xchg    eax,esi
+        shl     eax,2
+
+        mov     ebx,500
+        mov     esi,700
+        add     ebx,esi
+        mov     eax,ebx
         call    SayısalDeğeriKaraktereÇevir
 
         ; mesaj kutusunu görüntüle
@@ -122,11 +132,18 @@ kod_başlangıç:
         push    0
         call    [ExitProcessİşlevi]
 
+;===============================================================================
+; işlev adı: SayısalDeğeriKaraktereÇevir
+; açıklama : sayısal değeri karakter katarı değerine çevirir
+;
+; giriş değerleri:
+;       eax = karakter katarına çevrilecek sayı
+; çıkış değerleri:
+;       karakter katarı değeri PencereMesaj adresinde
+;===============================================================================
 SayısalDeğeriKaraktereÇevir:
 
-        ; test amaçlı
-        dec     eax
-        inc     eax
+        pushad
 
         mov     edi,PencereMesaj+9
 
@@ -144,10 +161,20 @@ sonraki_basamak:
         dec     edi
         cmp     eax,0
         jnz     sonraki_basamak
+
+        popad
         ret
 
-; toplama işlemi
-; eax = 1. sayı, ebx = 2. sayı
+;===============================================================================
+; işlev adı: topla
+; açıklama : toplama işlemini gerçekleştirir
+;
+; giriş değerleri:
+;       eax = 1. sayı
+;       ebx = 2. sayı
+; çıkış değerleri:
+;       eax = sonuç değer
+;===============================================================================
 topla:
         add     eax,ebx
         ret
@@ -157,8 +184,6 @@ kod.tabaka = 200h
 veri_başlangıç:
 PencereBaşlık:	db	'Assembler 2 (a2)', 0
 PencereMesaj:	db	'0000000000', 0
-Sayi1           dd      100
-Sayi2           dd      200
 
 ; program içerisinde kullanılacak sistem işlevleri (import table)
 ;-------------------------------------------------------------------------------

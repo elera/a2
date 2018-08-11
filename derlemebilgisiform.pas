@@ -4,7 +4,7 @@
 
   İşlev: derleme sonrası bilgi verme işlemi
 
-  Güncelleme Tarihi: 14/04/2018
+  Güncelleme Tarihi: 11/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -17,9 +17,6 @@ uses
   Buttons, ExtCtrls;
 
 type
-
-  { TfrmDerlemeBilgisi }
-
   TfrmDerlemeBilgisi = class(TForm)
     btnTamam: TBitBtn;
     lblDerlenenDosya: TLabel;

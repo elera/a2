@@ -4,4 +4,4 @@ kod.adres = %BURASI+10h
 merhaba:
 
 
-in      eax,dx
+fxch    st2

@@ -9,21 +9,21 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   ClientHeight = 207
   ClientWidth = 255
   OnShow = FormShow
-  LCLVersion = '1.8.2.0'
+  LCLVersion = '1.8.4.0'
   object lblSatirSayisiB: TLabel
     Left = 146
-    Height = 17
+    Height = 15
     Top = 63
-    Width = 64
+    Width = 58
     Caption = 'Satır Sayısı:'
     ParentColor = False
     ParentFont = False
   end
   object lblDosyaSayisiB: TLabel
     Left = 25
-    Height = 17
+    Height = 15
     Top = 63
-    Width = 73
+    Width = 67
     Caption = 'Dosya Sayısı:'
     ParentColor = False
     ParentFont = False
@@ -43,7 +43,7 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   end
   object lblSatirSayisi: TLabel
     Left = 218
-    Height = 17
+    Height = 15
     Top = 63
     Width = 7
     Caption = '0'
@@ -53,7 +53,7 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   end
   object lblDosyaSayisi: TLabel
     Left = 107
-    Height = 17
+    Height = 15
     Top = 63
     Width = 7
     Caption = '1'
@@ -63,9 +63,9 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   end
   object lblProjeDosyasiB: TLabel
     Left = 8
-    Height = 17
+    Height = 15
     Top = 38
-    Width = 104
+    Width = 97
     Caption = 'Ana Proje Dosyası:'
     ParentColor = False
     ParentFont = False
@@ -89,9 +89,9 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   end
   object lblProjeDosyasiB1: TLabel
     Left = 41
-    Height = 17
+    Height = 15
     Top = 7
-    Width = 194
+    Width = 173
     Caption = 'Proje dosyası başarıyla derlendi.'
     Font.Color = clRed
     Font.Style = [fsBold]
@@ -117,18 +117,18 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   end
   object lblIkiliDosyaB: TLabel
     Left = 8
-    Height = 17
+    Height = 15
     Top = 96
-    Width = 106
+    Width = 100
     Caption = 'Oluşturulan Dosya:'
     ParentColor = False
     ParentFont = False
   end
   object lblIkiliUzunlukB: TLabel
     Left = 8
-    Height = 17
+    Height = 15
     Top = 140
-    Width = 84
+    Width = 80
     Caption = 'Uzunluk (Byte):'
     ParentColor = False
     ParentFont = False
@@ -152,9 +152,9 @@ object frmDerlemeBilgisi: TfrmDerlemeBilgisi
   end
   object lblDerlemeCevrimSayisiC: TLabel
     Left = 8
-    Height = 17
+    Height = 15
     Top = 118
-    Width = 78
+    Width = 73
     Caption = 'Çevrim Sayısı:'
     ParentColor = False
     ParentFont = False

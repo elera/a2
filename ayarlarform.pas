@@ -4,7 +4,7 @@
 
   İşlev: grafiksel ortamda program ayarlarını saklama / yönetme işlevlerini içerir
 
-  Güncelleme Tarihi: 23/04/2018
+  Güncelleme Tarihi: 09/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -17,13 +17,10 @@ uses
   ExtCtrls, Buttons, ComCtrls;
 
 type
-
-  { TfrmAyarlar }
-
   TfrmAyarlar = class(TForm)
     btnKaydet: TBitBtn;
     btnIptal: TBitBtn;
-    cbSonKullanilanDosyayiAc: TCheckBox;
+    cbAcikDosyalariTabAlanindaAc: TCheckBox;
     edtYaziBoyutu: TEdit;
     lblYaziBoyutu: TLabel;
     pnlAlt: TPanel;
@@ -50,7 +47,7 @@ procedure TfrmAyarlar.FormShow(Sender: TObject);
 begin
 
   edtYaziBoyutu.Text := IntToStr(GProgramAyarlari.DuzenleyiciYaziBoyut);
-  cbSonKullanilanDosyayiAc.Checked := GProgramAyarlari.SonKullanilanDosyayiAc;
+  cbAcikDosyalariTabAlanindaAc.Checked := GProgramAyarlari.AcikDosyalariTabAlanindaAc;
 end;
 
 procedure TfrmAyarlar.btnKaydetClick(Sender: TObject);
@@ -61,7 +58,7 @@ begin
   except
   end;
 
-  GProgramAyarlari.SonKullanilanDosyayiAc := cbSonKullanilanDosyayiAc.Checked;
+  GProgramAyarlari.AcikDosyalariTabAlanindaAc := cbAcikDosyalariTabAlanindaAc.Checked;
 end;
 
 end.

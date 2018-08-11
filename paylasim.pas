@@ -4,7 +4,7 @@
 
   İşlev: tüm birimlerin kullandığı sabit, değişken ve yapıları içerir
 
-  Güncelleme Tarihi: 19/03/2018
+  Güncelleme Tarihi: 11/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -13,6 +13,12 @@ unit paylasim;
 interface
 
 type
+  // program dosyasının derleme mimarisi
+  TMimari = (mim16Bit, mim32Bit, mim64Bit);
+
+  // dosyanın, düzenleyicideki durumu
+  TDosyaDurum = (ddYeni, ddKaydedildi, ddDegistirildi);
+
   // satır içerisinde kullanılan temel veri tipi
   TTemelVeriTipi = (tvtTanimsiz, tvtKarakterDizisi,
     tvtSayi,                  // normal sayı

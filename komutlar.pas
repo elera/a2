@@ -47,6 +47,7 @@ const
   GRUP02_DW       = GRUP02_DBW + 1;
   GRUP02_DD       = GRUP02_DW + 1;
   GRUP02_DQ       = GRUP02_DD + 1;
+  GRUP02_DT       = GRUP02_DQ + 1;
 
   // 10. grup komutlar
   GRUP10_AAA 		  = $100001;
@@ -135,7 +136,8 @@ const
   GRUP11_FLD      = GRUP11_DIV + 1;
   GRUP11_FST      = GRUP11_FLD + 1;
   GRUP11_FSTP     = GRUP11_FST + 1;
-  GRUP11_INC      = GRUP11_FSTP + 1;
+  GRUP11_FXCH     = GRUP11_FSTP + 1;
+  GRUP11_INC      = GRUP11_FXCH + 1;
   GRUP11_INT      = GRUP11_INC + 1;
   GRUP11_JA       = GRUP11_INT + 1;
   GRUP11_JAE      = GRUP11_JA + 1;
@@ -217,7 +219,7 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
-  TOPLAM_KOMUT = 165;
+  TOPLAM_KOMUT = 167;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
   // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
@@ -233,6 +235,7 @@ const
   (Komut: 'dw';                 GrupNo: GRUP02_DW;            KomutTipi: ktDegisken),
   (Komut: 'dd';                 GrupNo: GRUP02_DD;            KomutTipi: ktDegisken),
   (Komut: 'dq';                 GrupNo: GRUP02_DQ;            KomutTipi: ktDegisken),
+  (Komut: 'dt';                 GrupNo: GRUP02_DT;            KomutTipi: ktDegisken),
 
   // grup 10 - işlem kodu - (sıralama alfabetiktir)
   // bu gruptaki komutlar: SADECE işlem koduna sahip, hiçbir öndeğer (parametre)
@@ -330,6 +333,7 @@ const
     (Komut: 'fld';              GrupNo: GRUP11_FLD;           KomutTipi: ktIslemKodu),
     (Komut: 'fst';              GrupNo: GRUP11_FST;           KomutTipi: ktIslemKodu),
     (Komut: 'fstp';             GrupNo: GRUP11_FSTP;          KomutTipi: ktIslemKodu),
+    (Komut: 'fxch';             GrupNo: GRUP11_FXCH;          KomutTipi: ktIslemKodu),
     (Komut: 'inc';              GrupNo: GRUP11_INC;           KomutTipi: ktIslemKodu),
     (Komut: 'int';              GrupNo: GRUP11_INT;           KomutTipi: ktIslemKodu),
     (Komut: 'ja';               GrupNo: GRUP11_JA;            KomutTipi: ktIslemKodu),
@@ -415,7 +419,7 @@ var
 
     // 2. grup komutlar
     @Grup02Degisken, @Grup02Degisken, @Grup02Degisken, @Grup02Degisken,
-    @Grup02Degisken,
+    @Grup02Degisken, @Grup02Degisken,
 
     // 10. grup komutlar
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
@@ -452,7 +456,7 @@ var
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
     @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev,
+    @Grup11Islev, @Grup11Islev, @Grup11Islev,
 
     // 12. grup komutlar
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,

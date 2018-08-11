@@ -2,34 +2,34 @@ object frmAyarlar: TfrmAyarlar
   Left = 538
   Height = 121
   Top = 344
-  Width = 310
+  Width = 353
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'Ayarlar'
   ClientHeight = 121
-  ClientWidth = 310
+  ClientWidth = 353
   OnShow = FormShow
-  LCLVersion = '1.8.2.0'
-  object cbSonKullanilanDosyayiAc: TCheckBox
+  LCLVersion = '1.8.4.0'
+  object cbAcikDosyalariTabAlanindaAc: TCheckBox
     Left = 16
     Height = 19
     Top = 45
-    Width = 264
-    Caption = 'Program İlk Açıldığında Son Açılan Dosyayı Aç'
+    Width = 328
+    Caption = 'Program Açıldığında Düzenleyicideki Dosyaları Yeniden Aç'
     TabOrder = 0
   end
   object pnlAlt: TPanel
     Left = 0
     Height = 39
     Top = 82
-    Width = 310
+    Width = 353
     Align = alBottom
     BevelOuter = bvNone
     ClientHeight = 39
-    ClientWidth = 310
+    ClientWidth = 353
     TabOrder = 1
     object btnKaydet: TBitBtn
-      Left = 219
+      Left = 262
       Height = 28
       Top = 6
       Width = 81
@@ -42,7 +42,7 @@ object frmAyarlar: TfrmAyarlar
       TabOrder = 0
     end
     object btnIptal: TBitBtn
-      Left = 135
+      Left = 178
       Height = 28
       Top = 6
       Width = 81
@@ -58,7 +58,7 @@ object frmAyarlar: TfrmAyarlar
     Left = 16
     Height = 1
     Top = 76
-    Width = 282
+    Width = 325
     Anchors = [akLeft, akRight, akBottom]
   end
   object lblYaziBoyutu: TLabel

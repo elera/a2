@@ -362,10 +362,7 @@ DLLBaşlangıçİşlevi:
         mov     ebp,esp
         mov     eax,1
         leave
-
-        ; retn 000ch
-        db	0C2h
-        db	00Ch
+        retn    12
 
 kod.tabaka = 4
 

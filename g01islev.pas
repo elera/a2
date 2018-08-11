@@ -6,7 +6,7 @@
 
   1. grup kodlama işlevi, BİLDİRİM ifadelerini yönetir
 
-  Güncelleme Tarihi: 25/03/2018
+  Güncelleme Tarihi: 11/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -21,7 +21,7 @@ function Grup01Bildirim(SatirNo: Integer; ParcaNo: Integer;
 
 implementation
 
-uses donusum, asm2, komutlar, kodlama, sysutils, genel;
+uses donusum, asm2, komutlar, kodlama, sysutils, genel, dosya;
 
 var
   VeriTipi: TTemelVeriTipi;
@@ -33,6 +33,7 @@ var
 function Grup01Bildirim(SatirNo: Integer; ParcaNo: Integer;
   VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
 var
+  Dosya: TDosya;
   i, j: QWord;
 begin
 
@@ -99,14 +100,14 @@ begin
       if(Tanimlanan = GRUP01_DOS_AD_) then
       begin
 
-        GAsm2.CikisDosyaAdi := sTanim;
+        GAktifDosya.CikisDosyaAdi := sTanim;
         Result := HATA_YOK;
       end
       // * dosya uzantı tanımlaması
       else if(Tanimlanan = GRUP01_DOS_UZN) then
       begin
 
-        GAsm2.CikisDosyaUzanti := sTanim;
+        GAktifDosya.CikisDosyaUzanti := sTanim;
         Result := HATA_YOK;
       end
       // * adresleme tanımlaması
@@ -130,9 +131,9 @@ begin
         begin
 
           case sTanim of
-            '16bit': begin GAsm2.Mimari := mim16Bit; Result := HATA_YOK; end;
-            '32bit': begin GAsm2.Mimari := mim32Bit; Result := HATA_YOK; end;
-            '64bit': begin GAsm2.Mimari := mim64Bit; Result := HATA_YOK; end;
+            '16bit': begin GAktifDosya.Mimari := mim16Bit; Result := HATA_YOK; end;
+            '32bit': begin GAktifDosya.Mimari := mim32Bit; Result := HATA_YOK; end;
+            '64bit': begin GAktifDosya.Mimari := mim64Bit; Result := HATA_YOK; end;
             else Result := HATA_BILINMEYEN_MIMARI;
           end;
           Result := HATA_YOK;
