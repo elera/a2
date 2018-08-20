@@ -4,7 +4,7 @@
 
   İşlev: dosya işlevlerini içerir
 
-  Güncelleme Tarihi: 11/08/2018
+  Güncelleme Tarihi: 13/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -22,6 +22,7 @@ type
   TDosya = class(TCollectionItem)
   private
     FMimari: TMimari;
+    FBicim: TDosyaBicim;
     FDurum: TDosyaDurum;
     FKimlik, FSiraNo: Integer;
     FProjeDizin,
@@ -38,6 +39,7 @@ type
     procedure SetCikisDosyaUzanti(ACikisDosyaUzanti: string);
   published
     property Mimari: TMimari read FMimari write FMimari;
+    property Bicim: TDosyaBicim read FBicim write FBicim;
     property Durum: TDosyaDurum read FDurum write FDurum;
     property Kimlik: Integer read FKimlik write FKimlik;
     property SiraNo: Integer read FSiraNo write FSiraNo;
@@ -72,12 +74,12 @@ type
     property Eleman[Sira: Integer]: TDosya read Al write Ver;
   end;
 
-function ProgramDosyasiOlustur(DosyaAdi: string): Boolean;
+function ProgramDosyasiOlustur(Dosya: TDosya): Integer;
 function DosyaYolunuAyristir(TamDosyaYolu: string; var Dizin, DosyaAdi, DosyaUzanti: string): Boolean;
 
 implementation
 
-uses genel, Forms;
+uses genel, Forms, Dialogs;
 
 var
   KimlikSayaci: Integer;
@@ -198,7 +200,11 @@ begin
         Dosya.ProjeDosyaUzanti := DosyaUzanti;
 
         Dosya.CikisDosyaAdi := Dosya.ProjeDosyaAdi;
-        Dosya.CikisDosyaUzanti := Dosya.ProjeDosyaUzanti;
+        {$IFDEF Windows}
+        Dosya.CikisDosyaUzanti := 'bin';
+        {$ELSE}
+        Dosya.CikisDosyaUzanti := '';
+        {$ENDIF}
       end;
       Result := Dosya;
     end;
@@ -319,37 +325,48 @@ begin
 end;
 
 // ikili dosya biçiminde (binary file format) dosya oluştur
-function ProgramDosyasiOlustur(DosyaAdi: string): Boolean;
+function ProgramDosyasiOlustur(Dosya: TDosya): Integer;
 var
   F: file of Byte;
   i: Integer;
   s: string;
 begin
 
-  AssignFile(F, DosyaAdi);
-  {$I-} Rewrite(F); {$I+}
-
-  if(IOResult = 0) then
+  if(Dosya.Bicim = dbIkili) then
   begin
 
-    if(KodBellekU > 0) then
+    // dosya uzantısının olmaması durumunda dosyaya uzantı ekleme (özellikle linux için)
+    if(Length(Dosya.CikisDosyaUzanti) > 0) then
+      s := Dosya.ProjeDizin + DirectorySeparator + Dosya.CikisDosyaAdi + '.' +
+        Dosya.CikisDosyaUzanti
+    else s := Dosya.ProjeDizin + DirectorySeparator + Dosya.CikisDosyaAdi;
+
+    AssignFile(F, s);
+    {$I-} Rewrite(F); {$I+}
+
+    if(IOResult = 0) then
     begin
 
-      for i := 0 to KodBellekU - 1 do
+      if(KodBellekU > 0) then
       begin
 
-        Write(F, KodBellek[i]);
-        Application.ProcessMessages;
+        for i := 0 to KodBellekU - 1 do
+        begin
+
+          Write(F, KodBellek[i]);
+          Application.ProcessMessages;
+        end;
       end;
-    end;
 
-    CloseFile(F);
-    Result := True;
-  end else Result := False;
+      CloseFile(F);
+      Result := HATA_YOK;
+    end else Result := HATA_PROG_DOSYA_OLUSTURMA;
 
-  {$IFDEF Linux}
-  RunCommand('chmod +x ' + DosyaAdi, s);
-  {$ENDIF}
+    {$IFDEF Linux}
+    RunCommand('chmod +x ' + DosyaAdi, s);
+    {$ENDIF}
+
+  end else Result := HATA_DESTEKLENMEYEN_BICIM;
 end;
 
 end.

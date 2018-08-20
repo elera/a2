@@ -23,7 +23,7 @@ kod.mimari = '16Bit'
 	dd	'PE'
 	dw	MAKİNE_TİP_I386
 	dw	1
-	dd	0FFF0013Ch
+	dd	%ts_unix+0
 	dd	78h
 	dd	0
 	dw	0E0h
@@ -105,20 +105,9 @@ kod_başlangıç:
 
 ; grafiksel arabirim kodları
 ;-------------------------------------------------------------------------------
-
-        mov     eax,5*40
-        mov     ebx,2*9
-        call    topla
-        mov     esi,500
-        mov     edi,300
-        add     esi,edi
-        xchg    eax,esi
-        shl     eax,2
-
-        mov     ebx,500
-        mov     esi,700
-        add     ebx,esi
-        mov     eax,ebx
+        mov     ecx,20082018
+        push    ecx
+        pop     eax
         call    SayısalDeğeriKaraktereÇevir
 
         ; mesaj kutusunu görüntüle
@@ -182,8 +171,8 @@ topla:
 kod.tabaka = 200h
 
 veri_başlangıç:
-PencereBaşlık:	db	'Assembler 2 (a2)', 0
-PencereMesaj:	db	'0000000000', 0
+PencereBaşlık:	db0     'Assembler 2 (a2)'
+PencereMesaj:	db0     '0000000000'
 
 ; program içerisinde kullanılacak sistem işlevleri (import table)
 ;-------------------------------------------------------------------------------
@@ -194,10 +183,10 @@ girdiler_başlangıç:
 	dd	0, 0, 0, 0, 0
 
 kernel32_dll:
-	db	'kernel32.dll', 0
+	db0     'kernel32.dll'
 
 user32_dll:
-	db	'user32.dll', 0
+	db0     'user32.dll'
 
 ExitProcessİşlevi:
 	dd	ExitProcess - TEMEL_ADRES
@@ -208,12 +197,12 @@ MessageBoxAİşlevi:
 	dd	0
 
 ExitProcess:
-	db	0, 0
-	db	'ExitProcess', 0
+	dw      0
+	db0     'ExitProcess'
 
 MessageBoxA:
-	db	0, 0
-	db	'MessageBoxA', 0
+	dw      0
+	db0     'MessageBoxA'
 
 kod.tabaka = 4
 

@@ -144,8 +144,8 @@ bölüm1_başlangıç:
         push    0
         call    [ExitProcessİşlevi]
 
-PencereBaşlık:	db	'Assembler 2 (a2)', 0
-PencereMesaj:	db	'0000000000', 0
+PencereBaşlık:	db0	'Assembler 2 (a2)'
+PencereMesaj:	db0	'0000000000'
 SayisalDeger    dd      12345
 
 kod.tabaka = 4
@@ -158,10 +158,10 @@ girdiler_başlangıç:
 	dd	0, 0, 0, 0, 0
 
 kernel32_dll:
-	db	'kernel32.dll', 0
+	db0	'kernel32.dll'
 
 merhaba_dll:
-	db	'merhaba.dll', 0
+	db0	'merhaba.dll'
 
 ExitProcessİşlevi:
 	dd	ExitProcess - TEMEL_ADRES
@@ -173,11 +173,11 @@ MerhabaDLLİşlevi:
 
 ExitProcess:
 	db	0, 0
-	db	'ExitProcess', 0
+	db0	'ExitProcess'
 
 MerhabaDLL:
 	db	0, 0
-	db	'MerhabaDLL', 0
+	db0	'MerhabaDLL'
 
 kod.tabaka = 4
 

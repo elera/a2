@@ -1,7 +1,7 @@
-kod.mimari = '64Bit'
-kod.adres = 400000h
-kod.adres = %BURASI+10h
-merhaba:
+; dosya.biçim='ikili'
+kod.mimari = '16Bit'
+
+;shrd       ecx,edx,cl
 
 
-fxch    st2
+dec     [bx ]

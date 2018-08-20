@@ -6,7 +6,7 @@
 
   1. grup kodlama işlevi, BİLDİRİM ifadelerini yönetir
 
-  Güncelleme Tarihi: 11/08/2018
+  Güncelleme Tarihi: 13/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -101,6 +101,18 @@ begin
       begin
 
         GAktifDosya.CikisDosyaAdi := sTanim;
+        Result := HATA_YOK;
+      end
+      else if(Tanimlanan = GRUP01_BICIM) then
+      begin
+
+        sTanim := KucukHarfeCevir(sTanim);
+        if(sTanim = 'pe64') then
+          GAktifDosya.Bicim := dbPE64
+        else if(sTanim = 'ikili') then
+          GAktifDosya.Bicim := dbIkili
+        else GAktifDosya.Bicim := dbBilinmiyor;
+
         Result := HATA_YOK;
       end
       // * dosya uzantı tanımlaması

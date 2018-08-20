@@ -82,18 +82,19 @@ function KodEkle(Kod: Byte): Boolean;
 function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string;
   SayiTipi: TVeriGenisligi): Integer;
 function SayisalDegerKodla(ASayisalDeger: QWord; AVeriGenisligi: TVeriGenisligi = vgHatali): Integer;
-function BellekAdresle1(IslemKodu, MODRMDegeri: Byte; SatirIcerik: TSatirIcerik): Integer;
+function BellekAdresle(IsKod8, IsKodDiger, MODRMDegeri: Byte; SatirIcerik:
+  TSatirIcerik): Integer;
 function GoreceliDegerEkle(Komut: Integer; KomutIK: Byte): Integer;
+function IslemKoduIleYazmacDegeriniBirlestir(IsKod8, IsKodDiger, Yazmac: Byte): Integer;
 function IslemKoduIleYazmacDegeriniBirlestir2(IK8, IKDiger, ModRMDeger: Byte; SI: TSatirIcerik): Integer;
 function YazmacKodla(IsKod8, IsKodDiger, HedefYazmac, KaynakYazmac: Byte;
   SI: TSatirIcerik): Integer;
-function YazmacBirlestir(IslemKodu, Yazmac: Byte; SatirIcerik: TSatirIcerik): Integer;
-function IslemKoduVeYazmacDegeriniKodla2(IK8, IKDiger, ModRMDeger: Byte; SI: TSatirIcerik): Integer;
+function YazmacaBellekBolgesiAta(YazmacaBB: Boolean; IsKod8, IsKodDiger: Byte): Integer;
 function SayisalDegerEkle(SayisalDeger: QWord; VeriGenisligi: TVeriGenisligi): Integer;
 
 implementation
 
-uses genel, asm2;
+uses genel, asm2, dbugintf;
 
 // kodların derlenerek yerleştirileceği belleği ilklendir
 procedure KodBellekDegerleriniIlklendir;
@@ -108,29 +109,36 @@ end;
 function KodEkle(Kod: Byte): Boolean;
 begin
 
-  // bellek kapasitesi dolmuş ise. belleği artırmayı dene
-  if(KodBellekU = BellekKapasitesi) then
+  // ikili dosya biçimine sahip verileri kodla
+  if(GAktifDosya.Bicim = dbIkili) then
   begin
 
-    // eklenecek bellek azami dosya uzunluğundan büyük ise, olumsuz olarak işlevden çık
-    if((BellekKapasitesi + BELLEK_BLOK_UZUNLUGU) > AZAMI_DOSYA_BOYUTU) then
+    // bellek kapasitesi dolmuş ise. belleği artırmayı dene
+    if(KodBellekU = BellekKapasitesi) then
     begin
 
-      Result := False;
-      Exit;
+      // eklenecek bellek azami dosya uzunluğundan büyük ise, olumsuz olarak işlevden çık
+      if((BellekKapasitesi + BELLEK_BLOK_UZUNLUGU) > AZAMI_DOSYA_BOYUTU) then
+      begin
+
+        Result := False;
+        Exit;
+      end;
+
+      // aksi durumda bellek kapasitesini blok uzunluğu kadar artır
+      BellekKapasitesi += BELLEK_BLOK_UZUNLUGU;
+      SetLength(KodBellek, BellekKapasitesi);
     end;
 
-    // aksi durumda bellek kapasitesini blok uzunluğu kadar artır
-    BellekKapasitesi += BELLEK_BLOK_UZUNLUGU;
-    SetLength(KodBellek, BellekKapasitesi);
-  end;
+    // oluşturulan kodu bellek bölgesine yaz ve işaretçiyi bir artır
+    KodBellek[KodBellekU] := Kod;
+    Inc(KodBellekU);
 
-  // oluşturulan kodu bellek bölgesine yaz ve işaretçiyi bir artır
-  KodBellek[KodBellekU] := Kod;
-  Inc(KodBellekU);
-
-  // MevcutBellekAdresi, adresleme işlemlerini yönetir
-  Inc(MevcutBellekAdresi);
+    // MevcutBellekAdresi, adresleme işlemlerini yönetir
+    Inc(MevcutBellekAdresi);
+  end
+  { TODO : diğer formattaki dosyalar çoklu bölümler halinde burada kodlanacak }
+  else Result := False;
 end;
 
 function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string;
@@ -227,9 +235,10 @@ end;
 // 1. tek öndeğere sahip yazmaçların bellek adreslenmesi tamamlandı
 // 2. birden fazla yazmacın bellek adreslenmesi gerçekleştirilecek
 // 3. yazmaç + sayısaldeğer, yazmaç + ölçek bellek adreslemesi gerçekleştirilecek
-function BellekAdresle1(IslemKodu, MODRMDegeri: Byte; SatirIcerik: TSatirIcerik): Integer;
+function BellekAdresle(IsKod8, IsKodDiger, MODRMDegeri: Byte; SatirIcerik:
+  TSatirIcerik): Integer;
 var
-  i: Byte;
+  KodDeger, i: Byte;
 
   procedure IslemKoduEkle;
   begin
@@ -237,120 +246,170 @@ var
     if(GSabitDegerVG = vgB1) then
     begin
 
-      KodEkle(IslemKodu);
-    end else KodEkle(IslemKodu + 1);
+      KodEkle(IsKod8);
+    end else KodEkle(IsKodDiger);
   end;
 begin
 
-  if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) then
+  // 16 bitlik genel yazmaç bellek adreslemesi
+  if(YazmacListesi[GYazmacB1].Uzunluk = yu16bGY) then
   begin
 
-    // bellek adreslemede 2 yazmaç kullanılmışsa
-    if((baBellekYazmac1 in SatirIcerik.BolumTip1.BolumAyrinti) and
-      (baBellekYazmac2 in SatirIcerik.BolumTip1.BolumAyrinti)) then
+    // KodDeger değişkeninin
+    // 7..4 bit = 1. bellek yazmacı
+    // 3..0 bit = 2. bellek yazmacı
+    KodDeger := 0;
+    case YazmacListesi[GYazmacB1].Ad of
+      'bx': KodDeger := (3 shl 4);
+      'bp': KodDeger := (5 shl 4);
+      'si': KodDeger := (6 shl 4);
+      'di': KodDeger := (7 shl 4);
+      else KodDeger := (15 shl 4);  // 15 = $F
+    end;
+
+    // 2. yazmaç var ve 16 bitlik değil ise, hata kodu ile çık
+    if(baBellekYazmac2 in SatirIcerik.BolumTip1.BolumAyrinti) then
     begin
 
-
-    end
-    else
-    // aksi durumda tek bir yazmaç kullanılmıştır
-    begin
-
-      // sayısal değer kontrolü burada yapılacak
-      if(baBellekSabitDeger in SatirIcerik.BolumTip1.BolumAyrinti) then
+      if(YazmacListesi[GYazmacB2].Uzunluk = yu16bGY) then
       begin
 
-        IslemKoduEkle;
-        KodEkle($05);
-        { TODO : 4 bytelık veri olarak belirlenmiştir. diğer veri tipleri de incelensin}
-        Result := SayisalDegerKodla(GBellekSabitDeger, vgB4);
-      end
-      // 1. 32 bitlik yazmaç adresleme
-      else if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
-      begin
-
-        // ayrıntılar eklenecek - sayısal değer gerekebilir
-        if(YazmacListesi[GYazmac1].Ad = 'esp') then
-        begin
-
-          IslemKoduEkle;
-          KodEkle($04);
-          KodEkle($24);
-          Result := HATA_YOK;
-        end
-        // ebp yazmacının öndeğer alması gerekmektedir. [ebp+0] gibi
-        else if(YazmacListesi[GYazmac1].Ad = 'ebp') then
-        begin
-
-          Result := HATA_ISL_KOD_KULLANIM;
-        end
-        else
-        // 32 bir mimari - 32 bit yazmaç
-        // 64 bit mimari - 64 bit yazmaç
-        // kontrol durumları
-        // 1. sadece yazmaç değer kontrolü
-
-        // 1.1 32 bit mimari 32 bit yazmaç - mevcut çalışma budur!!!
-        // 1.2.1 64 bit mimari 32 bit yazmaç
-        // 1.2.2 64 bit mimari 64 bit yazmaç
-
-        // 32 bit genel yazmaçlar kodlandı. Tamam!
-        // 64 bitlik mimarinin 32 bitlik yazmaçlarının kodlanması
-
-        // esp / rsp ve ebp / rbp yazmaçları haricindeki diğer yazmaçların kodlaması
-        begin
-
-          // 32 bitlik yazmaçların kodlanması
-          if(YazmacListesi[GYazmac1].DesMim = dmTum) then
-          begin
-
-            // mimarinin 16 bit, yazmaçların 32 bit olması durumunda
-            if(GAktifDosya.Mimari = mim16Bit) then
-            begin
-
-              KodEkle($67);
-              KodEkle($66);
-            end
-            // mimarinin 64 bit, yazmaçların 32 bit olması durumunda
-            else if(GAktifDosya.Mimari = mim64Bit) then KodEkle($67);
-
-            IslemKoduEkle;
-            KodEkle((MODRMDegeri shl 3) or YazmacListesi[GYazmac1].Deger);
-            Result := HATA_YOK;
-          end
-          // 32 / 64 bitlik yazmaçların kodlanması
-          else if(YazmacListesi[GYazmac1].DesMim = dm64Bit) then
-          begin
-
-            // mimarinin 16 bit, yazmaçların 32 bit olması durumunda
-            if(GAktifDosya.Mimari = mim64Bit) then
-            begin
-
-              KodEkle($67);
-              KodEkle($41);
-
-              IslemKoduEkle;
-              KodEkle((MODRMDegeri shl 3) or (YazmacListesi[GYazmac1].Deger - 8));
-              Result := HATA_YOK;
-            end else Result := HATA_ISL_KOD_KULLANIM;
-          end;
+        case YazmacListesi[GYazmacB2].Ad of
+          'bx': KodDeger += 3;
+          'bp': KodDeger += 5;
+          'si': KodDeger += 6;
+          'di': KodDeger += 7;
+          else KodDeger += 15;  // 15 = $F
         end;
       end
-      // 2. 64 bitlik yazmaç adresleme
-      else if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) then
+      else
       begin
 
-        if(YazmacListesi[GYazmac1].Deger > 7) then
-        begin
+        Result := HATA_ISL_KOD_KULLANIM;
+        Exit;
+      end
+    end;
 
-          KodEkle($41);
-          i := 8 - YazmacListesi[GYazmac1].Deger;
-        end else i := YazmacListesi[GYazmac1].Deger;
+    case KodDeger of
+      $36, $63: i := 0;   // bx + si veya si + bx
+      $37, $73: i := 1;   // bx + di veya di + bx
+      $56, $65: i := 2;   // bp + si veya si + bp
+      $57, $75: i := 3;   // bp + di veya di + bp
+      $60: i := 4;        // si
+      $70: i := 5;        // di
+      $30: i := 7;        // bx
+      else i := $FF;
+    end;
+
+    // hatalı kombinasyon kullanıldıysa hata kodu ile işlevden çık
+    if(i = $FF) then
+    begin
+
+      Result := HATA_ISL_KOD_KULLANIM;
+      Exit;
+    end;
+
+    KodEkle((MODRMDegeri shl 3) or i);
+    Result := HATA_YOK;
+  end
+  else
+  // aksi durumda tek bir yazmaç kullanılmıştır
+  begin
+
+    // sayısal değer kontrolü burada yapılacak
+    if(baBellekSabitDeger in SatirIcerik.BolumTip1.BolumAyrinti) then
+    begin
+
+      IslemKoduEkle;
+      KodEkle($05);
+      { TODO : 4 bytelık veri olarak belirlenmiştir. diğer veri tipleri de incelensin}
+      Result := SayisalDegerKodla(GBellekSabitDeger, vgB4);
+    end
+    // 1. 32 bitlik yazmaç adresleme
+    else if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
+    begin
+
+      // ayrıntılar eklenecek - sayısal değer gerekebilir
+      if(YazmacListesi[GYazmac1].Ad = 'esp') then
+      begin
 
         IslemKoduEkle;
-        KodEkle((MODRMDegeri shl 3) or i);
+        KodEkle($04);
+        KodEkle($24);
         Result := HATA_YOK;
+      end
+      // ebp yazmacının öndeğer alması gerekmektedir. [ebp+0] gibi
+      else if(YazmacListesi[GYazmac1].Ad = 'ebp') then
+      begin
+
+        Result := HATA_ISL_KOD_KULLANIM;
+      end
+      else
+      // 32 bir mimari - 32 bit yazmaç
+      // 64 bit mimari - 64 bit yazmaç
+      // kontrol durumları
+      // 1. sadece yazmaç değer kontrolü
+
+      // 1.1 32 bit mimari 32 bit yazmaç - mevcut çalışma budur!!!
+      // 1.2.1 64 bit mimari 32 bit yazmaç
+      // 1.2.2 64 bit mimari 64 bit yazmaç
+
+      // 32 bit genel yazmaçlar kodlandı. Tamam!
+      // 64 bitlik mimarinin 32 bitlik yazmaçlarının kodlanması
+
+      // esp / rsp ve ebp / rbp yazmaçları haricindeki diğer yazmaçların kodlaması
+      begin
+
+        // 32 bitlik yazmaçların kodlanması
+        if(YazmacListesi[GYazmac1].DesMim = dmTum) then
+        begin
+
+          // mimarinin 16 bit, yazmaçların 32 bit olması durumunda
+          if(GAktifDosya.Mimari = mim16Bit) then
+          begin
+
+            KodEkle($67);
+            KodEkle($66);
+          end
+          // mimarinin 64 bit, yazmaçların 32 bit olması durumunda
+          else if(GAktifDosya.Mimari = mim64Bit) then KodEkle($67);
+
+          IslemKoduEkle;
+          KodEkle((MODRMDegeri shl 3) or YazmacListesi[GYazmac1].Deger);
+          Result := HATA_YOK;
+        end
+        // 32 / 64 bitlik yazmaçların kodlanması
+        else if(YazmacListesi[GYazmac1].DesMim = dm64Bit) then
+        begin
+
+          // mimarinin 16 bit, yazmaçların 32 bit olması durumunda
+          if(GAktifDosya.Mimari = mim64Bit) then
+          begin
+
+            KodEkle($67);
+            KodEkle($41);
+
+            IslemKoduEkle;
+            KodEkle((MODRMDegeri shl 3) or (YazmacListesi[GYazmac1].Deger - 8));
+            Result := HATA_YOK;
+          end else Result := HATA_ISL_KOD_KULLANIM;
+        end;
       end;
+    end
+    // 2. 64 bitlik yazmaç adresleme
+    else if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) then
+    begin
+
+      if(YazmacListesi[GYazmac1].Deger > 7) then
+      begin
+
+        KodEkle($41);
+        i := YazmacListesi[GYazmac1].Deger - 8;
+      end else i := YazmacListesi[GYazmac1].Deger;
+
+      IslemKoduEkle;
+      KodEkle((MODRMDegeri shl 3) or i);
+      Result := HATA_YOK;
     end;
   end;
 end;
@@ -370,9 +429,9 @@ begin
   // bu komutlar bir komut grubu olup, bulunulan konumdan kaç adım ileri veya
   // geri (relative) adrese dallanma yapılacağını bildirir
   // not: şu aşamada 8 bitlik katı kodlama uygulanmıştır
-  if(GSabitDeger < (MevcutBellekAdresi + 2)) then
-    ii := -((MevcutBellekAdresi + 2) - GSabitDeger)
-  else ii := GSabitDeger - (MevcutBellekAdresi + 2);
+  if(GSabitDeger1 < (MevcutBellekAdresi + 2)) then
+    ii := -((MevcutBellekAdresi + 2) - GSabitDeger1)
+  else ii := GSabitDeger1 - (MevcutBellekAdresi + 2);
 
   KodEkle(KomutIK);
   KodEkle(ii);
@@ -543,88 +602,159 @@ begin
   end;
 end;
 
-// işlev tamamlanmadı
-// push r32 -> 50+rd kodlama işlemlerini yönetir
-function YazmacBirlestir(IslemKodu, Yazmac: Byte; SatirIcerik: TSatirIcerik): Integer;
+// 5.3 - yazmaça bellek değeri ata
+// YazmacKodla:
+// örnek kod: not eax
+// örnek işlem kodu: REX + F6 /2
+// IsKod8 = 8 bitlik işlem kodu
+// IsKodDiger = 8 bit haricindeki işlem kodu
+// KaynakYazmac = işlem kodundaki /x değeri (mod r/m değeri)
+// HedefYazmac = kullanılan yazmaç değeri
+function YazmacaBellekBolgesiAta(YazmacaBB: Boolean; IsKod8, IsKodDiger: Byte): Integer;
 var
-  DesMim1, DesMim2: TDestekleyenMimari;
-  i: Byte;
+  BT1, BT2: TBolumTip;
+  Y1, Y2: Integer;
 begin
 
-  // 64 bitlik işlem kodları yalnızca 64 bitlik mimaride kullanılabilir
-  if(GAktifDosya.Mimari <> mim64Bit) and (YazmacListesi[Yazmac].Uzunluk = yu64bGY) then
+  // işlem yapılırken, İşlemKodu Yazmaç, [Bellek] biçiminde işlem yapılacak
+  if(YazmacaBB) then
   begin
 
-    Result := HATA_64BIT_MIMARI_GEREKLI;
-    Exit;
+    BT1 := SatirIcerik.BolumTip1;
+    BT2 := SatirIcerik.BolumTip2;
+    Y1 := GYazmac1;
+    Y2 := GYazmac2;
+  end
+  else
+  begin
+
+    BT1 := SatirIcerik.BolumTip2;
+    BT2 := SatirIcerik.BolumTip1;
+    Y1 := GYazmac2;
+    Y2 := GYazmac1;
   end;
 
-  // derlenecek kod mimarisi 64 bit ise...
-  {if(GAsm2.Mimari = mim64Bit) and (YazmacListesi[Yazmac].Uzunluk = yu64bGY) then
+  if(BT1.BolumAnaTip = batYazmac) and (BT2.BolumAnaTip = batBellek) then
+  begin
 
-    // 0100W000 = W = 1 = 64 bit işlem kodu
-    KodEkle($48)}
+    if(YazmacListesi[Y1].Uzunluk = yu8bGY) then
 
-  // derlenecek kod mimarisi 32 bit, yazmaç 32 bit değilse...
-  // 66 ön ekini kodun başına ekle
-  if(GAktifDosya.Mimari = mim32Bit) and (YazmacListesi[Yazmac].Uzunluk <> yu32bGY) then
+      KodEkle(IsKod8)
+    else KodEkle(IsKodDiger);
 
-    KodEkle($66)
+    if(baBellekSabitDeger in BT2.BolumAyrinti) then
+    begin
 
-  // derlenecek kod mimarisi 16 bit, yazmaç 16 bit değilse...
-  else if(GAktifDosya.Mimari = mim16Bit) and (YazmacListesi[Yazmac].Uzunluk <> yu16bGY) then
+      KodEkle((YazmacListesi[Y1].Deger shl 3) or 5);
+      SayisalDegerEkle(GBellekSabitDeger, vgB4);
+    end
+    else
+    begin
 
-    KodEkle($66);
+      KodEkle((YazmacListesi[Y1].Deger shl 3) or
+        (YazmacListesi[GYazmacB1].Deger and 7));
+    end;
 
-  DesMim1 := YazmacListesi[Yazmac].DesMim;
-
-  KodEkle(IslemKodu + (YazmacListesi[Yazmac].Deger and 7));
-  Result := HATA_YOK;
+    Result := HATA_YOK;
+  end else Result := HATA_DEVAM_EDEN_CALISMA;
 end;
 
-// 2.2 - mov   eax,ebx
-// $8A /r
-function IslemKoduVeYazmacDegeriniKodla2(IK8, IKDiger, ModRMDeger: Byte; SI: TSatirIcerik): Integer;
+// İşlemKodu + Yazmac değerinin birleştirilmesini sağlar
+function IslemKoduIleYazmacDegeriniBirlestir(IsKod8, IsKodDiger, Yazmac: Byte): Integer;
 begin
 
-  if(YazmacListesi[GYazmac1].Uzunluk = yu8bGY) and (YazmacListesi[GYazmac2].Uzunluk = yu8bGY) then
+  if(YazmacListesi[Yazmac].Uzunluk = yu8bGY) then
   begin
 
-    KodEkle(IK8);
-    KodEkle($C0 + (ModRMDeger shl 3) or (YazmacListesi[GYazmac1].Deger and 7));
-    Result := HATA_YOK;
+    if(YazmacListesi[Yazmac].DesMim = dmTum) then
+    begin
+
+      KodEkle(IsKod8 + (YazmacListesi[Yazmac].Deger));
+      Result := HATA_YOK;
+    end
+    else
+    // 64 bitlik mimarinin 8 bitlik yazmaçları
+    begin
+
+      if(GAktifDosya.Mimari = mim64Bit) then
+      begin
+
+        if((YazmacListesi[Yazmac].Ad = 'spl') or (YazmacListesi[Yazmac].Ad = 'bpl') or
+          (YazmacListesi[Yazmac].Ad = 'sil') or (YazmacListesi[Yazmac].Ad = 'dil')) then
+          KodEkle($40)
+        else KodEkle($41);
+
+        KodEkle(IsKod8 + (YazmacListesi[Yazmac].Deger - 8));
+        Result := HATA_YOK;
+      end else Result := HATA_64BIT_MIMARI_GEREKLI;
+    end;
   end
-  {if(YazmacListesi[GYazmac1].Uzunluk = yu8bGY) then
+  else if(YazmacListesi[Yazmac].Uzunluk = yu16bGY) then
   begin
 
-    KodEkle(IK8 + (YazmacListesi[GYazmac1].Deger and 7));
-    Result := HATA_YOK;
+    if(YazmacListesi[Yazmac].DesMim = dmTum) then
+    begin
+
+      if not(GAktifDosya.Mimari = mim16Bit) then KodEkle($66);
+
+      KodEkle(IsKodDiger + (YazmacListesi[Yazmac].Deger));
+      Result := HATA_YOK;
+    end
+    else
+    // 64 bitlik mimarinin 16 bitlik yazmaçları
+    begin
+
+      if(GAktifDosya.Mimari = mim64Bit) then
+      begin
+
+        KodEkle($66);
+        KodEkle($41);
+
+        KodEkle(IsKodDiger + (YazmacListesi[Yazmac].Deger - 8));
+        Result := HATA_YOK;
+      end else Result := HATA_64BIT_MIMARI_GEREKLI;
+    end;
   end
-  else if(YazmacListesi[GYazmac1].Uzunluk = yu16bGY) then
+  else if(YazmacListesi[Yazmac].Uzunluk = yu32bGY) then
   begin
 
-    KodEkle(IK8 + (YazmacListesi[GYazmac1].Deger and 7));
-    Result := HATA_YOK;
+    if(YazmacListesi[Yazmac].DesMim = dmTum) then
+    begin
+
+      if(GAktifDosya.Mimari = mim16Bit) then KodEkle($66);
+
+      KodEkle(IsKodDiger + (YazmacListesi[Yazmac].Deger));
+      Result := HATA_YOK;
+    end
+    else
+    // 64 bitlik mimarinin 32 bitlik yazmaçları
+    begin
+
+      if(GAktifDosya.Mimari = mim64Bit) then
+      begin
+
+        KodEkle($41);
+
+        KodEkle(IsKodDiger + (YazmacListesi[Yazmac].Deger - 8));
+        Result := HATA_YOK;
+      end else Result := HATA_64BIT_MIMARI_GEREKLI;
+    end;
   end
-  else if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
+  else if(YazmacListesi[Yazmac].Uzunluk = yu64bGY) then
   begin
 
-    if(YazmacListesi[GYazmac1].DesMim = dm64Bit) then KodEkle($41);
+    if(YazmacListesi[Yazmac].Deger > 7) then
+    begin
 
-    KodEkle(IKDiger + (YazmacListesi[GYazmac1].Deger and 7));
-    Result := HATA_YOK;
-  end;}
+      KodEkle($41);
+      KodEkle(IsKodDiger + (YazmacListesi[Yazmac].Deger - 8));
+    end
+    else
+    begin
 
+      KodEkle(IsKodDiger + (YazmacListesi[Yazmac].Deger));
+    end;
 
-  else if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) then
-  begin
-
-    if(YazmacListesi[GYazmac1].Deger > 7) then
-      KodEkle($4C)
-    else KodEkle($48);
-
-    KodEkle(IKDiger);
-    KodEkle($C0 + (ModRMDeger shl 3) or (YazmacListesi[GYazmac1].Deger and 7));
     Result := HATA_YOK;
   end;
 end;
@@ -693,9 +823,9 @@ begin
   // bu komutlar bir komut grubu olup, bulunulan konumdan kaç adım ileri veya
   // geri (relative) adrese dallanma yapılacağını bildirir
   // not: şu aşamada 8 bitlik katı kodlama uygulanmıştır
-  if(GSabitDeger < (MevcutBellekAdresi - 1)) then
-    SayisalVeri := -((MevcutBellekAdresi - 1) - GSabitDeger)
-  else SayisalVeri := GSabitDeger - (MevcutBellekAdresi - 1);
+  if(GSabitDeger1 < (MevcutBellekAdresi - 1)) then
+    SayisalVeri := -((MevcutBellekAdresi - 1) - GSabitDeger1)
+  else SayisalVeri := GSabitDeger1 - (MevcutBellekAdresi - 1);
 
   SayiTipi := SayiTipiniAl(SayisalVeri);
 

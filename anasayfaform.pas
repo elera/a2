@@ -23,7 +23,13 @@ type
 
   TfrmAnaSayfa = class(TForm)
     ilAnaMenu16: TImageList;
-    miDuzenleyiciDosyaKapat: TMenuItem;
+    ilDuzenleyiciMenu: TImageList;
+    miDuzenleyiciAyirac0: TMenuItem;
+    miDuzenleyiciSayfayiSagaTasi: TMenuItem;
+    miDuzenleyiciSayfayiSolaTasi: TMenuItem;
+    miDuzenleyiciAyirac1: TMenuItem;
+    miDuzenleyiciSayfadakiDosyayiAc: TMenuItem;
+    miDuzenleyiciSayfayiKapat: TMenuItem;
     miDosyaAcANSI: TMenuItem;
     miDosyaAyarlar: TMenuItem;
     miDosyaAyrim2: TMenuItem;
@@ -74,6 +80,9 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDropFiles(Sender: TObject; const Dosyalar: array of string);
     procedure FormShow(Sender: TObject);
+    procedure miDuzenleyiciSayfayiSagaTasiClick(Sender: TObject);
+    procedure miDuzenleyiciSayfayiSolaTasiClick(Sender: TObject);
+    procedure miDuzenleyiciSayfadakiDosyayiAcClick(Sender: TObject);
     procedure miDosyaAcANSIClick(Sender: TObject);
     procedure miDosyaAcClick(Sender: TObject);
     procedure miDosyaAyarlarClick(Sender: TObject);
@@ -81,7 +90,7 @@ type
     procedure miDosyaKaydetClick(Sender: TObject);
     procedure miDosyaSonKullanilanDosyayiAcClick(Sender: TObject);
     procedure miDosyaYeniClick(Sender: TObject);
-    procedure miDuzenleyiciDosyaKapatClick(Sender: TObject);
+    procedure miDuzenleyiciSayfayiKapatClick(Sender: TObject);
     procedure miKodEtiketListesiClick(Sender: TObject);
     procedure miYardimAssemblerBelgeClick(Sender: TObject);
     procedure miKodDerleClick(Sender: TObject);
@@ -93,6 +102,7 @@ type
     procedure seDosya0KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure SynCompletion1Execute(Sender: TObject);
+    procedure SynEdit1Change(Sender: TObject);
   private
     procedure DurumCubugunuGuncelle;
     procedure ProjeDosyasiYukle(seDosya: TSynEdit; Dosya: TDosya;
@@ -115,7 +125,7 @@ implementation
 
 uses incele, genel, atamalar, derlemebilgisiform, atamalarform, asm2,
   ayarlar, yazmaclar, {$IFDEF Windows} windows, {$ENDIF} process, oneriler, komutlar, dbugintf,
-  paylasim, donusum, LConvEncoding, ayarlarform, kodlama, araclar;
+  paylasim, donusum, LConvEncoding, ayarlarform, kodlama, araclar, dateutils, LCLIntf;
 
 procedure TfrmAnaSayfa.FormCreate(Sender: TObject);
 begin
@@ -218,6 +228,39 @@ begin
       end;
     end else miDosyaYeniClick(Self);
   end else miDosyaYeniClick(Self);
+end;
+
+procedure TfrmAnaSayfa.miDuzenleyiciSayfayiSagaTasiClick(Sender: TObject);
+var
+  CurrentIndex: Integer;
+begin
+
+  CurrentIndex := pcDosyalar.ActivePageIndex;
+
+  if(CurrentIndex < (pcDosyalar.PageCount - 1)) then
+
+    pcDosyalar.Pages[CurrentIndex].PageIndex := CurrentIndex + 1;
+end;
+
+procedure TfrmAnaSayfa.miDuzenleyiciSayfayiSolaTasiClick(Sender: TObject);
+var
+  CurrentIndex: Integer;
+begin
+
+  CurrentIndex := pcDosyalar.ActivePageIndex;
+
+  if(CurrentIndex > 0) then
+
+    pcDosyalar.Pages[CurrentIndex].PageIndex := CurrentIndex - 1;
+end;
+
+procedure TfrmAnaSayfa.miDuzenleyiciSayfadakiDosyayiAcClick(Sender: TObject);
+var
+  Dosya: TDosya;
+begin
+
+  Dosya := GAsm2.Dosyalar.Bul(pcDosyalar.ActivePage.Tag);
+  OpenDocument(Dosya.ProjeDizin);
 end;
 
 procedure TfrmAnaSayfa.miDosyaAcANSIClick(Sender: TObject);
@@ -401,7 +444,7 @@ begin
   end else ShowMessage('Hata: daha fazla düzenleyici alanı açılamıyor!')
 end;
 
-procedure TfrmAnaSayfa.miDuzenleyiciDosyaKapatClick(Sender: TObject);
+procedure TfrmAnaSayfa.miDuzenleyiciSayfayiKapatClick(Sender: TObject);
 var
   tsDosya: TTabSheet;
   seDosya: TSynEdit;
@@ -741,6 +784,12 @@ begin
   OnerileriListele(SynCompletion1.CurrentString, SynCompletion1.ItemList);
 end;
 
+procedure TfrmAnaSayfa.SynEdit1Change(Sender: TObject);
+begin
+
+  ShowMessage('changed');
+end;
+
 procedure TfrmAnaSayfa.DurumCubugunuGuncelle;
 begin
 
@@ -766,6 +815,8 @@ begin
 
   GAsm2.AtamaListesi.Temizle;
   GAsm2.Matematik.Temizle;
+
+  GAktifDosya.Bicim := dbIkili;
 
   // düzenleyicideki kodları derle
   DerlemeSonucu := KodlariDerle(GAktifDuzenleyici);
@@ -857,6 +908,8 @@ begin
         SatirIcerik.BolumTip1.BolumAyrinti := [];
         SatirIcerik.BolumTip2.BolumAnaTip := batYok;
         SatirIcerik.BolumTip2.BolumAyrinti := [];
+        SatirIcerik.BolumTip3.BolumAnaTip := batYok;
+        SatirIcerik.BolumTip3.BolumAyrinti := [];
 
         // ilgili satırın incelendiği / kodların üretildiği ana çağrı
         IslevSonuc := KodUret(GAktifDosya.IslenenSatir, HamVeri);
@@ -904,15 +957,7 @@ begin
     if(Length(GAktifDosya.CikisDosyaAdi) > 0) then
     begin
 
-      // dosya uzantısının olmaması durumunda dosyaya uzantı ekleme (özellikle linux için)
-      if(Length(GAktifDosya.CikisDosyaUzanti) > 0) then
-        s := GAktifDosya.CikisDosyaAdi + '.' + GAktifDosya.CikisDosyaUzanti
-      else s := GAktifDosya.CikisDosyaAdi;
-
-      if(ProgramDosyasiOlustur(GAktifDosya.ProjeDizin + DirectorySeparator + s)) then
-
-        Result := HATA_YOK
-      else Result := HATA_PROG_DOSYA_OLUSTURMA;
+      Result := ProgramDosyasiOlustur(GAktifDosya);
 
     end else Result := HATA_PROJEYI_KAYDET;
   end else Result := IslevSonuc;
@@ -932,6 +977,8 @@ begin
 
   GAsm2.AtamaListesi.Temizle;
   GAsm2.Matematik.Temizle;
+
+  GAktifDosya.Bicim := dbIkili;
 
   // kodlar daha önce derlenmiş veya program derleme aşamasında hata olmamış
   // olsa bile düzenleyicideki kodları MUTLAKA bir kez derle

@@ -17,8 +17,8 @@ uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler, araclar,
 
 const
   ProgramAdi = 'Assembler 2 (a2)';
-  ProgramSurum = '0.0.16.2018';
-  SurumTarihi = '11.08.2018';
+  ProgramSurum = '0.0.17.2018';
+  SurumTarihi = '20.08.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -79,7 +79,8 @@ const
   HATA_PROG_DOSYA_OLUSTURMA       = HATA_TANIMLAMA + 1;
   HATA_PROJEYI_KAYDET             = HATA_PROG_DOSYA_OLUSTURMA + 1;
   HATA_VERI_GENISLIGI             = HATA_PROJEYI_KAYDET + 1;
-  HATA_DEVAM_EDEN_CALISMA         = HATA_VERI_GENISLIGI + 1;
+  HATA_DESTEKLENMEYEN_BICIM       = HATA_VERI_GENISLIGI + 1;
+  HATA_DEVAM_EDEN_CALISMA         = HATA_DESTEKLENMEYEN_BICIM + 1;
 
   sHATA_BILINMEYEN_HATA           = 'Bilinmeyen hata';
   sHATA_BILINMEYEN_KOMUT          = 'Bilinmeyen komut';
@@ -111,6 +112,7 @@ const
   sHATA_PROG_DOSYA_OLUSTURMA      = 'Program dosyası oluşturulamıyor!';
   sHATA_PROJEYI_KAYDET            = 'Projeyi derlemeden önce kaydediniz!';
   sHATA_VERI_GENISLIGI            = 'Veri genişliği hatalı.';
+  sHATA_DESTEKLENMEYEN_BICIM      = 'Dosya biçimi desteklenmiyor.';
   sHATA_DEVAM_EDEN_CALISMA        = 'Çalışmalar devam etmekte...';
 
 const
@@ -159,19 +161,17 @@ var
   SatirIcerik: TSatirIcerik;
 
   // GENEL BİLGİ:
-  // 1. her bir kod satırı, 2 öndeğeri (parametre) işleyecek şekilde yapılandırılmıştır
-  //   bunlar; GParametreTip1 ve GParametreTip2 değişkenleri tarafından yönetilir
-  // 2. her bir komut satırının (opcode) GIslemKodu değişkeni ile ifade edilen sıra numarası vardır
-  // 3. her 2 öndeğerin yazmaç olması halinde GYazmac1 ve GYazmac2 değişkenleri kullanılırken;
-  //   adresleme işleminin olması durumunda GYazmac1, GYazmacB1 ve GYazmacB2 kullanımaktadır
-  GYazmac1,                                 // birinci yazmaç değeri
-  GYazmac2,                                 // ikinci yazmaç değeri
-  GYazmacB1,                                // birinci bellek yazmaç değeri
-  GYazmacB2,                                // ikinci bellek yazmaç değeri
+  // 1. her bir kod satırı, 3 öndeğeri (parametre) işleyecek şekilde yapılandırılmıştır
+  //   bunlar; TSatirIcerik yapısının BolumTip1, BolumTip2 ve BolumTip2 alt yapılarıdır
+  // 2. her 3 öndeğerin yazmaç olması halinde GYazmac1, GYazmac2 ve GYazmac3 değişkenleri
+  //   kullanılırken; adresleme işlemi için GYazmacB1 ve GYazmacB2 değişkenleri kullanımaktadır
+  GYazmac1, GYazmac2, GYazmac3,             // işlem kodunun kullanacağı yazmaç değerleri
+  GYazmacB1, GYazmacB2,                     // işlem kodunun kullanacağı bellek yazmaç değerleri
   GOlcek,                                   // bellek adreslemede kullanılan ölçek değer
   GBellekSabitDeger: Integer;               // bellek adresleme sabit değeri (yeni, ilgili kısımlara uygulansın)
   GBellekSabitDegerVG: TVeriGenisligi;
-  GSabitDeger: Integer;                     // bellek / yazmaç için sayısal değer
+  GSabitDeger1, GSabitDeger2,               // not: programın her alanına uygulanmadı
+  GSabitDeger3: Integer;                    // her bir alan için tanımlanan sabit değer
   GSabitDegerVG: TVeriGenisligi;
   GYazmacB1OlcekM, GYazmacB2OlcekM: Boolean;// bellek yazmaçlarının ölçek değerleri var mı?
   GAktifDuzenleyici: TSynEdit = nil;        // aktif düzenleyici nesne değerini barındırır

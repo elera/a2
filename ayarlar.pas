@@ -38,7 +38,7 @@ procedure INIDosyasinaYaz(ProgramAyarlari: TProgramAyarlari);
 
 implementation
 
-uses IniFiles, genel, dosya, Classes, paylasim;
+uses IniFiles, genel, dosya, Classes, paylasim, anasayfaform;
 
 // ini dosyasından program ayarlarını oku
 function INIDosyasiniOku: TProgramAyarlari;
@@ -145,6 +145,7 @@ end;
 // program ayarlarını ini dosyasına yaz
 procedure INIDosyasinaYaz(ProgramAyarlari: TProgramAyarlari);
 var
+  Dosya: TDosya;
   INIDosyasi: TINIFile;
   FileName: string;
   i, j: Integer;
@@ -180,16 +181,16 @@ begin
   begin
 
     j := 1;
-    for i := 0 to GAsm2.Dosyalar.Toplam - 1 do
+    for i := 0 to frmAnaSayfa.pcDosyalar.PageCount - 1 do
     begin
 
-      if(GAsm2.Dosyalar.Eleman[i].Durum = ddKaydedildi) then
+      Dosya := GAsm2.Dosyalar.Bul(frmAnaSayfa.pcDosyalar.Pages[i].Tag);
+      if(Dosya.Durum = ddKaydedildi) then
       begin
 
         INIDosyasi.WriteString('AcikDosyalar', 'Dosya' + IntToStr(j),
-          GAsm2.Dosyalar.Eleman[i].ProjeDizin + DirectorySeparator +
-          GAsm2.Dosyalar.Eleman[i].ProjeDosyaAdi + '.' +
-          GAsm2.Dosyalar.Eleman[i].ProjeDosyaUzanti);
+          Dosya.ProjeDizin + DirectorySeparator + Dosya.ProjeDosyaAdi + '.' +
+          Dosya.ProjeDosyaUzanti);
 
         Inc(j);
       end;

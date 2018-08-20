@@ -366,7 +366,7 @@ DLLBaşlangıçİşlevi:
 
 kod.tabaka = 4
 
-	db	'DLL dosyasından merhaba!', 0
+	db0     'DLL dosyasından merhaba!'
 
 MerhabaDLLİşlevi:
 
@@ -398,7 +398,7 @@ iveri_başlangıç:
 
         dw      0
 dosya1:
-        db      'USER32.DLL', 0
+        db0     'USER32.DLL'
         db      0
 dosya3:
         dd      MessageBoxA - TEMEL_ADRES
@@ -408,7 +408,7 @@ dosya2:
         dd      0
 MessageBoxA:
         dw      0
-        db      'MessageBoxA', 0
+        db0     'MessageBoxA'
 
 kod.tabaka = 200h
 iveri_son:
@@ -417,17 +417,19 @@ kod.mimari = '32Bit'
 kod.adres = 403000h
 edata_başlangıç:
 ;-------------------------------------------------------------------------------
-        dd      0
-        dd      0
-        dw      0
-        dw      0
-        dd      3032h
-        dd      1
-        dd      1
-        dd      1
-        dd      burası2 - TEMEL_ADRES
-        dd      dll_işlevler_adres - TEMEL_ADRES
-        dd      dll_dosya_adı - TEMEL_ADRES
+; ayrıntılar için
+; https://en.wikibooks.org/wiki/X86_Disassembly/Windows_Executable_Files
+        dd      0                                       ; Characteristics
+        dd      0                                       ; TimeDateStamp
+        dw      0                                       ; MajorVersion
+        dw      0                                       ; MinorVersion
+        dd      3032h                                   ; Name
+        dd      1                                       ; Base
+        dd      1                                       ; NumberOfFunctions
+        dd      1                                       ; NumberOfNames
+        dd      burası2 - TEMEL_ADRES                   ; *AddressOfFunctions
+        dd      dll_işlevler_adres - TEMEL_ADRES        ; *AddressOfNames
+        dd      dll_dosya_adı - TEMEL_ADRES             ; *AddressOfNameOrdinals
 
 burası2:
         dd      MerhabaDLLİşlevi - TEMEL_ADRES
@@ -437,10 +439,10 @@ dll_işlevler_adres:
 
 dll_dosya_adı:
         dw      0
-        db      'merhaba.dll', 0
+        db0     'merhaba.dll'
 
 dll_işlevler:
-        db      'MerhabaDLL', 0
+        db0     'MerhabaDLL'
 
 kod.tabaka = 200h
 edata_son:

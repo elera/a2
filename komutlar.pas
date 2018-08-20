@@ -13,7 +13,7 @@ unit komutlar;
 interface
 
 uses Classes, SysUtils, genel, paylasim, g01islev, g02islev, g10islev,
-  g12islev, g11islev;
+  g11islev, g12islev, g13islev;
 
 type
   TKomutDurum = record
@@ -36,14 +36,16 @@ type
 const
   // 1. grup komutlar
   GRUP01_DOS_AD_  = $010001;
-  GRUP01_DOS_UZN  = GRUP01_DOS_AD_ + 1;
+  GRUP01_BICIM    = GRUP01_DOS_AD_ + 1;
+  GRUP01_DOS_UZN  = GRUP01_BICIM + 1;
   GRUP01_KOD_ADR  = GRUP01_DOS_UZN + 1;
   GRUP01_KOD_MIM  = GRUP01_KOD_ADR + 1;
   GRUP01_KOD_TBK  = GRUP01_KOD_MIM + 1;
 
   // 2. grup komutlar
   GRUP02_DB       = $020001;
-  GRUP02_DBW      = GRUP02_DB + 1;
+  GRUP02_DB0      = GRUP02_DB + 1;
+  GRUP02_DBW      = GRUP02_DB0 + 1;
   GRUP02_DW       = GRUP02_DBW + 1;
   GRUP02_DD       = GRUP02_DW + 1;
   GRUP02_DQ       = GRUP02_DD + 1;
@@ -203,13 +205,15 @@ const
   GRUP12_SAR      = GRUP12_SAL + 1;
   GRUP12_SBB      = GRUP12_SAR + 1;
   GRUP12_SHL      = GRUP12_SBB + 1;
-  GRUP12_SHLD     = GRUP12_SHL + 1;
-  GRUP12_SHR      = GRUP12_SHLD + 1;
-  GRUP12_SHRD     = GRUP12_SHR + 1;
-  GRUP12_SUB      = GRUP12_SHRD + 1;
+  GRUP12_SHR      = GRUP12_SHL + 1;
+  GRUP12_SUB      = GRUP12_SHR + 1;
   GRUP12_TEST     = GRUP12_SUB + 1;
   GRUP12_XCHG     = GRUP12_TEST + 1;
   GRUP12_XOR      = GRUP12_XCHG + 1;
+
+  // 13. grup komutlar
+  GRUP13_SHLD     = $130001;
+  GRUP13_SHRD     = GRUP13_SHLD + 1;
 
   {
   GRUP01_CBW 		  = $10003;
@@ -219,11 +223,12 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
-  TOPLAM_KOMUT = 167;
+  TOPLAM_KOMUT = 169;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
   // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
   (Komut: 'dosya.ad';           GrupNo: GRUP01_DOS_AD_;       KomutTipi: ktBildirim),
+  (Komut: 'dosya.biçim';        GrupNo: GRUP01_BICIM;         KomutTipi: ktBildirim),
   (Komut: 'dosya.uzantı';       GrupNo: GRUP01_DOS_UZN;       KomutTipi: ktBildirim),
   (Komut: 'kod.adres';          GrupNo: GRUP01_KOD_ADR;       KomutTipi: ktBildirim),
   (Komut: 'kod.mimari';         GrupNo: GRUP01_KOD_MIM;       KomutTipi: ktBildirim),
@@ -231,6 +236,7 @@ const
 
   // grup 02 - DEĞİŞKENLER - (sıralama sınıflamaya göredir)
   (Komut: 'db';                 GrupNo: GRUP02_DB;            KomutTipi: ktDegisken),
+  (Komut: 'db0';                GrupNo: GRUP02_DB0;           KomutTipi: ktDegisken),
   (Komut: 'dbw';                GrupNo: GRUP02_DBW;           KomutTipi: ktDegisken),
   (Komut: 'dw';                 GrupNo: GRUP02_DW;            KomutTipi: ktDegisken),
   (Komut: 'dd';                 GrupNo: GRUP02_DD;            KomutTipi: ktDegisken),
@@ -400,14 +406,15 @@ const
     (Komut: 'sar';              GrupNo: GRUP12_SAR;           KomutTipi: ktIslemKodu),
     (Komut: 'sbb';              GrupNo: GRUP12_SBB;           KomutTipi: ktIslemKodu),
     (Komut: 'shl';              GrupNo: GRUP12_SHL;           KomutTipi: ktIslemKodu),
-    (Komut: 'shld';             GrupNo: GRUP12_SHLD;          KomutTipi: ktIslemKodu),
     (Komut: 'shr';              GrupNo: GRUP12_SHR;           KomutTipi: ktIslemKodu),
-    (Komut: 'shrd';             GrupNo: GRUP12_SHRD;          KomutTipi: ktIslemKodu),
     (Komut: 'sub';              GrupNo: GRUP12_SUB;           KomutTipi: ktIslemKodu),
     (Komut: 'test';             GrupNo: GRUP12_TEST;          KomutTipi: ktIslemKodu),
     (Komut: 'xchg';             GrupNo: GRUP12_XCHG;          KomutTipi: ktIslemKodu),
-    (Komut: 'xor';              GrupNo: GRUP12_XOR;           KomutTipi: ktIslemKodu)
+    (Komut: 'xor';              GrupNo: GRUP12_XOR;           KomutTipi: ktIslemKodu),
 
+    // 13. grup komutlar
+    (Komut: 'shld';             GrupNo: GRUP13_SHLD;          KomutTipi: ktIslemKodu),
+    (Komut: 'shrd';             GrupNo: GRUP13_SHRD;          KomutTipi: ktIslemKodu)
     );
 
 var
@@ -415,11 +422,11 @@ var
 
     // 1. grup komutlar
     @Grup01Bildirim, @Grup01Bildirim, @Grup01Bildirim, @Grup01Bildirim,
-    @Grup01Bildirim,
+    @Grup01Bildirim, @Grup01Bildirim,
 
     // 2. grup komutlar
     @Grup02Degisken, @Grup02Degisken, @Grup02Degisken, @Grup02Degisken,
-    @Grup02Degisken, @Grup02Degisken,
+    @Grup02Degisken, @Grup02Degisken, @Grup02Degisken,
 
     // 10. grup komutlar
     @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
@@ -464,7 +471,9 @@ var
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
     @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
-    @Grup12Islev, @Grup12Islev
+
+    // 13. grup komutlar
+    @Grup13Islev, @Grup13Islev
   );
 
 function KomutBilgisiAl(AKomut: string): TKomutDurum;

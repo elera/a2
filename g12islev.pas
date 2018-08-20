@@ -4,6 +4,9 @@
 
   İşlev: 12. grup kodlama işlevlerini gerçekleştirir
 
+  12. grup kodlama işlevi; iki parametreli, yazmaç / sabit değer / bellek
+    bölgesi ataması kombinasyonlarından oluşan komutlardır
+
   Güncelleme Tarihi: 14/04/2018
 
 -------------------------------------------------------------------------------}
@@ -16,8 +19,6 @@ uses Classes, SysUtils, paylasim, onekler;
 
 function Grup12Islev(SatirNo: Integer; ParcaNo: Integer;
   VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
-function YazmacaBellekBolgesiAta(SatirIcerik: TSatirIcerik; Yazmac1,
-  Yazmac2: Integer): Integer;
 function BellekBolgesineYazmacAta(SatirIcerik: TSatirIcerik; Yazmac1,
   Yazmac2: Integer): Integer;
 function BellekBolgesineSayisalDegerAta(SatirIcerik: TSatirIcerik; Yazmac1,
@@ -56,8 +57,8 @@ begin
     Result := HATA_YOK;
   end
   // ÖNEMLİ:
-  // 1. GParametreTip1 ve GParametreTip2 değişkenlerine anasayfa'da ptYok olarak ilk değer atanıyor
-  // 2. GParametreTip1 ve GParametreTip2 değişkenleri vtKPAc kısmında ptBellek olarak atama yapılıyor
+  // 1. .BolumTip1, .BolumTip2 ve .BolumTip3 alt yapılarına anasayfa'da batYok değeri atanmaktadır
+  // 2. .BolumTip1, .BolumTip2 ve .BolumTip3 alt yapılarına vtKPAc kısmında batBellek tipi atanmaktadır
   // 3. Köşeli parantez kontrolü vtKPAc sorgulama kısmında gerçekleştiriliyor
   // 4. Sabit sayısal değer (imm) ve ölçek değeri (scale) diğer sorgu aşamalarında atanmaktadır
   else if(VeriKontrolTip = vktYazmac) then
@@ -324,7 +325,7 @@ begin
 
         SatirIcerik.BolumTip1.BolumAnaTip := batSayisalDeger;
         SatirIcerik.BolumTip1.BolumAyrinti += [baSabitDeger];
-        GSabitDeger := Veri2;
+        GSabitDeger1 := Veri2;
         Result := HATA_YOK;
       end else Result := HATA_ISL_KOD_KULLANIM;
     end
@@ -355,7 +356,7 @@ begin
 
         SatirIcerik.BolumTip2.BolumAnaTip := batSayisalDeger;
         SatirIcerik.BolumTip2.BolumAyrinti += [baSabitDeger];
-        GSabitDeger := Veri2;
+        GSabitDeger1 := Veri2;
         Result := HATA_YOK;
       end else Result := HATA_ISL_KOD_KULLANIM;
     end;
@@ -370,7 +371,7 @@ begin
       if(SatirIcerik.BolumTip2.BolumAnaTip = batSayisalDeger) then
       begin
 
-        DegerVG := SayiTipiniAl(GSabitDeger);
+        DegerVG := SayiTipiniAl(GSabitDeger1);
         if(DegerVG = vgB1) then
         begin
 
@@ -381,21 +382,21 @@ begin
             begin
 
               KodEkle($E4);
-              Result := SayisalDegerEkle(GSabitDeger, vgB1);
+              Result := SayisalDegerEkle(GSabitDeger1, vgB1);
             end
             else if(YazmacListesi[GYazmac1].Ad = 'ax') then
             begin
 
               if(GAktifDosya.Mimari <> mim16Bit) then KodEkle($66);
               KodEkle($E5);
-              Result := SayisalDegerEkle(GSabitDeger, vgB1);
+              Result := SayisalDegerEkle(GSabitDeger1, vgB1);
             end
             else if(YazmacListesi[GYazmac1].Ad = 'eax') then
             begin
 
               if(GAktifDosya.Mimari =  mim16Bit) then KodEkle($66);
               KodEkle($E5);
-              Result := SayisalDegerEkle(GSabitDeger, vgB1);
+              Result := SayisalDegerEkle(GSabitDeger1, vgB1);
             end else Result := HATA_ISL_KOD_KULLANIM;
           end else Result := HATA_ISL_KOD_KULLANIM;
         end else Result := HATA_VERI_GENISLIGI;
@@ -439,7 +440,7 @@ begin
       if(SatirIcerik.BolumTip1.BolumAnaTip = batSayisalDeger) then
       begin
 
-        DegerVG := SayiTipiniAl(GSabitDeger);
+        DegerVG := SayiTipiniAl(GSabitDeger1);
         if(DegerVG = vgB1) then
         begin
 
@@ -450,21 +451,21 @@ begin
             begin
 
               KodEkle($E6);
-              Result := SayisalDegerEkle(GSabitDeger, vgB1);
+              Result := SayisalDegerEkle(GSabitDeger1, vgB1);
             end
             else if(YazmacListesi[GYazmac2].Ad = 'ax') then
             begin
 
               if(GAktifDosya.Mimari <> mim16Bit) then KodEkle($66);
               KodEkle($E7);
-              Result := SayisalDegerEkle(GSabitDeger, vgB1);
+              Result := SayisalDegerEkle(GSabitDeger1, vgB1);
             end
             else if(YazmacListesi[GYazmac2].Ad = 'eax') then
             begin
 
               if(GAktifDosya.Mimari =  mim16Bit) then KodEkle($66);
               KodEkle($E7);
-              Result := SayisalDegerEkle(GSabitDeger, vgB1);
+              Result := SayisalDegerEkle(GSabitDeger1, vgB1);
             end else Result := HATA_ISL_KOD_KULLANIM;
           end else Result := HATA_ISL_KOD_KULLANIM;
         end else Result := HATA_VERI_GENISLIGI;
@@ -511,8 +512,6 @@ begin
         GRUP12_MOVSX: begin Result := HATA_DEVAM_EDEN_CALISMA; Exit; end;
         GRUP12_MOVZX: begin Result := HATA_DEVAM_EDEN_CALISMA; Exit; end;
         GRUP12_SBB:   begin Result := HATA_DEVAM_EDEN_CALISMA; Exit; end;
-        GRUP12_SHLD:  begin Result := HATA_DEVAM_EDEN_CALISMA; Exit; end;
-        GRUP12_SHRD:  begin Result := HATA_DEVAM_EDEN_CALISMA; Exit; end;
         GRUP12_TEST:  begin Result := HATA_DEVAM_EDEN_CALISMA; Exit; end;
       end;
 
@@ -553,6 +552,28 @@ begin
           else Result := HATA_ISL_KOD_KULLANIM;
         end;
       end
+      // İşlemKodu Yazmaç,[Bellek] atamaları buraya eklenecek
+      else if(SatirIcerik.BolumTip1.BolumAnaTip = batYazmac) and
+        (SatirIcerik.BolumTip2.BolumAnaTip = batBellek) then
+      begin
+
+        case SatirIcerik.Komut.GrupNo of
+
+          GRUP12_MOV:   Result := YazmacaBellekBolgesiAta(True, $8A, $8B);
+          else Result := HATA_ISL_KOD_KULLANIM;
+        end;
+      end
+      // İşlemKodu Yazmaç,[Bellek] atamaları buraya eklenecek
+      else if(SatirIcerik.BolumTip1.BolumAnaTip = batBellek) and
+        (SatirIcerik.BolumTip2.BolumAnaTip = batYazmac) then
+      begin
+
+        case SatirIcerik.Komut.GrupNo of
+
+          GRUP12_MOV:   Result := YazmacaBellekBolgesiAta(False, $88, $89);
+          else Result := HATA_ISL_KOD_KULLANIM;
+        end;
+      end
       // yazmaça sayısal değer aktarma işlemi olarak geliştirilecek.
       // dönüşüm aşamalı olarak gerçekleştirilecek.
       // bunun için alt satırdaki kodların toparlanmaları gerekmektedir.
@@ -566,11 +587,11 @@ begin
         (SatirIcerik.Komut.GrupNo = GRUP12_SHR)) then
       begin
 
-        DegerVG := SayiTipiniAl(GSabitDeger);
+        DegerVG := SayiTipiniAl(GSabitDeger1);
         if(DegerVG < GSabitDegerVG) then DegerVG := GSabitDegerVG;
 
         // sabit değer 1 değerinin değerlendirilmesi
-        if(DegerVG = vgB1) and (GSabitDeger = 1) then
+        if(DegerVG = vgB1) and (GSabitDeger1 = 1) then
         begin
 
           case SatirIcerik.Komut.GrupNo of
@@ -599,7 +620,7 @@ begin
             GRUP12_SHR: Result := YazmacKodla($C0, $C1, GYazmac1, 5, SatirIcerik);
           end;
 
-          if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger, vgB1);
+          if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger1, vgB1);
         end
       end
       // uygulanan komut
@@ -614,7 +635,7 @@ begin
 
           KodEkle($83);
           KodEkle($C0 + (7 shl 3) + (YazmacListesi[GYazmac1].Deger and 7));
-          KodEkle(GSabitDeger);
+          KodEkle(GSabitDeger1);
           Result := HATA_YOK;
         end else Result := HATA_BILINMEYEN_HATA;
       end
@@ -629,20 +650,20 @@ begin
           begin
 
             Result := YazmacKodla($80, $81, GYazmac1, 0, SatirIcerik);
-            if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger, vgB1);
+            if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger1, vgB1);
           end
           else if(YazmacListesi[GYazmac1].Uzunluk = yu16bGY) then
           begin
 
             Result := YazmacKodla($80, $81, GYazmac1, 0, SatirIcerik);
-            if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger, vgB2);
+            if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger1, vgB2);
           end
           // 32 ve 64 bitlik yazmaç 32 bitlik değer kullanıyor
           else if(YazmacListesi[GYazmac1].Uzunluk = yu16bGY) then
           begin
 
             Result := YazmacKodla($80, $81, GYazmac1, 0, SatirIcerik);
-            if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger, vgB4);
+            if(Result = HATA_YOK) then Result := SayisalDegerEkle(GSabitDeger1, vgB4);
           end
         end else Result := HATA_BILINMEYEN_HATA;
       end
@@ -660,14 +681,14 @@ begin
           begin
 
             Result := IslemKoduIleYazmacDegeriniBirlestir2($B0, $B8, 0, SatirIcerik);
-            if(Result = HATA_YOK) then SayisalDegerEkle(GSabitDeger, vgB1);
+            if(Result = HATA_YOK) then SayisalDegerEkle(GSabitDeger1, vgB1);
           end
           // 16 bitlik veri
           else if(YazmacListesi[GYazmac1].Uzunluk = yu16bGY) then
           begin
 
             Result := IslemKoduIleYazmacDegeriniBirlestir2($B0, $B8, 0, SatirIcerik);
-            if(Result = HATA_YOK) then SayisalDegerEkle(GSabitDeger, vgB2);
+            if(Result = HATA_YOK) then SayisalDegerEkle(GSabitDeger1, vgB2);
           end
           // 32 bitlik veri
           else if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
@@ -691,7 +712,7 @@ begin
             begin
 
               Result := IslemKoduIleYazmacDegeriniBirlestir2($B0, $B8, 0, SatirIcerik);
-              if(Result = HATA_YOK) then SayisalDegerEkle(GSabitDeger, vgB4);
+              if(Result = HATA_YOK) then SayisalDegerEkle(GSabitDeger1, vgB4);
             end;
           end
           // 64 bitlik yazmaça sabit değer aktarma işlemi
@@ -733,8 +754,8 @@ begin
                 for i := 1 to 4 do
                 begin
 
-                  KodEkle(Byte(GSabitDeger));
-                  GSabitDeger := GSabitDeger shr 8;
+                  KodEkle(Byte(GSabitDeger1));
+                  GSabitDeger1 := GSabitDeger1 shr 8;
                 end;
                 Result := HATA_YOK;
               end
@@ -743,7 +764,7 @@ begin
               begin
 
                 Result := YazmacKodla($80, $83, GYazmac1, 5, SatirIcerik);
-                KodEkle(Byte(GSabitDeger));
+                KodEkle(Byte(GSabitDeger1));
                 Result := HATA_YOK;
               end;
             end else Result := HATA_64BIT_MIMARI_GEREKLI;
@@ -762,13 +783,6 @@ begin
       end;
     end;
   end;
-end;
-
-// 5.3 - yazmaça bellek değeri ata
-function YazmacaBellekBolgesiAta(SatirIcerik: TSatirIcerik; Yazmac1,
-  Yazmac2: Integer): Integer;
-begin
-
 end;
 
 // 5.4 - bellek bölgesine yazmaç ata

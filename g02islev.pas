@@ -42,12 +42,13 @@ begin
   begin
 
     case KomutListesi[Veri2].GrupNo of
-      GRUP02_DB:  begin VeriGenisligi := 1; SayiTipi := vgB1;   end;
-      GRUP02_DBW: begin VeriGenisligi := 1; SayiTipi := vgB1B2; end;
-      GRUP02_DW:  begin VeriGenisligi := 2; SayiTipi := vgB2;   end;
-      GRUP02_DD:  begin VeriGenisligi := 4; SayiTipi := vgB4;   end;
-      GRUP02_DQ:  begin VeriGenisligi := 8; SayiTipi := vgB8;   end;
-      GRUP02_DT:  begin VeriGenisligi := 10;SayiTipi := vgB10;  end;
+      GRUP02_DB:  begin VeriGenisligi := 1; SayiTipi := vgB1;     end;
+      GRUP02_DB0: begin VeriGenisligi := 1; SayiTipi := vgB1Sifir;end;
+      GRUP02_DBW: begin VeriGenisligi := 1; SayiTipi := vgB1B2;   end;
+      GRUP02_DW:  begin VeriGenisligi := 2; SayiTipi := vgB2;     end;
+      GRUP02_DD:  begin VeriGenisligi := 4; SayiTipi := vgB4;     end;
+      GRUP02_DQ:  begin VeriGenisligi := 8; SayiTipi := vgB8;     end;
+      GRUP02_DT:  begin VeriGenisligi := 10;SayiTipi := vgB10;    end;
     end;
 
     // virgül kullanıldı olarak belirlenerek ilk gelecek verinin sayısal
@@ -68,10 +69,10 @@ begin
       // pascal derleyici tarafından utf-8 olarak kodlanan veri ansi karaktere çevriliyor
       s2 := YeniUTF8AnsiTR(Veri1);
 
-      // karakter dizisinin uzunluğu db veya dbw olması halinde veri uzunluğunu kontrol
-      // etmeye gerek yoktur. veri uzunluğu sınırsızdır
+      // karakter dizisinin uzunluğu db, db0 veya dbw olması halinde veri
+      // uzunluğunu kontrol etmeye gerek yoktur. veri uzunluğu sınırsızdır.
       // aksi durumda uzunluk kontrolünün yapılması gerekmektedir
-      if(SayiTipi = vgB1) or (SayiTipi = vgB1B2) then
+      if(SayiTipi = vgB1) or (SayiTipi = vgB1Sifir) or (SayiTipi = vgB1B2) then
 
         s := s2
       else
@@ -97,6 +98,8 @@ begin
       end;
 
       // hazırlanan veriyi hedef bellek bölgesine kopyala
+
+      // 1. 1 bytelık verinin 2 byte olarak değerlendirilmesi
       if(SayiTipi = vgB1B2) then
       begin
 
@@ -104,11 +107,15 @@ begin
         for i := 1 to j do begin KodEkle(Byte(s[i])); KodEkle(Byte(0)); end;
       end
       else
+      // 2. 1 bytelık verinin 1 byte olarak değerlendirilmesi
       begin
 
         j := Length(s);
         for i := 1 to j do KodEkle(Byte(s[i]));
       end;
+
+      // veri tipinin vgB1Sifir olması durumunda verinin sonuna 0 değeri ekle
+      if(SayiTipi = vgB1Sifir) then KodEkle(0);
 
       VirgulKullanildi := False;
 

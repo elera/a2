@@ -20,10 +20,15 @@ type
 
 const
   MAKRO_BURASI = 1;
+  MAKRO_TSUNIX = MAKRO_BURASI + 1;
 
-  TOPLAM_MAKRO = 1;
+  TOPLAM_MAKRO = 2;
   MakroListesi: array[0..TOPLAM_MAKRO - 1] of TMakro = (
-    (MakroKimlik: MAKRO_BURASI; MakroAdi: '%burası')
+    // bulunulan adresi geri döndürür
+    (MakroKimlik: MAKRO_BURASI; MakroAdi: '%burası'),
+    // mevcut tarih / saat bilgisini, unix epoch formatında geri döndürür
+    // bilgi: dosyanın tarih / saat damgası (DateTimeStamp) için.
+    (MakroKimlik: MAKRO_TSUNIX; MakroAdi: '%ts_unix')
   );
 
 function MakroIslev(AIsleyici, AMakroAdi: string; var ASonKullanilanIsleyici:
@@ -31,13 +36,16 @@ function MakroIslev(AIsleyici, AMakroAdi: string; var ASonKullanilanIsleyici:
 
 implementation
 
-uses donusum, asm2, sysutils, genel;
+uses donusum, asm2, sysutils, genel, dateutils;
 
 function MakroIslev(AIsleyici, AMakroAdi: string; var ASonKullanilanIsleyici:
   Char): Integer;
 var
   MakroAdi: string;
   MakroSiraNo, i: Integer;
+  MakroDeger: QWord;
+  ets: TDateTime;     // evrensel tarih / saat
+  uts: Int64;         // unix / epoch tarih / saat
 begin
 
   MakroAdi := KucukHarfeCevir(AMakroAdi);
@@ -55,19 +63,32 @@ begin
     end;
   end;
 
-  if(MakroSiraNo = MAKRO_BURASI) then
+  if(MakroSiraNo > -1) then
   begin
+
+    if(MakroSiraNo = MAKRO_BURASI) then
+    begin
+
+      MakroDeger := MevcutBellekAdresi;
+    end
+    else if(MakroSiraNo = MAKRO_TSUNIX) then
+    begin
+
+      ets := LocalTimeToUniversal(Now);
+      uts := DateTimeToUnix(ets);
+      MakroDeger := uts;
+    end;
 
     if(Length(AIsleyici) > 0) then
     begin
 
-      GAsm2.Matematik.SayiEkle(AIsleyici[1], True, MevcutBellekAdresi);
+      GAsm2.Matematik.SayiEkle(AIsleyici[1], True, MakroDeger);
       ASonKullanilanIsleyici := AIsleyici[1];
     end
     else
     begin
 
-      GAsm2.Matematik.SayiEkle('+', True, MevcutBellekAdresi);
+      GAsm2.Matematik.SayiEkle('+', True, MakroDeger);
       ASonKullanilanIsleyici := '+';     // geçici değer
     end;
 

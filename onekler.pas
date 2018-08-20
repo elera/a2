@@ -15,8 +15,9 @@ interface
 type
   // veri genişliği
   // B1 = 1 Byte, B1B2 = 1 Byte verinin 2 Byte olarak tanımlanması
+  // B1Sifir = byte uzunluklu verinin 0 ile sonlandırılması
   { TODO : vgB1B2 ve diğer tanımlanacak veriler TOnEk kısmında da tanımlanabilir }
-  TVeriGenisligi = (vgHatali, vgB1, vgB1B2, vgB2, vgB4, vgB8, vgB10);
+  TVeriGenisligi = (vgHatali, vgB1, vgB1Sifir, vgB1B2, vgB2, vgB4, vgB8, vgB10);
 
 type
   TOnEk = record

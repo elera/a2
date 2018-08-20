@@ -16,6 +16,9 @@ type
   // program dosyasının derleme mimarisi
   TMimari = (mim16Bit, mim32Bit, mim64Bit);
 
+  // oluşturulacak dosya biçimleri
+  TDosyaBicim = (dbBilinmiyor, dbIkili, dbPE64);
+
   // dosyanın, düzenleyicideki durumu
   TDosyaDurum = (ddYeni, ddKaydedildi, ddDegistirildi);
 
@@ -57,6 +60,7 @@ type                  // baHedefYazmac ve baKaynakYazmac değerleri birleştiril
   TBolumAyrinti = set of TBolumAyrintilar;
 
 type
+  PBolumTip = ^TBolumTip;
   TBolumTip = record
     BolumAnaTip: TBolumAnaTip;
     BolumAyrinti: TBolumAyrinti;
@@ -74,6 +78,7 @@ type
     Komut: TKomut;
     BolumTip1: TBolumTip;
     BolumTip2: TBolumTip;
+    BolumTip3: TBolumTip;
     DigerVeri: TDigerVeri;
     Etiket, Aciklama: string;
   end;
