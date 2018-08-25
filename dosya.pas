@@ -4,7 +4,7 @@
 
   İşlev: dosya işlevlerini içerir
 
-  Güncelleme Tarihi: 13/08/2018
+  Güncelleme Tarihi: 25/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -14,153 +14,149 @@ interface
 
 uses Classes, SysUtils, paylasim;
 
-const
-  // programın açacağı azami dosya sayısı
-  AZAMI_DOSYA_SAYISI = 28;    // küüçük bir işaret :D
-
 type
-  TDosya = class(TCollectionItem)
+  PDosya = ^TDosya;
+  TDosya = class
   private
     FMimari: TMimari;
-    FBicim: TDosyaBicim;
     FDurum: TDosyaDurum;
     FKimlik, FSiraNo: Integer;
     FProjeDizin,
-    FProjeDosyaAdi, FProjeDosyaUzanti,
-    FCikisDosyaAdi, FCikisDosyaUzanti: string;
+    FProjeDosyaAdi, FProjeDosyaUzanti: string;
     FBellekAdresi: QWord;
-    FDerlemeBasarili: Boolean;
-    FDerlemeCevrimSayisi: Integer;
-    FIslenenSatirSayisi,            // işlenen toplam satır sayısı (boş satırlar dahil değildir)
-    FIslenenSatir: Integer;         // o anda işlenen satır (hata olduğunda hatanın olduğu satır)
+    FAcikOlmaDurumu: TDosyaAcikDurum;
+    FIslenenKodSatirSayisi,         // işlenen toplam kod satır sayısı (boş satırlar dahil değildir)
+    FIslenenToplamSatir: Integer;   // o anda işlenen satır (hata olduğunda hatanın olduğu satır)
+    FSatirlar: TStringList;
   public
-    constructor Create(ACollection: TCollection); override;
+    constructor Create;
     destructor Destroy; override;
-    procedure SetCikisDosyaUzanti(ACikisDosyaUzanti: string);
+    function Yukle(CP1254KarakterSetiniKullan: Boolean): Boolean;
+    function Kaydet(sl: TStrings): Boolean;
+    procedure IslenenKodSatirSayisiniArtir;
+    procedure IslenenToplamSatirSayisiniArtir;
   published
     property Mimari: TMimari read FMimari write FMimari;
-    property Bicim: TDosyaBicim read FBicim write FBicim;
     property Durum: TDosyaDurum read FDurum write FDurum;
     property Kimlik: Integer read FKimlik write FKimlik;
     property SiraNo: Integer read FSiraNo write FSiraNo;
     property ProjeDizin: string read FProjeDizin write FProjeDizin;
     property ProjeDosyaAdi: string read FProjeDosyaAdi write FProjeDosyaAdi;
     property ProjeDosyaUzanti: string read FProjeDosyaUzanti write FProjeDosyaUzanti;
-    property CikisDosyaAdi: string read FCikisDosyaAdi write FCikisDosyaAdi;
-    property CikisDosyaUzanti: string read FCikisDosyaUzanti write FCikisDosyaUzanti;
     property BellekAdresi: QWord read FBellekAdresi write FBellekAdresi;
-    property DerlemeBasarili: Boolean read FDerlemeBasarili write FDerlemeBasarili;
-    property DerlemeCevrimSayisi: Integer read FDerlemeCevrimSayisi
-      write FDerlemeCevrimSayisi;
-    property IslenenSatirSayisi: Integer read FIslenenSatirSayisi write FIslenenSatirSayisi;
-    property IslenenSatir: Integer read FIslenenSatir write FIslenenSatir;
+    property IslenenKodSatirSayisi: Integer read FIslenenKodSatirSayisi
+      write FIslenenKodSatirSayisi;
+    property IslenenToplamSatir: Integer read FIslenenToplamSatir
+      write FIslenenToplamSatir;
+    property Satirlar: TStringList read FSatirlar;
   end;
 
 type
-  TDosyalar = class(TCollection)
+  TDosyalar = class
   private
-    function Al(ASiraNo: Integer): TDosya;
-    procedure Ver(ASiraNo: Integer; AEtiket: TDosya);
-    function GetToplam: Integer;
+    FKimlikSayaci: Integer;
+    FDosyaSayisi: Integer;
+    FDosyaListesi: array of TDosya;
+    function Al(ASiraNo: Integer): PDosya;
+    function ToplamAl: Integer;
   public
     constructor Create;
     destructor Destroy; override;
-    function Ekle(ATamYolDosyaAdi: string; YeniDosya: Boolean; var DosyaAcik:
-      Boolean): TDosya;
-    function Bul(Kimlik: Integer): TDosya;
-    function Sil(Kimlik: Integer): Boolean;
+    function Ekle(ATamYolDosyaAdi: string; Durum: TDosyaDurum; var DosyaAcik:
+      Boolean): PDosya;
+    function Bul(Kimlik: Integer): PDosya;
+    function Sil(AKimlik: Integer): Boolean;
     procedure Temizle;
-    property Toplam: Integer read GetToplam;
-    property Eleman[Sira: Integer]: TDosya read Al write Ver;
+    procedure DerleyiciDosyalariniKapat;
+    property Toplam: Integer read ToplamAl;
+    property Eleman[Sira: Integer]: PDosya read Al;
   end;
 
-function ProgramDosyasiOlustur(Dosya: TDosya): Integer;
+function ProgramDosyasiOlustur: Integer;
 function DosyaYolunuAyristir(TamDosyaYolu: string; var Dizin, DosyaAdi, DosyaUzanti: string): Boolean;
 
 implementation
 
-uses genel, Forms, Dialogs;
-
-var
-  KimlikSayaci: Integer;
+uses genel, Forms, LConvEncoding;
 
 constructor TDosyalar.Create;
 begin
 
-  KimlikSayaci := 0;
+  FKimlikSayaci := 0;
 
-  inherited Create(TDosya);
+  FDosyaSayisi := 0;
+  SetLength(FDosyaListesi, FDosyaSayisi);
 end;
 
 destructor TDosyalar.Destroy;
 begin
 
-  inherited Destroy;
+  Temizle;
+  inherited;
 end;
 
-function TDosyalar.Al(ASiraNo: Integer): TDosya;
+function TDosyalar.Al(ASiraNo: Integer): PDosya;
 begin
 
-  Result := TDosya(inherited GetItem(ASiraNo));
+  Result := nil;
+
+  if(ASiraNo >= 0) and (ASiraNo < FDosyaSayisi) then
+    Result := @FDosyaListesi[ASiraNo];
 end;
 
-procedure TDosyalar.Ver(ASiraNo: Integer; AEtiket: TDosya);
+function TDosyalar.ToplamAl: Integer;
 begin
 
-  inherited SetItem(ASiraNo, AEtiket);
+  Result := FDosyaSayisi;
 end;
 
-function TDosyalar.GetToplam: Integer;
-begin
-
-  Result := inherited Count;
-end;
-
-// dosyanın, dosya listesine eklenmesini sağlar
-function TDosyalar.Ekle(ATamYolDosyaAdi: string; YeniDosya: Boolean; var DosyaAcik:
-  Boolean): TDosya;
+function TDosyalar.Ekle(ATamYolDosyaAdi: string; Durum: TDosyaDurum; var DosyaAcik:
+  Boolean): PDosya;
 var
-  Dosya: TDosya;
   i: Integer;
   Dizin, DosyaAdi, DosyaUzanti: string;
+  Dosya: TDosya;
 
-  function YeniDosyaOlustur: TDosya;
+  function YeniDosyaOlustur: Boolean;
   begin
 
-    Result := nil;
+    Result := False;
 
     if(Toplam < AZAMI_DOSYA_SAYISI) then
     begin
 
-      Inc(KimlikSayaci);
+      Inc(FKimlikSayaci);
 
-      Result := inherited Add as TDosya;
-      Result.Kimlik := KimlikSayaci;
+      Dosya := TDosya.Create;
+      Dosya.Kimlik := FKimlikSayaci;
+
+      Result := True;
     end;
   end;
 begin
 
   // 1. dosyanın yeni olması durumunda...
-  if(YeniDosya) then
+  if(Durum = ddYeni) then
   begin
 
-    Dosya := YeniDosyaOlustur;
-    if not(Dosya = nil) then
+    if(YeniDosyaOlustur) then
     begin
 
       // bu değer yeni dosya için (bu aşamada) anlamsız
       DosyaAcik := False;
 
-      Dosya.Durum := ddYeni;
+      Dosya.Durum := Durum;
 
       Dosya.ProjeDizin := GSonKullanilanDizin;
       Dosya.ProjeDosyaAdi := Format('Dosya%d', [Dosya.Kimlik]);
       Dosya.ProjeDosyaUzanti := 'asm';
 
-      Dosya.CikisDosyaAdi := Dosya.ProjeDosyaAdi;
-      Dosya.CikisDosyaUzanti := Dosya.ProjeDosyaUzanti;
-    end;
-    Result := Dosya;
+      Inc(FDosyaSayisi);
+      SetLength(FDosyaListesi, FDosyaSayisi);
+      FDosyaListesi[FDosyaSayisi - 1] := Dosya;
+
+      Result := @FDosyaListesi[FDosyaSayisi - 1];
+    end else Result := nil;
   end
   else
   // 2. dosyanın daha önce kayıtlı bir dosya olması durumunda...
@@ -169,111 +165,262 @@ begin
     if(DosyaYolunuAyristir(ATamYolDosyaAdi, Dizin, DosyaAdi, DosyaUzanti)) then
     begin
 
-      // dosyanın daha önce açık olup olmadığı kontrol ediliyor...
-      for i := 0 to Toplam - 1 do
+      // dosya durumunun ddKaydedildi olması durumunda, dosyanın daha önce açık
+      // olup olmadığı kontrol ediliyor.
+      // ddDerleyici durumunda bu kontrol yoktur. her bir ddDerleyici isteğinde
+      // dosyanın bir kopyası daha belleğe açılmaktadır. (tasarım gereği)
+      if(Durum = ddKaydedildi) then
       begin
 
-        Dosya := GAsm2.Dosyalar.Eleman[i];
-        if(Dosya.ProjeDizin = Dizin) and (Dosya.ProjeDosyaAdi = DosyaAdi) and
-          (Dosya.ProjeDosyaUzanti = DosyaUzanti) and (Dosya.Durum = ddKaydedildi) then
+        if(FDosyaSayisi > 0) then
         begin
 
-          // dosyanın açık olduğu bilgisini geri döndür
-          DosyaAcik := True;
-          Result := Dosya;
-          Exit;
+          for i := 0 to FDosyaSayisi - 1 do
+          begin
+
+            Dosya := FDosyaListesi[i];
+            if(Dosya.ProjeDizin = Dizin) and (Dosya.ProjeDosyaAdi = DosyaAdi) and
+              (Dosya.ProjeDosyaUzanti = DosyaUzanti) and (Dosya.Durum = ddKaydedildi) then
+            begin
+
+              // dosyanın açık olduğu bilgisini geri döndür
+              DosyaAcik := True;
+              Result := @Dosya;
+              Exit;
+            end;
+          end;
         end;
       end;
 
       // dosya, kayıtlarda mevcut olmadığı için yeni dosya yapısı oluşturuluyor
-      Dosya := YeniDosyaOlustur;
-      if not(Dosya = nil) then
+      if(YeniDosyaOlustur) then
       begin
 
         // dosyanın açık olmadığı bilgisini geri döndür
         DosyaAcik := False;
 
-        Dosya.Durum := ddKaydedildi;
+        Dosya.Durum := Durum;
 
         Dosya.ProjeDizin := Dizin;
         Dosya.ProjeDosyaAdi := DosyaAdi;
         Dosya.ProjeDosyaUzanti := DosyaUzanti;
 
-        Dosya.CikisDosyaAdi := Dosya.ProjeDosyaAdi;
-        {$IFDEF Windows}
-        Dosya.CikisDosyaUzanti := 'bin';
-        {$ELSE}
-        Dosya.CikisDosyaUzanti := '';
-        {$ENDIF}
-      end;
-      Result := Dosya;
+        Inc(FDosyaSayisi);
+        SetLength(FDosyaListesi, FDosyaSayisi);
+        FDosyaListesi[FDosyaSayisi - 1] := Dosya;
+
+        Result := @FDosyaListesi[FDosyaSayisi - 1];
+      end else Result := nil;
     end;
   end;
 end;
 
-function TDosyalar.Bul(Kimlik: Integer): TDosya;
+function TDosyalar.Bul(Kimlik: Integer): PDosya;
 var
   i: Integer;
 begin
 
   Result := nil;
 
-  for i := 0 to Toplam - 1 do
+  for i := 0 to FDosyaSayisi - 1 do
   begin
 
-    if(Eleman[i].Kimlik = Kimlik) then
+    if(FDosyaListesi[i].Kimlik = Kimlik) then
     begin
 
-      Result := Eleman[i];
+      Result := @FDosyaListesi[i];
       Exit;
     end;
   end;
 end;
 
-function TDosyalar.Sil(Kimlik: Integer): Boolean;
+function TDosyalar.Sil(AKimlik: Integer): Boolean;
+var
+  i, j: Integer;
+  FYedekDosyaListesi: array of TDosya;
+begin
+
+  Result := False;
+  if(FDosyaSayisi = 0) then Exit;
+
+  // eski kayıtlar yedeklenirken silinecek kayıt yok ediliyor
+  j := 0;
+  for i := 0 to FDosyaSayisi - 1 do
+  begin
+
+    if(FDosyaListesi[i].Kimlik = AKimlik) then
+    begin
+
+      FDosyaListesi[i].Destroy;
+    end
+    else
+    begin
+
+      Inc(j);
+      SetLength(FYedekDosyaListesi, j);
+      FYedekDosyaListesi[j - 1] := FDosyaListesi[i];
+    end;
+  end;
+
+  // silinecek veri silindikten sonra (eğer var ise) yedeklenen kayıtlar
+  // eski yerine bırakılıyor
+  FDosyaSayisi := j;
+  SetLength(FDosyaListesi, FDosyaSayisi);
+
+  if(FDosyaSayisi > 0) then
+  begin
+
+    for i := 0 to FDosyaSayisi - 1 do
+    begin
+
+      FDosyaListesi[i] := FYedekDosyaListesi[i];
+    end;
+  end;
+
+  // rezerv edilen geçici bellek iptal ediliyor
+  SetLength(FYedekDosyaListesi, 0);
+  Result := True;
+end;
+
+procedure TDosyalar.Temizle;
 var
   i: Integer;
 begin
 
-  Result := False;
-
-  for i := 0 to Toplam - 1 do
+  if(FDosyaSayisi > 0) then
   begin
 
-    if(Eleman[i].Kimlik = Kimlik) then
+    for i := FDosyaSayisi - 1 downto 0 do
     begin
 
-      inherited Delete(i);
-      Result := True;
-      Exit;
+      FDosyaListesi[i].Destroy;
+    end;
+  end;
+
+  FDosyaSayisi := 0;
+  SetLength(FDosyaListesi, FDosyaSayisi);
+end;
+
+// derleyicinin yeniden derleme yapmadan önce tüm dosyaları kapatma işlemi
+procedure TDosyalar.DerleyiciDosyalariniKapat;
+var
+  i: Integer;
+begin
+
+  if(FDosyaSayisi > 0) then
+  begin
+
+    for i := FDosyaSayisi - 1 downto 0 do
+    begin
+
+      // sadece derleyici için açılan dosyalar kapatılıyor
+      if(FDosyaListesi[i].Durum = ddDerleyici) then
+      begin
+
+        Sil(FDosyaListesi[i].Kimlik);
+      end;
     end;
   end;
 end;
 
-procedure TDosyalar.Temizle;
+constructor TDosya.Create;
 begin
 
-  inherited Clear;
-end;
-
-constructor TDosya.Create(ACollection: TCollection);
-begin
-
-  inherited Create(ACollection);
+  FSatirlar := TStringList.Create;
 end;
 
 destructor TDosya.Destroy;
 begin
 
+  FreeAndNil(FSatirlar);
+
   inherited Destroy;
 end;
 
-procedure TDosya.SetCikisDosyaUzanti(ACikisDosyaUzanti: string);
+function TDosya.Yukle(CP1254KarakterSetiniKullan: Boolean): Boolean;
+var
+  YaziDosya: TextFile;
+  Veri, s: string;
 begin
 
-  if(FCikisDosyaUzanti = ACikisDosyaUzanti) then Exit;
+  Result := False;
 
-  FCikisDosyaUzanti := ACikisDosyaUzanti;
+  FSatirlar.Clear;
+
+  if(Length(FProjeDosyaUzanti) > 0) then
+    s := FProjeDosyaAdi + '.' + FProjeDosyaUzanti
+  else s := FProjeDosyaAdi;
+
+  AssignFile(YaziDosya, FProjeDizin + DirectorySeparator + s);
+  {$I-} Reset(YaziDosya); {$I+}
+
+  if(IOResult = 0) then
+  begin
+
+    while not EOF(YaziDosya) do
+    begin
+
+      ReadLn(YaziDosya, Veri);
+
+      if(CP1254KarakterSetiniKullan) then
+        FSatirlar.Add(CP1254ToUTF8(Veri))
+      else FSatirlar.Add(Veri);
+
+      Application.ProcessMessages;
+    end;
+
+    CloseFile(YaziDosya);
+
+    Result := True;
+  end;
+end;
+
+function TDosya.Kaydet(sl: TStrings): Boolean;
+var
+  YaziDosya: TextFile;
+  s: string;
+  i: Integer;
+begin
+
+  Result := False;
+
+  FSatirlar.Assign(sl);
+
+  if(Length(FProjeDosyaUzanti) > 0) then
+    s := FProjeDosyaAdi + '.' + FProjeDosyaUzanti
+  else s := FProjeDosyaAdi;
+
+  AssignFile(YaziDosya, FProjeDizin + DirectorySeparator + s);
+  {$I-} Rewrite(YaziDosya); {$I+}
+
+  if(IOResult = 0) then
+  begin
+
+    i := 0;
+    while i < FSatirlar.Count do
+    begin
+
+      WriteLn(YaziDosya, FSatirlar[i]);
+      Inc(i);
+      Application.ProcessMessages;
+    end;
+
+    CloseFile(YaziDosya);
+
+    Result := True;
+  end;
+end;
+
+procedure TDosya.IslenenKodSatirSayisiniArtir;
+begin
+
+  Inc(FIslenenKodSatirSayisi);
+end;
+
+procedure TDosya.IslenenToplamSatirSayisiniArtir;
+begin
+
+  Inc(FIslenenToplamSatir);
 end;
 
 // tam dosya yolunu; dizin, dosya adı ve dosya uzantısı olarak ayrıştırır
@@ -325,21 +472,21 @@ begin
 end;
 
 // ikili dosya biçiminde (binary file format) dosya oluştur
-function ProgramDosyasiOlustur(Dosya: TDosya): Integer;
+function ProgramDosyasiOlustur: Integer;
 var
   F: file of Byte;
   i: Integer;
   s: string;
 begin
 
-  if(Dosya.Bicim = dbIkili) then
+  if(GAsm2.Derleyici.Bicim = dbIkili) then
   begin
 
     // dosya uzantısının olmaması durumunda dosyaya uzantı ekleme (özellikle linux için)
-    if(Length(Dosya.CikisDosyaUzanti) > 0) then
-      s := Dosya.ProjeDizin + DirectorySeparator + Dosya.CikisDosyaAdi + '.' +
-        Dosya.CikisDosyaUzanti
-    else s := Dosya.ProjeDizin + DirectorySeparator + Dosya.CikisDosyaAdi;
+    if(Length(GAsm2.Derleyici.CikisDosyaUzanti) > 0) then
+      s := GAsm2.Derleyici.ProjeDizin + DirectorySeparator +
+        GAsm2.Derleyici.CikisDosyaAdi + '.' + GAsm2.Derleyici.CikisDosyaUzanti
+    else s := GAsm2.Derleyici.ProjeDizin + DirectorySeparator + GAsm2.Derleyici.CikisDosyaAdi;
 
     AssignFile(F, s);
     {$I-} Rewrite(F); {$I+}
@@ -363,7 +510,7 @@ begin
     end else Result := HATA_PROG_DOSYA_OLUSTURMA;
 
     {$IFDEF Linux}
-    RunCommand('chmod +x ' + DosyaAdi, s);
+    RunCommand('chmod +x ' + s, s);
     {$ENDIF}
 
   end else Result := HATA_DESTEKLENMEYEN_BICIM;

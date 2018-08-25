@@ -4,7 +4,7 @@
 
   İşlev: proje içerisindeki etiket ve tanım değerlerini yönetir
 
-  Güncelleme Tarihi: 08/03/2018
+  Güncelleme Tarihi: 24/08/2018
 
   Bilgi: etiket ve tanım işlemlerindeki isimlendirmenin tümü küçük harflerle yapılmaktadır.
 
@@ -18,7 +18,7 @@ unit atamalar;
 
 interface
 
-uses Classes, SysUtils, paylasim;
+uses Classes, SysUtils, paylasim, dosya;
 
 type
   TAtamaTipi = (atEtiket, atTanim);
@@ -28,6 +28,7 @@ type
   private
     FAdi: string;
     FTip: TAtamaTipi;
+    FDosyaAdi,
     FsDeger: string;
     FiDeger, FBellekAdresi: QWord;
     FVeriTipi: TTemelVeriTipi;
@@ -39,6 +40,7 @@ type
   published
     property Adi: string read FAdi write FAdi;
     property Tip: TAtamaTipi read FTip write FTip;
+    property DosyaAdi: string read FDosyaAdi write FDosyaAdi;
     property BellekAdresi: QWord read FBellekAdresi write FBellekAdresi;
     property VeriTipi: TTemelVeriTipi read FVeriTipi write FVeriTipi;
     property VeriUzunluk: Integer read FVeriUzunluk write FVeriUzunluk;
@@ -56,9 +58,10 @@ type
     function GetToplam: Integer;
   public
     constructor Create;
-    function Ekle(SatirNo: Integer; EtiketAdi: string; AtamaTipi: TAtamaTipi;
-      BellekAdresi: QWord; VeriTipi: TTemelVeriTipi; sDeger: string; iDeger: QWord): Integer;
-    function Bul(EtiketAdi: string): TAtama;
+    function Ekle(Dosya: PDosya; EtiketAdi: string; AtamaTipi: TAtamaTipi;
+      BellekAdresi: QWord; VeriTipi: TTemelVeriTipi; sDeger: string;
+      iDeger: QWord): Integer;
+    function Bul(Dosya: PDosya; AEtiket: string): TAtama;
     procedure Temizle;
     function Temizle2: Integer;
     property Toplam: Integer read GetToplam;
@@ -87,10 +90,11 @@ begin
   inherited Create(TAtama);
 end;
 
-function TAtamaListesi.Ekle(SatirNo: Integer; EtiketAdi: string; AtamaTipi: TAtamaTipi;
-  BellekAdresi: QWord; VeriTipi: TTemelVeriTipi; sDeger: string; iDeger: QWord): Integer;
+function TAtamaListesi.Ekle(Dosya: PDosya; EtiketAdi: string; AtamaTipi: TAtamaTipi;
+  BellekAdresi: QWord; VeriTipi: TTemelVeriTipi; sDeger: string;
+  iDeger: QWord): Integer;
 var
-  s: string;
+  DosyaAdUzanti, s: string;
   Etiket: TAtama;
   Komut: TKomutDurum;
   Yazmac: TYazmacDurum;
@@ -119,6 +123,10 @@ begin
     Exit;
   end;
 
+  if(Length(Dosya^.ProjeDosyaUzanti) > 0) then
+    DosyaAdUzanti := Dosya^.ProjeDosyaAdi + '.' + Dosya^.ProjeDosyaUzanti
+  else DosyaAdUzanti := Dosya^.ProjeDosyaAdi;
+
   // değişken 2 tip veri kullanır.
   // 1 = tvtSayi, 2 = tvtKarakterDizisi
   if(Toplam = 0) then
@@ -127,6 +135,7 @@ begin
     Etiket := inherited Add as TAtama;
     Etiket.Adi := s;
     Etiket.Tip := AtamaTipi;
+    Etiket.DosyaAdi := DosyaAdUzanti;
 
     if(AtamaTipi = atEtiket) then Etiket.BellekAdresi := BellekAdresi;
 
@@ -152,19 +161,20 @@ begin
       Etiket.sDeger := sDeger;
     end;
 
-    Etiket.SatirNo := SatirNo;
+    Etiket.SatirNo := Dosya^.IslenenToplamSatir;
     Etiket.EtiketHatasiMevcut := GEtiketHatasiMevcut;
   end
   else
   begin
 
-    Etiket := Bul(s);
+    Etiket := Bul(Dosya, s);
     if(Etiket = nil) then
     begin
 
       Etiket := inherited Add as TAtama;
       Etiket.Adi := s;
       Etiket.Tip := AtamaTipi;
+      Etiket.DosyaAdi := DosyaAdUzanti;
 
       if(AtamaTipi = atEtiket) then Etiket.BellekAdresi := BellekAdresi;
 
@@ -190,7 +200,7 @@ begin
         Etiket.sDeger := sDeger;
       end;
 
-      Etiket.SatirNo := SatirNo;
+      Etiket.SatirNo := Dosya^.IslenenToplamSatir;
       Etiket.EtiketHatasiMevcut := GEtiketHatasiMevcut;
     end
     else
@@ -198,27 +208,31 @@ begin
 
       // farklı bir satırdaki etiket, tanımlanmış bir etiketi tekrar tanımlamaya
       // çalışırsa geriye hata kodu döndür
-      if(Etiket.SatirNo <> SatirNo) then Result := HATA_ETIKET_TANIMLANMIS;
+      if(Etiket.SatirNo <> Dosya^.IslenenToplamSatir) then Result := HATA_ETIKET_TANIMLANMIS;
     end;
   end;
 end;
 
-function TAtamaListesi.Bul(EtiketAdi: string): TAtama;
+function TAtamaListesi.Bul(Dosya: PDosya; AEtiket: string): TAtama;
 var
   i: Integer;
-  s: string;
+  DosyaAdUzanti, s: string;
 begin
 
   Result := nil;
 
   if(Toplam = 0) then Exit;
 
-  s := KucukHarfeCevir(EtiketAdi);
+  s := KucukHarfeCevir(AEtiket);
+
+  if(Length(Dosya^.ProjeDosyaUzanti) > 0) then
+    DosyaAdUzanti := Dosya^.ProjeDosyaAdi + '.' + Dosya^.ProjeDosyaUzanti
+  else DosyaAdUzanti := Dosya^.ProjeDosyaAdi;
 
   for i := 0 to Toplam - 1 do
   begin
 
-    if(Eleman[i].Adi = s) then
+    if(Eleman[i].DosyaAdi = DosyaAdUzanti) and (Eleman[i].Adi = s) then
     begin
 
       Result := Eleman[i];

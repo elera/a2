@@ -4,7 +4,7 @@
 
   İşlev: tüm birimlerin kullandığı sabit, değişken ve yapıları içerir
 
-  Güncelleme Tarihi: 11/08/2018
+  Güncelleme Tarihi: 25/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -19,8 +19,13 @@ type
   // oluşturulacak dosya biçimleri
   TDosyaBicim = (dbBilinmiyor, dbIkili, dbPE64);
 
+  // dosyanın nerede açık olma durumu
+  TDosyaAcikDurum = (damDuzenleyici, damDerleyici);
+
   // dosyanın, düzenleyicideki durumu
-  TDosyaDurum = (ddYeni, ddKaydedildi, ddDegistirildi);
+  // ddYeni, ddKaydedildi, ddDegistirildi durumları düzenleyicideki durumlardır
+  // ddDerleyici ise dosyanın derleme amaçlı açıldığı ve düzenleyicide olmadığı durumdur
+  TDosyaDurum = (ddYeni, ddKaydedildi, ddDegistirildi, ddDerleyici);
 
   // satır içerisinde kullanılan temel veri tipi
   TTemelVeriTipi = (tvtTanimsiz, tvtKarakterDizisi,

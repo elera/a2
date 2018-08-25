@@ -4,7 +4,7 @@
 
   İşlev: program ana sayfası
 
-  Güncelleme Tarihi: 11/08/2018
+  Güncelleme Tarihi: 25/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -75,7 +75,7 @@ type
     tbDosyaKaydet: TToolButton;
     tbDosyaYeni: TToolButton;
     tbDosyaCikis: TToolButton;
-    function DuzenleyiciAlaniOlustur(Dosya: TDosya): TSynEdit;
+    function DuzenleyiciAlaniOlustur(Dosya: PDosya): TSynEdit;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDropFiles(Sender: TObject; const Dosyalar: array of string);
@@ -102,16 +102,15 @@ type
     procedure seDosya0KeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure SynCompletion1Execute(Sender: TObject);
-    procedure SynEdit1Change(Sender: TObject);
   private
     procedure DurumCubugunuGuncelle;
-    procedure ProjeDosyasiYukle(seDosya: TSynEdit; Dosya: TDosya;
+    procedure ProjeDosyasiYukle(seDosya: TSynEdit; Dosya: PDosya;
       CP1254KarakterSetiniKullan: Boolean);
     procedure SonKullanilanlarListesineEkle(Dosya: string);
     procedure MenuSonKullanilanlarListesiniGuncelle;
-    procedure DosyayiDuzenleyiciyeYukle(Duzenleyici: TSynEdit; Dosya: TDosya;
-      CP1254KarakterSetiniKullan: Boolean);
-    function KodlariDerle(AktifDuzenleyici: TSynEdit): Integer;
+    procedure DosyayiDuzenleyiciyeYukle(Duzenleyici: TSynEdit;
+      Dosya: PDosya; CP1254KarakterSetiniKullan: Boolean);
+    function KodlariDerle(AktifDosya: PDosya): Integer;
     function DosyaDuzenleyiciSiraNumarasiAl(DosyaKimlik: Integer): Integer;
   public
   end;
@@ -202,17 +201,24 @@ begin
 
         GAktifDosya := GAsm2.Dosyalar.Eleman[i];
 
-        seDosya := DuzenleyiciAlaniOlustur(GAktifDosya);
-        if(seDosya = nil) then
+        // dosya durum değeri, ayarlar yüklenirken ddDerleyici olanlar açılıyor
+        if(GAktifDosya^.Durum = ddDerleyici) then
         begin
 
-          ShowMessage('Hata: daha fazla düzenleyici alanı açılamıyor!');
-        end
-        else
-        begin
+          seDosya := DuzenleyiciAlaniOlustur(GAktifDosya);
+          if(seDosya = nil) then
+          begin
 
-          GAktifDuzenleyici := seDosya;
-          ProjeDosyasiYukle(seDosya, GAktifDosya, False);
+            ShowMessage('Hata: daha fazla düzenleyici alanı açılamıyor!');
+          end
+          else
+          begin
+
+            // açılan dosyaların dosya durum değerleri ddKaydedildi olarak değiştiriliyor
+            GAktifDosya^.Durum := ddKaydedildi;
+            GAktifDuzenleyici := seDosya;
+            ProjeDosyasiYukle(seDosya, GAktifDosya, False);
+          end;
         end;
       end;
 
@@ -256,17 +262,17 @@ end;
 
 procedure TfrmAnaSayfa.miDuzenleyiciSayfadakiDosyayiAcClick(Sender: TObject);
 var
-  Dosya: TDosya;
+  Dosya: PDosya;
 begin
 
   Dosya := GAsm2.Dosyalar.Bul(pcDosyalar.ActivePage.Tag);
-  OpenDocument(Dosya.ProjeDizin);
+  OpenDocument(Dosya^.ProjeDizin);
 end;
 
 procedure TfrmAnaSayfa.miDosyaAcANSIClick(Sender: TObject);
 var
   seDosya: TSynEdit;
-  Dosya: TDosya;
+  Dosya: PDosya;
 begin
 
   if(pcDosyalar.PageCount > 0) then
@@ -304,7 +310,7 @@ begin
 end;
 
 // açılacak dosya için düzenleyicide (editor) nesneleri oluşturur
-function TfrmAnaSayfa.DuzenleyiciAlaniOlustur(Dosya: TDosya): TSynEdit;
+function TfrmAnaSayfa.DuzenleyiciAlaniOlustur(Dosya: PDosya): TSynEdit;
 var
   tsDosya: TTabSheet;
   seDosya: TSynEdit;
@@ -317,14 +323,14 @@ begin
     ToplamDuzenleyici := pcDosyalar.PageCount;
 
     tsDosya := pcDosyalar.AddTabSheet;
-    tsDosya.Tag := Dosya.Kimlik;
-    tsDosya.Name := Format('tsDosya%d', [Dosya.Kimlik]);
-    tsDosya.Caption := Dosya.ProjeDosyaAdi + '.' + Dosya.ProjeDosyaUzanti;
+    tsDosya.Tag := Dosya^.Kimlik;
+    tsDosya.Name := Format('tsDosya%d', [Dosya^.Kimlik]);
+    tsDosya.Caption := Dosya^.ProjeDosyaAdi + '.' + Dosya^.ProjeDosyaUzanti;
     tsDosya.ImageIndex := 9;
 
     seDosya := TSynEdit.Create(Self);
-    seDosya.Tag := Dosya.Kimlik;
-    seDosya.Name := Format('seDosya%d', [Dosya.Kimlik]);
+    seDosya.Tag := Dosya^.Kimlik;
+    seDosya.Name := Format('seDosya%d', [Dosya^.Kimlik]);
     seDosya.Parent := tsDosya;
     seDosya.Align := alClient;
     seDosya.Highlighter := SynAssemblerSyn;
@@ -359,7 +365,7 @@ end;
 // dosyaların ana pencere üzerine sürüklenerek açma işlemi
 procedure TfrmAnaSayfa.FormDropFiles(Sender: TObject; const Dosyalar: array of string);
 var
-  Dosya: TDosya;
+  Dosya: PDosya;
   seDosya: TSynEdit;
   DosyaSayisi, i, DosyaDuzenleyiciSiraNumarasi: Integer;
   DosyaAcik: Boolean;
@@ -374,7 +380,7 @@ begin
     for i := 0 to DosyaSayisi - 1 do
     begin
 
-      Dosya := GAsm2.Dosyalar.Ekle(Dosyalar[i], False, DosyaAcik);
+      Dosya := GAsm2.Dosyalar.Ekle(Dosyalar[i], ddKaydedildi, DosyaAcik);
       if not(Dosya = nil) then
       begin
 
@@ -384,13 +390,13 @@ begin
         if(DosyaAcik) then
         begin
 
-          DosyaDuzenleyiciSiraNumarasi := DosyaDuzenleyiciSiraNumarasiAl(Dosya.Kimlik);
+          DosyaDuzenleyiciSiraNumarasi := DosyaDuzenleyiciSiraNumarasiAl(Dosya^.Kimlik);
           if(DosyaDuzenleyiciSiraNumarasi > -1) then
           begin
 
             pcDosyalar.ActivePageIndex := DosyaDuzenleyiciSiraNumarasi;
 
-            GAktifDuzenleyici := TSynEdit(FindComponent('seDosya' + IntToStr(Dosya.Kimlik)));
+            GAktifDuzenleyici := TSynEdit(FindComponent('seDosya' + IntToStr(Dosya^.Kimlik)));
 
             DurumCubugunuGuncelle;
           end;
@@ -419,13 +425,13 @@ end;
 
 procedure TfrmAnaSayfa.miDosyaYeniClick(Sender: TObject);
 var
-  Dosya: TDosya;
+  Dosya: PDosya;
   seDosya: TSynEdit;
   DosyaAcik: Boolean;
 begin
 
   // düzenleyici için yeni dosya yapısı oluştur
-  Dosya := GAsm2.Dosyalar.Ekle('', True, DosyaAcik);
+  Dosya := GAsm2.Dosyalar.Ekle('', ddYeni, DosyaAcik);
   if not(Dosya = nil) then
   begin
 
@@ -487,16 +493,17 @@ end;
 
 procedure TfrmAnaSayfa.miDosyaAcClick(Sender: TObject);
 var
-  Dosya: TDosya;
+  Dosya: PDosya;
   seDosya: TSynEdit;
   DosyaAcik: Boolean;
   DosyaDuzenleyiciSiraNumarasi: Integer;
 begin
 
   OpenDialog1.Title := 'Assembler Dosyası Aç';
-  OpenDialog1.Filter := 'Assembler Dosyası|*.asm';
+  OpenDialog1.Filter := 'Tüm Dosyalar (*.*)|*.*|' +
+    'Assembler Dosyaları (*.asm;*.inc)|*.asm;*.inc';
   OpenDialog1.InitialDir := GSonKullanilanDizin;
-  OpenDialog1.DefaultExt := 'asm';
+  OpenDialog1.FilterIndex := 2;
   OpenDialog1.FileName := '';
   if(OpenDialog1.Execute) then
   begin
@@ -504,7 +511,7 @@ begin
     // son kullanılan dizini güncelle
     GSonKullanilanDizin := OpenDialog1.InitialDir;
 
-    Dosya := GAsm2.Dosyalar.Ekle(OpenDialog1.Filename, False, DosyaAcik);
+    Dosya := GAsm2.Dosyalar.Ekle(OpenDialog1.Filename, ddKaydedildi, DosyaAcik);
     if not(Dosya = nil) then
     begin
 
@@ -514,13 +521,13 @@ begin
       if(DosyaAcik) then
       begin
 
-        DosyaDuzenleyiciSiraNumarasi := DosyaDuzenleyiciSiraNumarasiAl(Dosya.Kimlik);
+        DosyaDuzenleyiciSiraNumarasi := DosyaDuzenleyiciSiraNumarasiAl(Dosya^.Kimlik);
         if(DosyaDuzenleyiciSiraNumarasi > -1) then
         begin
 
           pcDosyalar.ActivePageIndex := DosyaDuzenleyiciSiraNumarasi;
 
-          GAktifDuzenleyici := TSynEdit(FindComponent('seDosya' + IntToStr(Dosya.Kimlik)));
+          GAktifDuzenleyici := TSynEdit(FindComponent('seDosya' + IntToStr(Dosya^.Kimlik)));
 
           DurumCubugunuGuncelle;
         end;
@@ -544,18 +551,15 @@ begin
   end;
 end;
 
-procedure TfrmAnaSayfa.ProjeDosyasiYukle(seDosya: TSynEdit; Dosya: TDosya;
+procedure TfrmAnaSayfa.ProjeDosyasiYukle(seDosya: TSynEdit; Dosya: PDosya;
   CP1254KarakterSetiniKullan: Boolean);
 begin
 
-  if(Dosya.ProjeDosyaUzanti <> 'asm') then
-
-    ShowMessage('Dosya biçimi desteklenmiyor!')
-  else
+  if(Dosya^.ProjeDosyaUzanti = 'asm') or (Dosya^.ProjeDosyaUzanti = 'inc') then
   begin
 
-    SonKullanilanlarListesineEkle(Dosya.ProjeDizin + DirectorySeparator +
-      Dosya.ProjeDosyaAdi + '.' + Dosya.ProjeDosyaUzanti);
+    SonKullanilanlarListesineEkle(Dosya^.ProjeDizin + DirectorySeparator +
+      Dosya^.ProjeDosyaAdi + '.' + Dosya^.ProjeDosyaUzanti);
 
     // öndeğer olarak a2 programı UTF-8 karakter setini kullanır
     DosyayiDuzenleyiciyeYukle(seDosya, Dosya, CP1254KarakterSetiniKullan);
@@ -567,7 +571,8 @@ begin
     GAktifDuzenleyici := seDosya;
 
     DurumCubugunuGuncelle;
-  end;
+
+  end else ShowMessage('Dosya biçimi desteklenmiyor!')
 end;
 
 procedure TfrmAnaSayfa.miDosyaAyarlarClick(Sender: TObject);
@@ -601,7 +606,7 @@ end;
 procedure TfrmAnaSayfa.miDosyaKaydetClick(Sender: TObject);
 var
   seDosya: TSynEdit;
-  Dosya: TDosya;
+  Dosya: PDosya;
   Dizin, DosyaAdi, DosyaUzanti: string;
   DosyaDuzenleyiciSiraNumarasi: Integer;
 begin
@@ -613,14 +618,14 @@ begin
     if not(Dosya = nil) then
     begin
 
-      if(Dosya.Durum = ddYeni) then
+      if(Dosya^.Durum = ddYeni) then
       begin
 
         SaveDialog1.Title := 'Assembler Dosyası Kaydet';
         SaveDialog1.Filter := 'Assembler Dosyası|*.asm';
-        SaveDialog1.InitialDir := Dosya.ProjeDizin;
-        SaveDialog1.DefaultExt := Dosya.ProjeDosyaUzanti;
-        SaveDialog1.FileName := Dosya.ProjeDosyaAdi;
+        SaveDialog1.InitialDir := Dosya^.ProjeDizin;
+        SaveDialog1.DefaultExt := Dosya^.ProjeDosyaUzanti;
+        SaveDialog1.FileName := Dosya^.ProjeDosyaAdi;
         if(SaveDialog1.Execute) then
         begin
 
@@ -630,21 +635,21 @@ begin
           if(DosyaYolunuAyristir(SaveDialog1.Filename, Dizin, DosyaAdi, DosyaUzanti)) then
           begin
 
-            Dosya.ProjeDizin := Dizin;
-            Dosya.ProjeDosyaAdi := DosyaAdi;
-            Dosya.ProjeDosyaUzanti := DosyaUzanti;
-            Dosya.Durum := ddKaydedildi;
+            Dosya^.ProjeDizin := Dizin;
+            Dosya^.ProjeDosyaAdi := DosyaAdi;
+            Dosya^.ProjeDosyaUzanti := DosyaUzanti;
+            Dosya^.Durum := ddKaydedildi;
 
             // dosya ad ve uzantısı değişmiş olabilir, değiştir.
-            DosyaDuzenleyiciSiraNumarasi := DosyaDuzenleyiciSiraNumarasiAl(Dosya.Kimlik);
+            DosyaDuzenleyiciSiraNumarasi := DosyaDuzenleyiciSiraNumarasiAl(Dosya^.Kimlik);
             if(Length(DosyaUzanti) > 0) then
               pcDosyalar.Pages[DosyaDuzenleyiciSiraNumarasi].Caption := DosyaAdi + '.' + DosyaUzanti
             else pcDosyalar.Pages[DosyaDuzenleyiciSiraNumarasi].Caption := DosyaAdi;
 
-            seDosya := TSynEdit(FindComponent('seDosya' + IntToStr(Dosya.Kimlik)));
+            seDosya := TSynEdit(FindComponent('seDosya' + IntToStr(Dosya^.Kimlik)));
 
-            seDosya.Lines.SaveToFile(Dosya.ProjeDizin + DirectorySeparator +
-              Dosya.ProjeDosyaAdi + '.' + Dosya.ProjeDosyaUzanti);
+            Dosya^.Kaydet(seDosya.Lines);
+            seDosya.MarkTextAsSaved;
           end;
         end;
       end
@@ -654,8 +659,8 @@ begin
 
         seDosya := FindComponent('seDosya' + IntToStr(pcDosyalar.ActivePage.Tag)) as TSynEdit;
 
-        seDosya.Lines.SaveToFile(Dosya.ProjeDizin + DirectorySeparator +
-          Dosya.ProjeDosyaAdi + '.' + Dosya.ProjeDosyaUzanti);
+        Dosya^.Kaydet(seDosya.Lines);
+        seDosya.MarkTextAsSaved;
       end;
     end;
   end;
@@ -663,7 +668,7 @@ end;
 
 procedure TfrmAnaSayfa.miDosyaSonKullanilanDosyayiAcClick(Sender: TObject);
 var
-  Dosya: TDosya;
+  Dosya: PDosya;
   seDosya: TSynEdit;
   DosyaSira,
   DosyaDuzenleyiciSiraNumarasi: Integer;
@@ -673,7 +678,7 @@ begin
   DosyaSira := (Sender as TMenuItem).Tag;
 
   Dosya := GAsm2.Dosyalar.Ekle(GProgramAyarlari.SonKullanilanDosyalar[DosyaSira],
-    False, DosyaAcik);
+    ddKaydedildi, DosyaAcik);
   if not(Dosya = nil) then
   begin
 
@@ -683,13 +688,13 @@ begin
     if(DosyaAcik) then
     begin
 
-      DosyaDuzenleyiciSiraNumarasi := DosyaDuzenleyiciSiraNumarasiAl(Dosya.Kimlik);
+      DosyaDuzenleyiciSiraNumarasi := DosyaDuzenleyiciSiraNumarasiAl(Dosya^.Kimlik);
       if(DosyaDuzenleyiciSiraNumarasi > -1) then
       begin
 
         pcDosyalar.ActivePageIndex := DosyaDuzenleyiciSiraNumarasi;
 
-        GAktifDuzenleyici := TSynEdit(FindComponent('seDosya' + IntToStr(Dosya.Kimlik)));
+        GAktifDuzenleyici := TSynEdit(FindComponent('seDosya' + IntToStr(Dosya^.Kimlik)));
 
         DurumCubugunuGuncelle;
       end;
@@ -784,12 +789,6 @@ begin
   OnerileriListele(SynCompletion1.CurrentString, SynCompletion1.ItemList);
 end;
 
-procedure TfrmAnaSayfa.SynEdit1Change(Sender: TObject);
-begin
-
-  ShowMessage('changed');
-end;
-
 procedure TfrmAnaSayfa.DurumCubugunuGuncelle;
 begin
 
@@ -813,13 +812,11 @@ begin
     Exit;
   end;
 
-  GAsm2.AtamaListesi.Temizle;
-  GAsm2.Matematik.Temizle;
-
-  GAktifDosya.Bicim := dbIkili;
+  // derlenecek dosya içeriğini kaydet
+  miDosyaKaydetClick(Self);
 
   // düzenleyicideki kodları derle
-  DerlemeSonucu := KodlariDerle(GAktifDuzenleyici);
+  DerlemeSonucu := KodlariDerle(GAktifDosya);
 
   // derleme esnasında hata var ise...
   if(DerlemeSonucu > HATA_YOK) then
@@ -832,7 +829,7 @@ begin
     else if(DerlemeSonucu = HATA_PROG_DOSYA_OLUSTURMA) then
     begin
 
-      ShowMessage('Hata: ' + GAktifDosya.ProjeDosyaAdi + ' dosyası oluşturulamadı!')
+      ShowMessage('Hata: ' + GAktifDosya^.ProjeDosyaAdi + ' dosyası oluşturulamadı!')
     end
     else
     // derleme başarılı
@@ -840,58 +837,75 @@ begin
 
       ShowMessage('Hata: ' + HataKodunuAl(DerlemeSonucu)); // + ' - ' + GHataAciklama);
       GAktifDuzenleyici.CaretX := 1;
-      GAktifDuzenleyici.CaretY := GAktifDosya.IslenenSatir;
+      GAktifDuzenleyici.CaretY := GAktifDosya^.IslenenToplamSatir;
     end;
   end
   else
   begin
 
-    frmDerlemeBilgisi.ProjeDosyaAdi := GAktifDosya.ProjeDosyaAdi + '.' +
-      GAktifDosya.ProjeDosyaUzanti;
-    frmDerlemeBilgisi.DerlenenDosya := GAktifDosya.CikisDosyaAdi + '.' +
-      GAktifDosya.CikisDosyaUzanti;
-    frmDerlemeBilgisi.DerlenenSatirSayisi := GAktifDosya.IslenenSatirSayisi;
+    frmDerlemeBilgisi.ProjeDosyaAdi := GAktifDosya^.ProjeDosyaAdi + '.' +
+      GAktifDosya^.ProjeDosyaUzanti;
+
+    if(Length(GAsm2.Derleyici.CikisDosyaUzanti) > 0) then
+
+      frmDerlemeBilgisi.DerlenenDosya := GAsm2.Derleyici.CikisDosyaAdi + '.' +
+        GAsm2.Derleyici.CikisDosyaUzanti
+    else frmDerlemeBilgisi.DerlenenDosya := GAsm2.Derleyici.CikisDosyaAdi;
+
+    frmDerlemeBilgisi.DosyaSayisi := GAsm2.Derleyici.DerlenenDosyaSayisi;
+    frmDerlemeBilgisi.DerlenenSatirSayisi := GAsm2.Derleyici.ToplamDosyaSatirSayisi;
     frmDerlemeBilgisi.IkiliDosyaUzunluk := KodBellekU;
-    frmDerlemeBilgisi.DerlemeCevrimSayisi := GAktifDosya.DerlemeCevrimSayisi;
+    frmDerlemeBilgisi.DerlemeCevrimSayisi := GAsm2.Derleyici.DerlemeCevrimSayisi;
     FormuOrtala(frmDerlemeBilgisi, True);
   end
 end;
 
-function TfrmAnaSayfa.KodlariDerle(AktifDuzenleyici: TSynEdit): Integer;
+function TfrmAnaSayfa.KodlariDerle(AktifDosya: PDosya): Integer;
 var
-  ToplamSatirSayisi, i: Integer;
-  HamVeri, s: string;
+  HamVeri: string;
   IslevSonuc: Integer;
   DerlemeCevrimindenCik: Boolean;
+  DerlenenDosya: PDosya;
 begin
+
+  GAsm2.Derleyici.ProjeDizin := AktifDosya^.ProjeDizin;
+  GAsm2.Derleyici.CikisDosyaAdi := AktifDosya^.ProjeDosyaAdi;
+  {$IFDEF Windows}
+  GAsm2.Derleyici.CikisDosyaUzanti := 'bin';
+  {$ELSE}
+  GAsm2.Derleyici.CikisDosyaUzanti := '';
+  {$ENDIF}
 
   DerlemeCevrimindenCik := False;
 
   // mevcut etiketleri temizle
   GAsm2.AtamaListesi.Temizle;
 
-  // ilk değer atamaları
-  GAktifDosya.DerlemeCevrimSayisi := 0;
+  GAsm2.Matematik.Temizle;
+
+  GAsm2.Derleyici.Bicim := dbIkili;
+
+  // derleyici değerlerini ilklendir
+  GAsm2.Derleyici.Ilklendir;
 
   while (DerlemeCevrimindenCik = False) do
   begin
 
-    IslevSonuc := HATA_YOK;
+    GAktifDosya := GAsm2.Derleyici.DosyaEkle(AktifDosya, True);
+    DerlenenDosya := GAktifDosya;
 
-    GEtiketHataSayisi := 0;
+    IslevSonuc := HATA_YOK;
 
     // bellek değişkenleri ve bellek içeriğini ilk değerlerle yükle
     KodBellekDegerleriniIlklendir;
 
-    ToplamSatirSayisi := AktifDuzenleyici.Lines.Count;
-    GAktifDosya.IslenenSatir := 0;
-    GAktifDosya.IslenenSatirSayisi := 0;
+    GEtiketHataSayisi := 0;
 
-    // son satıra gelinmediği ve hata olmadığı müddetçe devam et
-    while (GAktifDosya.IslenenSatir < ToplamSatirSayisi) and (IslevSonuc = HATA_YOK) do
+    // derlenen dosyalar tamamlanmadığı ve hata olmadığı müddetçe devam et
+    while (DerlenenDosya <> nil) and (IslevSonuc = HATA_YOK) do
     begin
 
-      HamVeri := AktifDuzenleyici.Lines[GAktifDosya.IslenenSatir];
+      HamVeri := DerlenenDosya^.Satirlar[DerlenenDosya^.IslenenToplamSatir];
 
       if(Length(Trim(HamVeri)) > 0) then
       begin
@@ -912,18 +926,37 @@ begin
         SatirIcerik.BolumTip3.BolumAyrinti := [];
 
         // ilgili satırın incelendiği / kodların üretildiği ana çağrı
-        IslevSonuc := KodUret(GAktifDosya.IslenenSatir, HamVeri);
+        IslevSonuc := KodUret(DerlenenDosya, HamVeri);
 
-        // işlenen satır sayısını artır
-        i := GAktifDosya.IslenenSatirSayisi;
-        Inc(i);
-        GAktifDosya.IslenenSatirSayisi := i;
+        // işlenen kod satır sayısını artır
+        DerlenenDosya^.IslenenKodSatirSayisiniArtir;
       end;
 
       // bir sonraki satıra geçiş yap
-      i := GAktifDosya.IslenenSatir;
-      Inc(i);
-      GAktifDosya.IslenenSatir := i;
+      DerlenenDosya^.IslenenToplamSatirSayisiniArtir;
+
+      if(GAsm2.Derleyici.AktifDosyaDegisti) then
+      begin
+
+        DerlenenDosya := GAsm2.Derleyici.AktifDosya;
+        //DerlenenDosya := GAsm2.Dosyalar.Bul(DosyaKimlik);
+
+        DerlenenDosya^.IslenenToplamSatir := 0;
+        DerlenenDosya^.IslenenKodSatirSayisi := 0;
+      end;
+
+      if(DerlenenDosya^.IslenenToplamSatir >= DerlenenDosya^.Satirlar.Count) then
+      begin
+
+        DerlenenDosya := GAsm2.Derleyici.BirOncekiDosyayiAl;
+        if not(DerlenenDosya = nil) then
+        begin
+
+          //DerlenenDosya^.IslenenToplamSatir := 0;
+          //DerlenenDosya^.IslenenKodSatirSayisi := 0;
+        end;
+      end;
+
       Application.ProcessMessages;
     end;
 
@@ -938,28 +971,31 @@ begin
       DerlemeCevrimindenCik := True;
 
     // çevrim sayısını bir artır
-    GAktifDosya.DerlemeCevrimSayisi := GAktifDosya.DerlemeCevrimSayisi + 1;
+    GAsm2.Derleyici.CevrimSayisiniArtir;
 
     Application.ProcessMessages;
   end;
 
+  Result := HATA_YOK;
+
   // derleme işleminin durumu, derleme sonrasında belirleniyor
-  GAktifDosya.DerlemeBasarili := (IslevSonuc = HATA_YOK);
+  GAsm2.Derleyici.DerlemeBasarili := (IslevSonuc = HATA_YOK);
 
   // kodların yorumlanması ve çevrilmesinde herhangi bir hata yoksa
   // ikili formatta (binary file) dosya oluştur
   { TODO : oluşturulacak dosya ilk aşamada saf assembler kodların makine dili karşılıklarıdır
     ileride PE / COFF ve diğer formatlarda program dosyaları oluşturulacaktır  }
-  if(GAktifDosya.DerlemeBasarili) then
+  if(GAsm2.Derleyici.DerlemeBasarili) then
   begin
 
     // dosya adının olması durumunda ...
-    if(Length(GAktifDosya.CikisDosyaAdi) > 0) then
+    if(Length(GAsm2.Derleyici.CikisDosyaAdi) > 0) then
     begin
 
-      Result := ProgramDosyasiOlustur(GAktifDosya);
+      Result := ProgramDosyasiOlustur;
 
     end else Result := HATA_PROJEYI_KAYDET;
+
   end else Result := IslevSonuc;
 end;
 
@@ -975,24 +1011,22 @@ begin
     Exit;
   end;
 
-  GAsm2.AtamaListesi.Temizle;
-  GAsm2.Matematik.Temizle;
-
-  GAktifDosya.Bicim := dbIkili;
+  // derlenecek dosya içeriğini kaydet
+  miDosyaKaydetClick(Self);
 
   // kodlar daha önce derlenmiş veya program derleme aşamasında hata olmamış
   // olsa bile düzenleyicideki kodları MUTLAKA bir kez derle
-  KodlariDerle(GAktifDuzenleyici);
+  KodlariDerle(GAktifDosya);
 
   // program; exe olarak başarılı bir şekilde derlendiyse, çalıştır
-  if(GAktifDosya.DerlemeBasarili) and (GAktifDosya.CikisDosyaUzanti = 'exe') then
+  if(GAsm2.Derleyici.DerlemeBasarili) and (GAsm2.Derleyici.CikisDosyaUzanti = 'exe') then
   begin
 
     Process := TProcessUTF8.Create(nil);
     try
 
-      Process.Executable := GAktifDosya.ProjeDizin + DirectorySeparator +
-        GAktifDosya.CikisDosyaAdi + '.' + GAktifDosya.CikisDosyaUzanti;
+      Process.Executable := GAktifDosya^.ProjeDizin + DirectorySeparator +
+        GAsm2.Derleyici.CikisDosyaAdi + '.' + GAsm2.Derleyici.CikisDosyaUzanti;
       Process.Options := Process.Options + [poWaitOnExit];
       Process.Execute;
     except
@@ -1141,39 +1175,13 @@ begin
   if(SonKullanilanlarListesi > 0) then miDosyaAyrim0.Visible := True;
 end;
 
-procedure TfrmAnaSayfa.DosyayiDuzenleyiciyeYukle(Duzenleyici: TSynEdit; Dosya: TDosya;
-  CP1254KarakterSetiniKullan: Boolean);
-var
-  YaziDosya: TextFile;
-  Veri, s: string;
+procedure TfrmAnaSayfa.DosyayiDuzenleyiciyeYukle(Duzenleyici: TSynEdit;
+  Dosya: PDosya; CP1254KarakterSetiniKullan: Boolean);
 begin
 
   Duzenleyici.Clear;
 
-  if(Length(Dosya.ProjeDosyaUzanti) > 0) then
-    s := Dosya.ProjeDosyaAdi + '.' + Dosya.ProjeDosyaUzanti
-  else s := Dosya.ProjeDosyaAdi;
-
-  AssignFile(YaziDosya, Dosya.ProjeDizin + DirectorySeparator + s);
-  {$I-} Reset(YaziDosya); {$I+}
-
-  if(IOResult = 0) then
-  begin
-
-    while not EOF(YaziDosya) do
-    begin
-
-      ReadLn(YaziDosya, Veri);
-
-      if(CP1254KarakterSetiniKullan) then
-        Duzenleyici.Lines.Add(CP1254ToUTF8(Veri))
-      else Duzenleyici.Lines.Add(Veri);
-
-      Application.ProcessMessages;
-    end;
-
-    CloseFile(YaziDosya);
-  end;
+  if(Dosya^.Yukle(CP1254KarakterSetiniKullan)) then Duzenleyici.Lines := Dosya^.Satirlar;
 end;
 
 // düzenleyicide açık olan dosyanın kimliğinden dosyanın düzenleyicinin hangi

@@ -41,7 +41,7 @@ function Grup10Islev(SatirNo: Integer; ParcaNo: Integer;
   function KodOlustur11(Kod: Byte): Integer;
   begin
 
-    if(GAktifDosya.Mimari = mim64Bit) then
+    if(GAktifDosya^.Mimari = mim64Bit) then
 
       Result := HATA_HATALI_MIMARI64
     else
@@ -65,7 +65,7 @@ function Grup10Islev(SatirNo: Integer; ParcaNo: Integer;
   function KodOlustur22(Kod1, Kod2: Byte): Integer;
   begin
 
-    if(GAktifDosya.Mimari = mim64Bit) then
+    if(GAktifDosya^.Mimari = mim64Bit) then
     begin
 
       KodEkle(Kod1);
@@ -92,7 +92,7 @@ function Grup10Islev(SatirNo: Integer; ParcaNo: Integer;
     if(Mimari = mim64Bit) then
     begin
 
-      if(Mimari = GAktifDosya.Mimari) then
+      if(Mimari = GAktifDosya^.Mimari) then
       begin
 
         KodEkle($48);
@@ -101,7 +101,7 @@ function Grup10Islev(SatirNo: Integer; ParcaNo: Integer;
       end else Result := HATA_64BIT_MIMARI_GEREKLI;
     end
     // 16 / 32 bitlik mimari
-    else if(Mimari <> GAktifDosya.Mimari) then
+    else if(Mimari <> GAktifDosya^.Mimari) then
     begin
 
       KodEkle($66);

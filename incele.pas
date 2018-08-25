@@ -27,9 +27,9 @@ interface
   yerini alma (displacement): 1-4 byte
   sayısal değer (immediate): 1-4 byte
 }
-uses genel, Dialogs, dbugintf;
+uses genel, Dialogs, dosya;
 
-function KodUret(SatirNo: Integer; KodDizisi: string): Integer;
+function KodUret(Dosya: PDosya; KodDizisi: string): Integer;
 
 implementation
 
@@ -45,7 +45,7 @@ var
 
 // her bir kod satırının yönlendirildiği, incelenerek parçalara ayrıldığı,
 // assembler kodlarının üretildiği ana bölüm
-function KodUret(SatirNo: Integer; KodDizisi: string): Integer;
+function KodUret(Dosya: PDosya; KodDizisi: string): Integer;
 var
   Atama: TAtama;
   Komut, s: string;
@@ -117,11 +117,12 @@ var
             SonVeriKontrolTip := vktIlk;
 
             iKomutYorumla := @Grup00Islev;
-            Result := iKomutYorumla(SatirNo, AParcaNo - 1, SonVeriKontrolTip,
-              GTanimlanacakVeri, 0);
+            Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo - 1,
+              SonVeriKontrolTip, GTanimlanacakVeri, 0);
 
             SonVeriKontrolTip := vktEsittir;
-            Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', 0);
+            Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
+              SonVeriKontrolTip, '', 0);
           end
           else
           begin
@@ -141,7 +142,8 @@ var
             SatirIcerik.Komut.KomutTipi := ktIslemKodu;
             SonVeriKontrolTip := vktIlk;
             iKomutYorumla := KomutListe[_KomutDurum.SiraNo];
-            Result := iKomutYorumla(SatirNo, AParcaNo, vktIlk, AVeri1, _KomutDurum.SiraNo);
+            Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo, vktIlk,
+              AVeri1, _KomutDurum.SiraNo);
           end
           // bildirim işlevine ilk çağrı yapılıyor
           else if(_KomutDurum.KomutTipi = ktBildirim) then
@@ -150,7 +152,8 @@ var
             SatirIcerik.Komut.KomutTipi := ktBildirim;
             SonVeriKontrolTip := vktIlk;
             iKomutYorumla := KomutListe[_KomutDurum.SiraNo];
-            Result := iKomutYorumla(SatirNo, AParcaNo, vktIlk, AVeri1, _KomutDurum.SiraNo);
+            Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo, vktIlk,
+              AVeri1, _KomutDurum.SiraNo);
 
             // boşluktan önce eşittir verisinin gelmesi durumunda,
             // veri ilgili işleve gönderiliyor
@@ -158,7 +161,8 @@ var
             begin
 
               SonVeriKontrolTip := vktEsittir;
-              Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', 0);
+              Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
+                SonVeriKontrolTip, '', 0);
             end;
           end
           // değişken işlevine ilk çağrı yapılıyor
@@ -182,12 +186,13 @@ var
 
             // 1. tanım etiketini listeye ekle
             // { TODO : tvtTanimsiz incelensin }
-            if(ParcaNo = 2) then Result := GAsm2.AtamaListesi.Ekle(SatirNo, GTanimlanacakVeri,
-              atEtiket, MevcutBellekAdresi, tvtTanimsiz, '', 0);
+            if(ParcaNo = 2) then Result := GAsm2.AtamaListesi.Ekle(Dosya,
+              GTanimlanacakVeri, atEtiket, MevcutBellekAdresi, tvtTanimsiz, '', 0);
 
             // 2. hata olmaması durumunda ilgili işleve çağrıda bulun
             if(Result = HATA_YOK) then
-              Result := iKomutYorumla(SatirNo, AParcaNo, vktIlk, '', _KomutDurum.SiraNo);
+              Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
+                vktIlk, '', _KomutDurum.SiraNo);
           end;
         end;
       end else Result := HATA_BILINMEYEN_KOMUT;
@@ -199,7 +204,8 @@ var
     begin
 
       SonVeriKontrolTip := vktKarakterDizisi;
-      Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, AVeri1, 0);
+      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
+        SonVeriKontrolTip, AVeri1, 0);
     end
     // değişken verisinin yazmaç, işlem kodu ve diğer tanımlama olup olmadığının
     // kontrol edilmesi için işleme alındığı bölüm
@@ -210,7 +216,8 @@ var
       begin
 
         SonVeriKontrolTip := vktDegisken;
-        Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, AVeri1, 0)
+        Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo, SonVeriKontrolTip,
+          AVeri1, 0)
       end
       else
       begin
@@ -224,7 +231,8 @@ var
 
         { TODO : yazmaç değeri alt kısımlara eklenecek. buradan çıkarılacak }
         SonVeriKontrolTip := vktYazmac;
-        Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', _i);
+        Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
+          SonVeriKontrolTip, '', _i);
       end;
     end
     // ölçek ve sayı verilerinin işlenmesi
@@ -232,20 +240,23 @@ var
     begin
 
       SonVeriKontrolTip := _AVeriKontrolTip;
-      Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', AVeri2);
+      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
+        SonVeriKontrolTip, '', AVeri2);
     end
     // kayan nokta verilerinin işlenmesi
     else if(_AVeriKontrolTip = vktKayanNokta)then
     begin
 
       SonVeriKontrolTip := _AVeriKontrolTip;
-      Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, AVeri1, 0);
+      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
+        SonVeriKontrolTip, AVeri1, 0);
     end
     else if(_AVeriKontrolTip = vktVirgul) then
     begin
 
       SonVeriKontrolTip := vktVirgul;
-      Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', 0);
+      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
+        SonVeriKontrolTip, '', 0);
 
       Inc(ParcaNo);
 
@@ -268,7 +279,8 @@ var
 
           _i := _Yazmac.Sonuc;
           SonVeriKontrolTip := vktYazmac;
-          Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', _i);
+          Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
+            SonVeriKontrolTip, '', _i);
         end;
       end;
 
@@ -282,13 +294,15 @@ var
         begin
 
           SonVeriKontrolTip := vktEsittir;
-          Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, '', 0);
+          Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
+            SonVeriKontrolTip, '', 0);
         end
         else
         begin
 
           SonVeriKontrolTip := _AVeriKontrolTip;
-          Result := iKomutYorumla(SatirNo, AParcaNo, SonVeriKontrolTip, AVeri1, _i);
+          Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
+            SonVeriKontrolTip, AVeri1, _i);
         end;
       end;
 
@@ -302,13 +316,14 @@ var
       //SendDebug('Yazmaç Kod: ' + IntToStr(AVeri2));
 
       SonVeriKontrolTip := vktYazmac;
-      Result := iKomutYorumla(SatirNo, ParcaNo, SonVeriKontrolTip, '', AVeri2);
+      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, ParcaNo,
+        SonVeriKontrolTip, '', AVeri2);
     end
     else if(_AVeriKontrolTip = vktSon) then
     begin
 
       SonVeriKontrolTip := vktSon;
-      Result := iKomutYorumla(SatirNo, 0, SonVeriKontrolTip, '', 0);
+      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, 0, SonVeriKontrolTip, '', 0);
     end;
 
     // işlenen değişkenlerin ilk değer atamalarını gerçekleştir
@@ -384,7 +399,7 @@ var
         else // if(VeriTipi = tvtDiger) then
         begin
 
-          _Atama := GAsm2.AtamaListesi.Bul(Komut);
+          _Atama := GAsm2.AtamaListesi.Bul(Dosya, Komut);
           if(_Atama = nil) then
           begin
 
@@ -569,7 +584,8 @@ begin
                 GHataKodu := SayisalVeriyiIsle('');
                 GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
 
-                GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktSayi, '', SayisalDeger);
+                GHataKodu := iKomutYorumla(Dosya^.IslenenToplamSatir, ParcaNo,
+                  vktSayi, '', SayisalDeger);
 
                 //GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktVirgul, '', 0);
 
@@ -596,9 +612,11 @@ begin
               GHataKodu := SayisalVeriyiIsle('');
               GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
 
-              GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktSayi, '', SayisalDeger);
+              GHataKodu := iKomutYorumla(Dosya^.IslenenToplamSatir, ParcaNo,
+                vktSayi, '', SayisalDeger);
 
-              GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktVirgul, '', 0);
+              GHataKodu := iKomutYorumla(Dosya^.IslenenToplamSatir, ParcaNo,
+                vktVirgul, '', 0);
 
               GAsm2.Matematik.Temizle;
 
@@ -867,7 +885,7 @@ begin
               SatirIcerik.Etiket := Komut;
 
               // etiketin mevcut olup olmadığını gerçekleştir
-              GHataKodu := GAsm2.AtamaListesi.Ekle(SatirNo, SatirIcerik.Etiket,
+              GHataKodu := GAsm2.AtamaListesi.Ekle(Dosya, SatirIcerik.Etiket,
                 atEtiket, MevcutBellekAdresi, tvtSayi, '', 0);
 
               if(GHataKodu = HATA_YOK) then
@@ -1072,7 +1090,13 @@ begin
         else
         begin
 
-          if(VeriTipi = tvtKarakterDizisi) then
+          if(VeriTipi = tvtMakro) then
+          begin
+
+            // geçici - test edilecek
+            GHataKodu := MakroIslev('', Komut, SonKullanilanIsleyici);
+          end
+          else if(VeriTipi = tvtKarakterDizisi) then
           begin
 
             GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);

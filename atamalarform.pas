@@ -1,10 +1,10 @@
 {-------------------------------------------------------------------------------
 
-  Dosya: etiketform.pas
+  Dosya: atamalarform.pas
 
   İşlev: derleyici tarafından atanan etiket ve tanım değerlerini görüntüler
 
-  Güncelleme Tarihi: 02/06/2018
+  Güncelleme Tarihi: 21/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -40,7 +40,7 @@ implementation
 
 {$R *.lfm}
 
-uses genel, atamalar, LCLType, paylasim;
+uses genel, atamalar, LCLType;
 
 procedure TfrmAtamalar.FormShow(Sender: TObject);
 var
@@ -65,6 +65,7 @@ begin
       li.ImageIndex := 0
     else li.ImageIndex := 1;
     li.Caption := '';
+    li.SubItems.Add(Atama.DosyaAdi);
     li.SubItems.Add(IntToStr(Atama.SatirNo + 1));
     li.SubItems.Add(Atama.Adi);
     li.SubItems.Add(IntToStr(Ord(Atama.Tip)));

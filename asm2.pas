@@ -4,7 +4,7 @@
 
   İşlev: derleyici içerisinde kullanılan tüm sınıfları yönetecek ana sınıf
 
-  Güncelleme Tarihi: 11/08/2018
+  Güncelleme Tarihi: 24/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -12,15 +12,16 @@ unit asm2;
 
 interface
 
-uses Classes, SysUtils, ayarlar, atamalar, matematik, dosya;
+uses Classes, SysUtils, ayarlar, atamalar, matematik, dosya, derleyici;
 
 type
   TAsm2 = class
   private
   public
-    Dosyalar: TDosyalar;
-    AtamaListesi: TAtamaListesi;
     Matematik: TMatematik;           // tüm çoklu matematiksel / mantıksal işlemleri yönetir
+    AtamaListesi: TAtamaListesi;
+    Dosyalar: TDosyalar;
+    Derleyici: TDerleyici;
     constructor Create;
     destructor Destroy; override;
     function ProgramAyarDosyasiniOku: TProgramAyarlari;
@@ -35,17 +36,19 @@ uses genel;
 constructor TAsm2.Create;
 begin
 
-  Dosyalar := TDosyalar.Create;
-  AtamaListesi := TAtamaListesi.Create;
   Matematik := TMatematik.Create;
+  AtamaListesi := TAtamaListesi.Create;
+  Dosyalar := TDosyalar.Create;
+  Derleyici := TDerleyici.Create;
 end;
 
 destructor TAsm2.Destroy;
 begin
 
-  Matematik.Destroy;
-  AtamaListesi.Destroy;
+  Derleyici.Destroy;
   Dosyalar.Destroy;
+  AtamaListesi.Destroy;
+  Matematik.Destroy;
 end;
 
 function TAsm2.ProgramAyarDosyasiniOku: TProgramAyarlari;

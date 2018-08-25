@@ -1,30 +1,34 @@
 object frmAtamalar: TfrmAtamalar
-  Left = 292
-  Height = 345
-  Top = 148
-  Width = 495
+  Left = 449
+  Height = 351
+  Top = 338
+  Width = 589
   Align = alBottom
   BorderStyle = bsSizeToolWin
   Caption = 'Etiket ve Tanımlama Listesi'
-  ClientHeight = 345
-  ClientWidth = 495
+  ClientHeight = 351
+  ClientWidth = 589
   Constraints.MinHeight = 345
   Constraints.MinWidth = 495
   OnShow = FormShow
   LCLVersion = '1.8.4.0'
   object lvEtiketler: TListView
     Left = 0
-    Height = 320
+    Height = 326
     Top = 0
-    Width = 495
+    Width = 589
     Align = alClient
     Columns = <    
       item
         Width = 30
       end    
       item
+        Caption = 'Dosya'
+        Width = 100
+      end    
+      item
         Alignment = taCenter
-        Caption = 'S.No'
+        Caption = 'Satır'
       end    
       item
         Caption = 'Etiket Adı'
@@ -67,11 +71,11 @@ object frmAtamalar: TfrmAtamalar
   object pnlBilgi: TPanel
     Left = 0
     Height = 25
-    Top = 320
-    Width = 495
+    Top = 326
+    Width = 589
     Align = alBottom
     ClientHeight = 25
-    ClientWidth = 495
+    ClientWidth = 589
     TabOrder = 1
     object lblToplamNesne: TLabel
       Left = 8
@@ -82,7 +86,7 @@ object frmAtamalar: TfrmAtamalar
       ParentColor = False
     end
     object Image1: TImage
-      Left = 315
+      Left = 409
       Height = 16
       Top = 4
       Width = 16
@@ -112,7 +116,7 @@ object frmAtamalar: TfrmAtamalar
       }
     end
     object Image2: TImage
-      Left = 393
+      Left = 487
       Height = 16
       Top = 4
       Width = 16
@@ -142,7 +146,7 @@ object frmAtamalar: TfrmAtamalar
       }
     end
     object Label1: TLabel
-      Left = 340
+      Left = 434
       Height = 15
       Top = 4
       Width = 29
@@ -151,7 +155,7 @@ object frmAtamalar: TfrmAtamalar
       ParentColor = False
     end
     object Label3: TLabel
-      Left = 419
+      Left = 513
       Height = 15
       Top = 4
       Width = 60

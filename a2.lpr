@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, anasayfaform, atamalarform, derlemebilgisiform, LConvEncoding, sysutils,
-  genel, paylasim, g11islev, onekler, ayarlarform, araclar, g13islev;
+  genel, paylasim, g11islev, onekler, ayarlarform, araclar, g13islev, derleyici;
 
 {$R *.res}
 

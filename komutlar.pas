@@ -4,7 +4,7 @@
 
   İşlev: işlem kodları (opcode) ve ilgili çağrı işlevlerini içerir
 
-  Güncelleme Tarihi: 09/06/2018
+  Güncelleme Tarihi: 25/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -37,7 +37,8 @@ const
   // 1. grup komutlar
   GRUP01_DOS_AD_  = $010001;
   GRUP01_BICIM    = GRUP01_DOS_AD_ + 1;
-  GRUP01_DOS_UZN  = GRUP01_BICIM + 1;
+  GRUP01_DOS_EKLE = GRUP01_BICIM + 1;
+  GRUP01_DOS_UZN  = GRUP01_DOS_EKLE + 1;
   GRUP01_KOD_ADR  = GRUP01_DOS_UZN + 1;
   GRUP01_KOD_MIM  = GRUP01_KOD_ADR + 1;
   GRUP01_KOD_TBK  = GRUP01_KOD_MIM + 1;
@@ -223,12 +224,13 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
-  TOPLAM_KOMUT = 169;
+  TOPLAM_KOMUT = 170;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
   // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
   (Komut: 'dosya.ad';           GrupNo: GRUP01_DOS_AD_;       KomutTipi: ktBildirim),
   (Komut: 'dosya.biçim';        GrupNo: GRUP01_BICIM;         KomutTipi: ktBildirim),
+  (Komut: 'dosya.ekle';         GrupNo: GRUP01_DOS_EKLE;      KomutTipi: ktBildirim),
   (Komut: 'dosya.uzantı';       GrupNo: GRUP01_DOS_UZN;       KomutTipi: ktBildirim),
   (Komut: 'kod.adres';          GrupNo: GRUP01_KOD_ADR;       KomutTipi: ktBildirim),
   (Komut: 'kod.mimari';         GrupNo: GRUP01_KOD_MIM;       KomutTipi: ktBildirim),
@@ -422,7 +424,7 @@ var
 
     // 1. grup komutlar
     @Grup01Bildirim, @Grup01Bildirim, @Grup01Bildirim, @Grup01Bildirim,
-    @Grup01Bildirim, @Grup01Bildirim,
+    @Grup01Bildirim, @Grup01Bildirim, @Grup01Bildirim,
 
     // 2. grup komutlar
     @Grup02Degisken, @Grup02Degisken, @Grup02Degisken, @Grup02Degisken,

@@ -6,7 +6,7 @@
 
   1. grup kodlama işlevi, BİLDİRİM ifadelerini yönetir
 
-  Güncelleme Tarihi: 13/08/2018
+  Güncelleme Tarihi: 24/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -21,7 +21,7 @@ function Grup01Bildirim(SatirNo: Integer; ParcaNo: Integer;
 
 implementation
 
-uses donusum, asm2, komutlar, kodlama, sysutils, genel, dosya;
+uses donusum, asm2, komutlar, kodlama, sysutils, genel, dosya, Dialogs;
 
 var
   VeriTipi: TTemelVeriTipi;
@@ -33,8 +33,10 @@ var
 function Grup01Bildirim(SatirNo: Integer; ParcaNo: Integer;
   VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
 var
-  Dosya: TDosya;
+  Dosya: PDosya;
   i, j: QWord;
+  s: string;
+  DosyaAcik: Boolean;
 begin
 
   // bildirim verisi gönderilmeden önceki ilk aşama
@@ -93,98 +95,117 @@ begin
   else if(VeriKontrolTip = vktSon) then
   begin
 
-    if(Esittir) then
+    // * dosya adı tanımlaması
+    if(Esittir) and (Tanimlanan = GRUP01_DOS_AD_) then
     begin
 
-      // * dosya adı tanımlaması
-      if(Tanimlanan = GRUP01_DOS_AD_) then
+      GAsm2.Derleyici.CikisDosyaAdi := sTanim;
+      Result := HATA_YOK;
+    end
+    else if(Esittir) and (Tanimlanan = GRUP01_BICIM) then
+    begin
+
+      sTanim := KucukHarfeCevir(sTanim);
+      if(sTanim = 'pe64') then
+        GAsm2.Derleyici.Bicim := dbPE64
+      else if(sTanim = 'ikili') then
+        GAsm2.Derleyici.Bicim := dbIkili
+      else GAsm2.Derleyici.Bicim := dbBilinmiyor;
+
+      Result := HATA_YOK;
+    end
+    // projeye dosya ekleme işlevi
+    else if(Tanimlanan = GRUP01_DOS_EKLE) then
+    begin
+
+      // derleyici dosya listesine dosya bilgilerini ekle
+      { TODO : göreceli (relative) dizin yapıları (..\..\dosya.asm) eklenerek kontrol edilecek }
+      Dosya := GAsm2.Dosyalar.Ekle(GAktifDosya^.ProjeDizin + DirectorySeparator +
+        sTanim, ddDerleyici, DosyaAcik);
+
+      if not(Dosya = nil) then
       begin
 
-        GAktifDosya.CikisDosyaAdi := sTanim;
-        Result := HATA_YOK;
-      end
-      else if(Tanimlanan = GRUP01_BICIM) then
-      begin
-
-        sTanim := KucukHarfeCevir(sTanim);
-        if(sTanim = 'pe64') then
-          GAktifDosya.Bicim := dbPE64
-        else if(sTanim = 'ikili') then
-          GAktifDosya.Bicim := dbIkili
-        else GAktifDosya.Bicim := dbBilinmiyor;
-
-        Result := HATA_YOK;
-      end
-      // * dosya uzantı tanımlaması
-      else if(Tanimlanan = GRUP01_DOS_UZN) then
-      begin
-
-        GAktifDosya.CikisDosyaUzanti := sTanim;
-        Result := HATA_YOK;
-      end
-      // * adresleme tanımlaması
-      else if(Tanimlanan = GRUP01_KOD_ADR) then
-      begin
-
-        // SADECE sayı verisi
-        if(VeriTipi = tvtSayi) then
+        // dosyayı belleğe yükle
+        if(Dosya^.Yukle(False)) then
         begin
 
-          MevcutBellekAdresi := iTanim;
+          // dosyayı derleyicinin derleme listesine ekle
+          GAsm2.Derleyici.DosyaEkle(Dosya, False);
+
           Result := HATA_YOK;
-        end else Result := HATA_VERI_TIPI;
-      end
-      // * mimari tanımlaması
-      else if(Tanimlanan = GRUP01_KOD_MIM) then
+        end else Result := HATA_DOSYA_YOK;
+      end else Result := HATA_DOSYA_YOK;
+    end
+    // * dosya uzantı tanımlaması
+    else if(Esittir) and (Tanimlanan = GRUP01_DOS_UZN) then
+    begin
+
+      GAsm2.Derleyici.CikisDosyaUzanti := sTanim;
+      Result := HATA_YOK;
+    end
+    // * adresleme tanımlaması
+    else if(Esittir) and (Tanimlanan = GRUP01_KOD_ADR) then
+    begin
+
+      // SADECE sayı verisi
+      if(VeriTipi = tvtSayi) then
       begin
 
-        // SADECE karakter verisi
-        if(VeriTipi = tvtKarakterDizisi) then
-        begin
+        MevcutBellekAdresi := iTanim;
+        Result := HATA_YOK;
+      end else Result := HATA_VERI_TIPI;
+    end
+    // * mimari tanımlaması
+    else if(Esittir) and (Tanimlanan = GRUP01_KOD_MIM) then
+    begin
 
-          case sTanim of
-            '16bit': begin GAktifDosya.Mimari := mim16Bit; Result := HATA_YOK; end;
-            '32bit': begin GAktifDosya.Mimari := mim32Bit; Result := HATA_YOK; end;
-            '64bit': begin GAktifDosya.Mimari := mim64Bit; Result := HATA_YOK; end;
-            else Result := HATA_BILINMEYEN_MIMARI;
-          end;
-          Result := HATA_YOK;
-        end else Result := HATA_VERI_TIPI;
-      end
-      // * tabaka tanımlaması - veri uzunluğunu belirtilen sayının
-      // katına (align) tamamamlar
-      else if(Tanimlanan = GRUP01_KOD_TBK) then
+      // SADECE karakter verisi
+      if(VeriTipi = tvtKarakterDizisi) then
       begin
 
-        // SADECE sayı verisi
-        if(VeriTipi = tvtSayi) then
+        case sTanim of
+          '16bit': begin GAktifDosya^.Mimari := mim16Bit; Result := HATA_YOK; end;
+          '32bit': begin GAktifDosya^.Mimari := mim32Bit; Result := HATA_YOK; end;
+          '64bit': begin GAktifDosya^.Mimari := mim64Bit; Result := HATA_YOK; end;
+          else Result := HATA_BILINMEYEN_MIMARI;
+        end;
+        Result := HATA_YOK;
+      end else Result := HATA_VERI_TIPI;
+    end
+    // * tabaka tanımlaması - veri uzunluğunu belirtilen sayının
+    // katına (align) tamamamlar
+    else if(Esittir) and (Tanimlanan = GRUP01_KOD_TBK) then
+    begin
+
+      // SADECE sayı verisi
+      if(VeriTipi = tvtSayi) then
+      begin
+
+        // 0 ve 1 değerleri gözardı ediliyor
+        if(iTanim > 1) then
         begin
 
-          // 0 ve 1 değerleri gözardı ediliyor
-          if(iTanim > 1) then
+          j := MevcutBellekAdresi + iTanim;
+          j := j mod iTanim;
+          j := iTanim - j;
+
+          // işlem sonucu 0'dan büyük, align sayısından farklı olmalıdır
+          if(j > 0) and (j <> iTanim) then
           begin
 
-            j := MevcutBellekAdresi + iTanim;
-            j := j mod iTanim;
-            j := iTanim - j;
-
-            // işlem sonucu 0'dan büyük, align sayısından farklı olmalıdır
-            if(j > 0) and (j <> iTanim) then
+            while j > 0 do
             begin
 
-              while j > 0 do
-              begin
-
-                KodEkle(0);
-                Dec(j);
-              end;
+              KodEkle(0);
+              Dec(j);
             end;
           end;
-          Result := HATA_YOK;
-        end else Result := HATA_VERI_TIPI;
-      end else Result := HATA_BILINMEYEN_BILDIRIM;
-    end else Result := HATA_ETIKET_TANIM;
-  end else Result := HATA_BEKLENMEYEN_IFADE;
+        end;
+        Result := HATA_YOK;
+      end else Result := HATA_VERI_TIPI;
+    end else Result := HATA_BILINMEYEN_BILDIRIM;
+  end else Result := HATA_ETIKET_TANIM;
 end;
 
 end.

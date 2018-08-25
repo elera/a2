@@ -231,7 +231,7 @@ begin
             begin
 
               if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) and
-                (GAktifDosya.Mimari <> mim64Bit) then
+                (GAktifDosya^.Mimari <> mim64Bit) then
               begin
 
                 Result := HATA_64BIT_MIMARI_GEREKLI;
@@ -239,13 +239,13 @@ begin
               end;
 
               if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) and
-                (GAktifDosya.Mimari = mim64Bit) then
+                (GAktifDosya^.Mimari = mim64Bit) then
 
                 KodEkle($48)
               else if(((YazmacListesi[GYazmac1].Uzunluk = yu16bGY) and
-                (GAktifDosya.Mimari = mim32Bit)) or
+                (GAktifDosya^.Mimari = mim32Bit)) or
                 ((YazmacListesi[GYazmac1].Uzunluk = yu32bGY) and
-                (GAktifDosya.Mimari = mim16Bit))) then KodEkle($66);
+                (GAktifDosya^.Mimari = mim16Bit))) then KodEkle($66);
 
               KodEkle($0F);
 
@@ -278,7 +278,7 @@ begin
             begin
 
               if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) and
-                (GAktifDosya.Mimari <> mim64Bit) then
+                (GAktifDosya^.Mimari <> mim64Bit) then
               begin
 
                 Result := HATA_64BIT_MIMARI_GEREKLI;
@@ -286,13 +286,13 @@ begin
               end;
 
               if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) and
-                (GAktifDosya.Mimari = mim64Bit) then
+                (GAktifDosya^.Mimari = mim64Bit) then
 
                 KodEkle($48)
               else if(((YazmacListesi[GYazmac1].Uzunluk = yu16bGY) and
-                (GAktifDosya.Mimari = mim32Bit)) or
+                (GAktifDosya^.Mimari = mim32Bit)) or
                 ((YazmacListesi[GYazmac1].Uzunluk = yu32bGY) and
-                (GAktifDosya.Mimari = mim16Bit))) then KodEkle($66);
+                (GAktifDosya^.Mimari = mim16Bit))) then KodEkle($66);
 
               KodEkle($0F);
 

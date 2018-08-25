@@ -193,7 +193,6 @@ kod_başlangıç:
         db      0FFh, 15h, 0Fh, 20h, 0, 0
         ;call    kernel32_işlevler.exit_process
 
-
 kod.tabaka = 200h
 kod_bitiş:
 ;-------------------------------------------------------------------------------
@@ -202,7 +201,7 @@ kod.adres = 402000h
 veri_başlangıç:
 ;-------------------------------------------------------------------------------
 PencereBaşlık:	db0     'Assembler 2 (a2)'
-PencereMesaj:	db0	'18.08.2018'
+PencereMesaj:	db	%tarih + ' - ' + %saat
 
 kod.tabaka = 200h
 veri_bitiş:

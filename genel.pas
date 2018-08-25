@@ -4,7 +4,7 @@
 
   İşlev: genel sabit, değişken, yapı ve işlevleri içerir
 
-  Güncelleme Tarihi: 11/08/2018
+  Güncelleme Tarihi: 25/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -17,8 +17,8 @@ uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler, araclar,
 
 const
   ProgramAdi = 'Assembler 2 (a2)';
-  ProgramSurum = '0.0.17.2018';
-  SurumTarihi = '20.08.2018';
+  ProgramSurum = '0.0.18.2018';
+  SurumTarihi = '25.08.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -29,6 +29,9 @@ type
   end;
 
 const
+  // programın açacağı azami dosya sayısı
+  AZAMI_DOSYA_SAYISI = 28;    // küçük bir işaret :D
+
   // oluşturulacak azami dosya boyutu = 40MB
   AZAMI_DOSYA_BOYUTU = (40 * 1024 * 1024);
   // bellek artış blok uzunluğu = 4KB (her bir artışta eklenecek boyut)
@@ -79,7 +82,8 @@ const
   HATA_PROG_DOSYA_OLUSTURMA       = HATA_TANIMLAMA + 1;
   HATA_PROJEYI_KAYDET             = HATA_PROG_DOSYA_OLUSTURMA + 1;
   HATA_VERI_GENISLIGI             = HATA_PROJEYI_KAYDET + 1;
-  HATA_DESTEKLENMEYEN_BICIM       = HATA_VERI_GENISLIGI + 1;
+  HATA_DOSYA_YOK                  = HATA_VERI_GENISLIGI + 1;
+  HATA_DESTEKLENMEYEN_BICIM       = HATA_DOSYA_YOK + 1;
   HATA_DEVAM_EDEN_CALISMA         = HATA_DESTEKLENMEYEN_BICIM + 1;
 
   sHATA_BILINMEYEN_HATA           = 'Bilinmeyen hata';
@@ -112,6 +116,7 @@ const
   sHATA_PROG_DOSYA_OLUSTURMA      = 'Program dosyası oluşturulamıyor!';
   sHATA_PROJEYI_KAYDET            = 'Projeyi derlemeden önce kaydediniz!';
   sHATA_VERI_GENISLIGI            = 'Veri genişliği hatalı.';
+  sHATA_DOSYA_YOK                 = 'Dosya mevcut değil';
   sHATA_DESTEKLENMEYEN_BICIM      = 'Dosya biçimi desteklenmiyor.';
   sHATA_DEVAM_EDEN_CALISMA        = 'Çalışmalar devam etmekte...';
 
@@ -175,7 +180,7 @@ var
   GSabitDegerVG: TVeriGenisligi;
   GYazmacB1OlcekM, GYazmacB2OlcekM: Boolean;// bellek yazmaçlarının ölçek değerleri var mı?
   GAktifDuzenleyici: TSynEdit = nil;        // aktif düzenleyici nesne değerini barındırır
-  GAktifDosya: TDosya = nil;                // aktif düzenleyicideki aktif dosya
+  GAktifDosya: PDosya = nil;                // aktif düzenleyicideki aktif dosya
 
   // -------------------------------------------------------------------------->
   // etiket veya tanım ataması yapılırken işleme dahil olunan etiket ve / veya tanım
@@ -192,8 +197,6 @@ var
 function HataKodunuAl(HataKodu: Integer): string;
 
 implementation
-
-uses kodlama, yazmaclar;
 
 // hata kodunun karakter dizi karşılığını geri döndürür
 function HataKodunuAl(HataKodu: Integer): string;

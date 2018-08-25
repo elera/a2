@@ -9,7 +9,7 @@
   TANIM ifadeleri; programcının tanımladığı, sabit olmayan sayısal ve
     ve karakter katarı türünde tanımlama verileridir
 
-  Güncelleme Tarihi: 07/03/2018
+  Güncelleme Tarihi: 24/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -53,7 +53,7 @@ begin
     Tanimlanan := Veri1;
 
     // tanımlayıcı etiket değerinin etiket tanım listesinde olup olmadığını kontrol et
-    Atama := GAsm2.AtamaListesi.Bul(Veri1);
+    Atama := GAsm2.AtamaListesi.Bul(GAktifDosya, Veri1);
     if(Atama = nil) then
     begin
 
@@ -126,7 +126,7 @@ begin
       begin
 
         VeriUzunlugu := Length(sTanim);
-        Result := GAsm2.AtamaListesi.Ekle(SatirNo, Tanimlanan, atTanim, -1,
+        Result := GAsm2.AtamaListesi.Ekle(GAktifDosya, Tanimlanan, atTanim, -1,
           tvtKarakterDizisi, sTanim, 0);
 
         Result := HATA_YOK;
@@ -134,7 +134,7 @@ begin
       else if(VeriTipi = tvtSayi) then
       begin
 
-        Result := GAsm2.AtamaListesi.Ekle(SatirNo, Tanimlanan, atTanim, -1,
+        Result := GAsm2.AtamaListesi.Ekle(GAktifDosya, Tanimlanan, atTanim, -1,
           tvtSayi, '', iTanim);
 
         Result := HATA_YOK;

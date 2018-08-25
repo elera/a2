@@ -105,7 +105,7 @@ kod_başlangıç:
 
 ; grafiksel arabirim kodları
 ;-------------------------------------------------------------------------------
-        mov     ecx,20082018
+        mov     ecx,test2
         push    ecx
         pop     eax
         call    SayısalDeğeriKaraktereÇevir
@@ -120,6 +120,8 @@ kod_başlangıç:
         ; programdan çık
         push    0
         call    [ExitProcessİşlevi]
+
+dosya.ekle 'islevler.inc'
 
 ;===============================================================================
 ; işlev adı: SayısalDeğeriKaraktereÇevir

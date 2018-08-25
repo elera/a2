@@ -4,7 +4,7 @@
 
   İşlev: program ayarlarını saklama / yönetme işlevlerini içerir
 
-  Güncelleme Tarihi: 11/08/2018
+  Güncelleme Tarihi: 25/08/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -130,8 +130,12 @@ begin
 
           s := Copy(sl[i], j + 1, Length(sl[i]) - j);
 
-          // DosyaAcik değerinin hata döndürmesinin burada kontrol edilmesi önemli değil
-          GAsm2.Dosyalar.Ekle(s, False, DosyaAcik);
+          // bilgi-1: DosyaAcik değerinin hata değeri döndürmesinin burada kontrol
+          // edilmesi önemli değil
+          // bilgi-2: ddDerleyici değeri, dosyanın derleyici için arka planda
+          // açıldığını belirtir. ana formun onShow olayında bu dosya durum değerleri
+          // ddKaydedildi olarak değiştirilir.
+          GAsm2.Dosyalar.Ekle(s, ddDerleyici, DosyaAcik);
         end;
       end;
 
@@ -145,7 +149,7 @@ end;
 // program ayarlarını ini dosyasına yaz
 procedure INIDosyasinaYaz(ProgramAyarlari: TProgramAyarlari);
 var
-  Dosya: TDosya;
+  Dosya: PDosya;
   INIDosyasi: TINIFile;
   FileName: string;
   i, j: Integer;
@@ -185,12 +189,12 @@ begin
     begin
 
       Dosya := GAsm2.Dosyalar.Bul(frmAnaSayfa.pcDosyalar.Pages[i].Tag);
-      if(Dosya.Durum = ddKaydedildi) then
+      if(Dosya^.Durum = ddKaydedildi) then
       begin
 
         INIDosyasi.WriteString('AcikDosyalar', 'Dosya' + IntToStr(j),
-          Dosya.ProjeDizin + DirectorySeparator + Dosya.ProjeDosyaAdi + '.' +
-          Dosya.ProjeDosyaUzanti);
+          Dosya^.ProjeDizin + DirectorySeparator + Dosya^.ProjeDosyaAdi + '.' +
+          Dosya^.ProjeDosyaUzanti);
 
         Inc(j);
       end;

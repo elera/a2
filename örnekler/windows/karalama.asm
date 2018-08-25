@@ -1,7 +1,5 @@
-; dosya.biçim='ikili'
-kod.mimari = '16Bit'
+test1   dd      1
 
-;shrd       ecx,edx,cl
+dosya.ekle 'islevler.inc'
 
-
-dec     [bx ]
+test3   dd      3

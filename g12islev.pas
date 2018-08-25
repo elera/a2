@@ -387,14 +387,14 @@ begin
             else if(YazmacListesi[GYazmac1].Ad = 'ax') then
             begin
 
-              if(GAktifDosya.Mimari <> mim16Bit) then KodEkle($66);
+              if(GAktifDosya^.Mimari <> mim16Bit) then KodEkle($66);
               KodEkle($E5);
               Result := SayisalDegerEkle(GSabitDeger1, vgB1);
             end
             else if(YazmacListesi[GYazmac1].Ad = 'eax') then
             begin
 
-              if(GAktifDosya.Mimari =  mim16Bit) then KodEkle($66);
+              if(GAktifDosya^.Mimari =  mim16Bit) then KodEkle($66);
               KodEkle($E5);
               Result := SayisalDegerEkle(GSabitDeger1, vgB1);
             end else Result := HATA_ISL_KOD_KULLANIM;
@@ -419,14 +419,14 @@ begin
             else if(YazmacListesi[GYazmac1].Ad = 'ax') then
             begin
 
-              if(GAktifDosya.Mimari <> mim16Bit) then KodEkle($66);
+              if(GAktifDosya^.Mimari <> mim16Bit) then KodEkle($66);
               KodEkle($ED);
               Result := HATA_YOK;
             end
             else if(YazmacListesi[GYazmac1].Ad = 'eax') then
             begin
 
-              if(GAktifDosya.Mimari =  mim16Bit) then KodEkle($66);
+              if(GAktifDosya^.Mimari =  mim16Bit) then KodEkle($66);
               KodEkle($ED);
               Result := HATA_YOK;
             end else Result := HATA_ISL_KOD_KULLANIM;
@@ -456,14 +456,14 @@ begin
             else if(YazmacListesi[GYazmac2].Ad = 'ax') then
             begin
 
-              if(GAktifDosya.Mimari <> mim16Bit) then KodEkle($66);
+              if(GAktifDosya^.Mimari <> mim16Bit) then KodEkle($66);
               KodEkle($E7);
               Result := SayisalDegerEkle(GSabitDeger1, vgB1);
             end
             else if(YazmacListesi[GYazmac2].Ad = 'eax') then
             begin
 
-              if(GAktifDosya.Mimari =  mim16Bit) then KodEkle($66);
+              if(GAktifDosya^.Mimari =  mim16Bit) then KodEkle($66);
               KodEkle($E7);
               Result := SayisalDegerEkle(GSabitDeger1, vgB1);
             end else Result := HATA_ISL_KOD_KULLANIM;
@@ -488,14 +488,14 @@ begin
             else if(YazmacListesi[GYazmac2].Ad = 'ax') then
             begin
 
-              if(GAktifDosya.Mimari <> mim16Bit) then KodEkle($66);
+              if(GAktifDosya^.Mimari <> mim16Bit) then KodEkle($66);
               KodEkle($EF);
               Result := HATA_YOK;
             end
             else if(YazmacListesi[GYazmac2].Ad = 'eax') then
             begin
 
-              if(GAktifDosya.Mimari =  mim16Bit) then KodEkle($66);
+              if(GAktifDosya^.Mimari =  mim16Bit) then KodEkle($66);
               KodEkle($EF);
               Result := HATA_YOK;
             end else Result := HATA_ISL_KOD_KULLANIM;
@@ -719,7 +719,7 @@ begin
           else if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) then
           begin
 
-            if(GAktifDosya.Mimari = mim64Bit) then
+            if(GAktifDosya^.Mimari = mim64Bit) then
             begin
 
               if(SatirIcerik.Komut.GrupNo = GRUP12_LEA) then

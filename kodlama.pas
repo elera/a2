@@ -110,7 +110,7 @@ function KodEkle(Kod: Byte): Boolean;
 begin
 
   // ikili dosya biçimine sahip verileri kodla
-  if(GAktifDosya.Bicim = dbIkili) then
+  if(GAsm2.Derleyici.Bicim = dbIkili) then
   begin
 
     // bellek kapasitesi dolmuş ise. belleği artırmayı dene
@@ -365,14 +365,14 @@ begin
         begin
 
           // mimarinin 16 bit, yazmaçların 32 bit olması durumunda
-          if(GAktifDosya.Mimari = mim16Bit) then
+          if(GAktifDosya^.Mimari = mim16Bit) then
           begin
 
             KodEkle($67);
             KodEkle($66);
           end
           // mimarinin 64 bit, yazmaçların 32 bit olması durumunda
-          else if(GAktifDosya.Mimari = mim64Bit) then KodEkle($67);
+          else if(GAktifDosya^.Mimari = mim64Bit) then KodEkle($67);
 
           IslemKoduEkle;
           KodEkle((MODRMDegeri shl 3) or YazmacListesi[GYazmac1].Deger);
@@ -383,7 +383,7 @@ begin
         begin
 
           // mimarinin 16 bit, yazmaçların 32 bit olması durumunda
-          if(GAktifDosya.Mimari = mim64Bit) then
+          if(GAktifDosya^.Mimari = mim64Bit) then
           begin
 
             KodEkle($67);
@@ -504,7 +504,7 @@ begin
     // 64 bitlik mimarinin 8 bitlik yazmaçları
     begin
 
-      if(GAktifDosya.Mimari = mim64Bit) then
+      if(GAktifDosya^.Mimari = mim64Bit) then
       begin
 
         if((YazmacListesi[HedefYazmac].Ad = 'spl') or (YazmacListesi[HedefYazmac].Ad = 'bpl') or
@@ -525,7 +525,7 @@ begin
     if(YazmacListesi[HedefYazmac].DesMim = dmTum) then
     begin
 
-      if not(GAktifDosya.Mimari = mim16Bit) then KodEkle($66);
+      if not(GAktifDosya^.Mimari = mim16Bit) then KodEkle($66);
 
       KodEkle(IsKodDiger);
       KodEkle($C0 + (YazmacListesi[KaynakYazmac].Deger shl 3) or
@@ -536,7 +536,7 @@ begin
     // 64 bitlik mimarinin 8 bitlik yazmaçları
     begin
 
-      if(GAktifDosya.Mimari = mim64Bit) then
+      if(GAktifDosya^.Mimari = mim64Bit) then
       begin
 
         KodEkle($66);
@@ -555,7 +555,7 @@ begin
     if(YazmacListesi[HedefYazmac].DesMim = dmTum) then
     begin
 
-      if(GAktifDosya.Mimari = mim16Bit) then KodEkle($66);
+      if(GAktifDosya^.Mimari = mim16Bit) then KodEkle($66);
 
       KodEkle(IsKodDiger);
       KodEkle($C0 or (YazmacListesi[KaynakYazmac].Deger shl 3) or
@@ -566,7 +566,7 @@ begin
     // 64 bitlik mimarinin 8 bitlik yazmaçları
     begin
 
-      if(GAktifDosya.Mimari = mim64Bit) then
+      if(GAktifDosya^.Mimari = mim64Bit) then
       begin
 
         KodEkle($41);
@@ -676,7 +676,7 @@ begin
     // 64 bitlik mimarinin 8 bitlik yazmaçları
     begin
 
-      if(GAktifDosya.Mimari = mim64Bit) then
+      if(GAktifDosya^.Mimari = mim64Bit) then
       begin
 
         if((YazmacListesi[Yazmac].Ad = 'spl') or (YazmacListesi[Yazmac].Ad = 'bpl') or
@@ -695,7 +695,7 @@ begin
     if(YazmacListesi[Yazmac].DesMim = dmTum) then
     begin
 
-      if not(GAktifDosya.Mimari = mim16Bit) then KodEkle($66);
+      if not(GAktifDosya^.Mimari = mim16Bit) then KodEkle($66);
 
       KodEkle(IsKodDiger + (YazmacListesi[Yazmac].Deger));
       Result := HATA_YOK;
@@ -704,7 +704,7 @@ begin
     // 64 bitlik mimarinin 16 bitlik yazmaçları
     begin
 
-      if(GAktifDosya.Mimari = mim64Bit) then
+      if(GAktifDosya^.Mimari = mim64Bit) then
       begin
 
         KodEkle($66);
@@ -721,7 +721,7 @@ begin
     if(YazmacListesi[Yazmac].DesMim = dmTum) then
     begin
 
-      if(GAktifDosya.Mimari = mim16Bit) then KodEkle($66);
+      if(GAktifDosya^.Mimari = mim16Bit) then KodEkle($66);
 
       KodEkle(IsKodDiger + (YazmacListesi[Yazmac].Deger));
       Result := HATA_YOK;
@@ -730,7 +730,7 @@ begin
     // 64 bitlik mimarinin 32 bitlik yazmaçları
     begin
 
-      if(GAktifDosya.Mimari = mim64Bit) then
+      if(GAktifDosya^.Mimari = mim64Bit) then
       begin
 
         KodEkle($41);

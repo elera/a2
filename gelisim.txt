@@ -30,11 +30,13 @@
 - 16 sayısal değerini kaarkter katarına dönüştürecek işlev yazılacak
 - lodsx, movsx, stosx işlevleri test edilecek
 - 11 aşamalı kodlama sistemi (kodlama.pas) programa dahil edilecek
-- gerek proje gerekse projeye eklenen diğer dosyaların (include) tümünün derlenmesi
-  dosyalar üzerinden (düzenleyici üzerinden değil) sağlanacak
 - kod derlemeleri bölüm yapıları (kod, data, vs section) olarak gerçekleştirilecek.
   böylece diğer formatların (pex+, coff format) önü açılacak.
 - dosya biçim bildirimi eklenecek
+- derleyicinin komut satırından programları derlemesi sağlanacak
+- her dosyanın değiştirilip değiştirilmediği algılanacak ve derleme / programdan
+  çıkış esnasında dosyalar kaydedilecek
+- proje içerisine eklenen kod dosyalarının (dosya.ekle / include) test işlemi gerçekleştirilecek
 
 +-------------------------------------------------------------+-------------+
 |                     Çalışma Alanı                           | Tamamlanma  |
