@@ -4,7 +4,7 @@
 
   İşlev: işlem kodları (opcode) ve ilgili çağrı işlevlerini içerir
 
-  Güncelleme Tarihi: 25/08/2018
+  Güncelleme Tarihi: 08/09/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -12,27 +12,9 @@ unit komutlar;
 
 interface
 
-uses Classes, SysUtils, genel, paylasim, g01islev, g02islev, g10islev,
-  g11islev, g12islev, g13islev;
+uses Classes, SysUtils, genel, paylasim, bildirimler;
 
-type
-  TKomutDurum = record
-    SiraNo: Integer;
-    KomutTipi: TKomutTipi;
-  end;
-
-type
-  // tüm assembler komutlarının çağrı yapısı
-  // 1. SatirNo = komut dizisinin bulunduğu satır
-  // 2. ParcaNo = komut dizisinin her bir ana kesim / parça numarasıdır
-  //    not: ParcaNo = 1, Veri2 değeri olarak komutun sıra numarasını döndürür
-  // 3. VeriKontrolTip = işleve gönderilen veri tipini belirtir
-  // 4. Veri1 = eğer varsa, karakter dizisi türünde veri
-  // 5. Veri2 = eğer varsa, sayısal türde veri
-  TAsmKomut = function(SatirNo: Integer; ParcaNo: Integer; VeriKontrolTip:
-    TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
-
-  { assembler komut listesi }
+{ assembler komut listesi }
 const
   // 1. grup komutlar
   GRUP01_DOS_AD_  = $010001;
@@ -224,270 +206,215 @@ const
   GRUP01_IRETD		  = $1002F;}
 
 const
+  // SNo = sıra no = bu değerin ataması işlev sırasında gerçekleşmektedir.
+  // GNo = grup no = komuta ait benzersiz kimlik
   TOPLAM_KOMUT = 170;
   KomutListesi: array[0..TOPLAM_KOMUT - 1] of TKomut = (
 
-  // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
-  (Komut: 'dosya.ad';           GrupNo: GRUP01_DOS_AD_;       KomutTipi: ktBildirim),
-  (Komut: 'dosya.biçim';        GrupNo: GRUP01_BICIM;         KomutTipi: ktBildirim),
-  (Komut: 'dosya.ekle';         GrupNo: GRUP01_DOS_EKLE;      KomutTipi: ktBildirim),
-  (Komut: 'dosya.uzantı';       GrupNo: GRUP01_DOS_UZN;       KomutTipi: ktBildirim),
-  (Komut: 'kod.adres';          GrupNo: GRUP01_KOD_ADR;       KomutTipi: ktBildirim),
-  (Komut: 'kod.mimari';         GrupNo: GRUP01_KOD_MIM;       KomutTipi: ktBildirim),
-  (Komut: 'kod.tabaka';         GrupNo: GRUP01_KOD_TBK;       KomutTipi: ktBildirim),
+    // grup 01 - BİLDİRİMLER - (sıralama alfabetiktir)
+    (Ad: 'dosya.ad';           SNo: 0; GNo: GRUP01_DOS_AD_;       Tip: kBildirim),
+    (Ad: 'dosya.biçim';        SNo: 0; GNo: GRUP01_BICIM;         Tip: kBildirim),
+    (Ad: 'dosya.ekle';         SNo: 0; GNo: GRUP01_DOS_EKLE;      Tip: kBildirim),
+    (Ad: 'dosya.uzantı';       SNo: 0; GNo: GRUP01_DOS_UZN;       Tip: kBildirim),
+    (Ad: 'kod.adres';          SNo: 0; GNo: GRUP01_KOD_ADR;       Tip: kBildirim),
+    (Ad: 'kod.mimari';         SNo: 0; GNo: GRUP01_KOD_MIM;       Tip: kBildirim),
+    (Ad: 'kod.tabaka';         SNo: 0; GNo: GRUP01_KOD_TBK;       Tip: kBildirim),
 
-  // grup 02 - DEĞİŞKENLER - (sıralama sınıflamaya göredir)
-  (Komut: 'db';                 GrupNo: GRUP02_DB;            KomutTipi: ktDegisken),
-  (Komut: 'db0';                GrupNo: GRUP02_DB0;           KomutTipi: ktDegisken),
-  (Komut: 'dbw';                GrupNo: GRUP02_DBW;           KomutTipi: ktDegisken),
-  (Komut: 'dw';                 GrupNo: GRUP02_DW;            KomutTipi: ktDegisken),
-  (Komut: 'dd';                 GrupNo: GRUP02_DD;            KomutTipi: ktDegisken),
-  (Komut: 'dq';                 GrupNo: GRUP02_DQ;            KomutTipi: ktDegisken),
-  (Komut: 'dt';                 GrupNo: GRUP02_DT;            KomutTipi: ktDegisken),
+    // grup 02 - DEĞİŞKENLER - (sıralama sınıflamaya göredir)
+    (Ad: 'db';                 SNo: 0; GNo: GRUP02_DB;            Tip: kDegisken),
+    (Ad: 'db0';                SNo: 0; GNo: GRUP02_DB0;           Tip: kDegisken),
+    (Ad: 'dbw';                SNo: 0; GNo: GRUP02_DBW;           Tip: kDegisken),
+    (Ad: 'dw';                 SNo: 0; GNo: GRUP02_DW;            Tip: kDegisken),
+    (Ad: 'dd';                 SNo: 0; GNo: GRUP02_DD;            Tip: kDegisken),
+    (Ad: 'dq';                 SNo: 0; GNo: GRUP02_DQ;            Tip: kDegisken),
+    (Ad: 'dt';                 SNo: 0; GNo: GRUP02_DT;            Tip: kDegisken),
 
-  // grup 10 - işlem kodu - (sıralama alfabetiktir)
-  // bu gruptaki komutlar: SADECE işlem koduna sahip, hiçbir öndeğer (parametre)
-  // almayan komutlardır
-  (Komut: 'aaa';                GrupNo: GRUP10_AAA;           KomutTipi: ktIslemKodu),
-  (Komut: 'aas';                GrupNo: GRUP10_AAS;           KomutTipi: ktIslemKodu),
-  (Komut: 'clc';                GrupNo: GRUP10_CLC;           KomutTipi: ktIslemKodu),
-  (Komut: 'cld';                GrupNo: GRUP10_CLD;           KomutTipi: ktIslemKodu),
-  (Komut: 'cli';                GrupNo: GRUP10_CLI;           KomutTipi: ktIslemKodu),
-  (Komut: 'cmc';                GrupNo: GRUP10_CMC;           KomutTipi: ktIslemKodu),
-  (Komut: 'cpuid';              GrupNo: GRUP10_CPUID;         KomutTipi: ktIslemKodu),
-  (Komut: 'daa';                GrupNo: GRUP10_DAA;           KomutTipi: ktIslemKodu),
-  (Komut: 'das';                GrupNo: GRUP10_DAS;           KomutTipi: ktIslemKodu),
-  (Komut: 'emms';               GrupNo: GRUP10_EMMS;          KomutTipi: ktIslemKodu),
-  (Komut: 'f2xm1';              GrupNo: GRUP10_F2XM1;         KomutTipi: ktIslemKodu),
-  (Komut: 'fabs';               GrupNo: GRUP10_FABS;          KomutTipi: ktIslemKodu),
-  (Komut: 'faddp';              GrupNo: GRUP10_FADDP;         KomutTipi: ktIslemKodu),
-  (Komut: 'fchs';               GrupNo: GRUP10_FCHS;          KomutTipi: ktIslemKodu),
-  (Komut: 'fclex';              GrupNo: GRUP10_FCLEX;         KomutTipi: ktIslemKodu),
-  (Komut: 'fcos';               GrupNo: GRUP10_FCOS;          KomutTipi: ktIslemKodu),
-  (Komut: 'fdecstp';            GrupNo: GRUP10_FDECSTP;       KomutTipi: ktIslemKodu),
-  (Komut: 'fincstp';            GrupNo: GRUP10_FINCSTP;       KomutTipi: ktIslemKodu),
-  (Komut: 'finit';              GrupNo: GRUP10_FINIT;         KomutTipi: ktIslemKodu),
-  (Komut: 'fld1';               GrupNo: GRUP10_FLD1;          KomutTipi: ktIslemKodu),
-  (Komut: 'fldl2e';             GrupNo: GRUP10_FLDL2E;        KomutTipi: ktIslemKodu),
-  (Komut: 'fldl2t';             GrupNo: GRUP10_FLDL2T;        KomutTipi: ktIslemKodu),
-  (Komut: 'fldlg2';             GrupNo: GRUP10_FLDLG2;        KomutTipi: ktIslemKodu),
-  (Komut: 'fldln2';             GrupNo: GRUP10_FLDLN2;        KomutTipi: ktIslemKodu),
-  (Komut: 'fldpi';              GrupNo: GRUP10_FLDPI;         KomutTipi: ktIslemKodu),
-  (Komut: 'fldz';               GrupNo: GRUP10_FLDZ;          KomutTipi: ktIslemKodu),
-  (Komut: 'fnclex';             GrupNo: GRUP10_FNCLEX;        KomutTipi: ktIslemKodu),
-  (Komut: 'fninit';             GrupNo: GRUP10_FNINIT;        KomutTipi: ktIslemKodu),
-  (Komut: 'fnop';               GrupNo: GRUP10_FNOP;          KomutTipi: ktIslemKodu),
-  (Komut: 'fpatan';             GrupNo: GRUP10_FPATAN;        KomutTipi: ktIslemKodu),
-  (Komut: 'fprem';              GrupNo: GRUP10_FPREM;         KomutTipi: ktIslemKodu),
-  (Komut: 'fprem1';             GrupNo: GRUP10_FPREM1;        KomutTipi: ktIslemKodu),
-  (Komut: 'fptan';              GrupNo: GRUP10_FPTAN;         KomutTipi: ktIslemKodu),
-  (Komut: 'frndint';            GrupNo: GRUP10_FRNDINT;       KomutTipi: ktIslemKodu),
-  (Komut: 'fscale';             GrupNo: GRUP10_FSCALE;        KomutTipi: ktIslemKodu),
-  (Komut: 'fsin';               GrupNo: GRUP10_FSIN;          KomutTipi: ktIslemKodu),
-  (Komut: 'fsincos';            GrupNo: GRUP10_FSINCOS;       KomutTipi: ktIslemKodu),
-  (Komut: 'fsqrt';              GrupNo: GRUP10_FSQRT;         KomutTipi: ktIslemKodu),
-  (Komut: 'ftst';               GrupNo: GRUP10_FTST;          KomutTipi: ktIslemKodu),
-  (Komut: 'fyl2x';              GrupNo: GRUP10_FYL2X;         KomutTipi: ktIslemKodu),
-  (Komut: 'fyl2xp1';            GrupNo: GRUP10_FYL2XP1;       KomutTipi: ktIslemKodu),
-  (Komut: 'fxam';               GrupNo: GRUP10_FXAM;          KomutTipi: ktIslemKodu),
-  (Komut: 'fxtract';            GrupNo: GRUP10_FXTRACT;       KomutTipi: ktIslemKodu),
-  (Komut: 'hlt';                GrupNo: GRUP10_HLT;           KomutTipi: ktIslemKodu),
-  (Komut: 'into';               GrupNo: GRUP10_INTO;          KomutTipi: ktIslemKodu),
-  (Komut: 'lahf';               GrupNo: GRUP10_LAHF;          KomutTipi: ktIslemKodu),
-  (Komut: 'leave';              GrupNo: GRUP10_LEAVE;         KomutTipi: ktIslemKodu),
-  (Komut: 'lock';               GrupNo: GRUP10_LOCK;          KomutTipi: ktIslemKodu),
-  (Komut: 'lodsb';              GrupNo: GRUP10_LODSB;         KomutTipi: ktIslemKodu),
-  (Komut: 'lodsd';              GrupNo: GRUP10_LODSD;         KomutTipi: ktIslemKodu),
-  (Komut: 'lodsw';              GrupNo: GRUP10_LODSW;         KomutTipi: ktIslemKodu),
-  (Komut: 'lodsq';              GrupNo: GRUP10_LODSQ;         KomutTipi: ktIslemKodu),
-  (Komut: 'movsb';              GrupNo: GRUP10_MOVSB;         KomutTipi: ktIslemKodu),
-  (Komut: 'movsd';              GrupNo: GRUP10_MOVSD;         KomutTipi: ktIslemKodu),
-  (Komut: 'movsw';              GrupNo: GRUP10_MOVSW;         KomutTipi: ktIslemKodu),
-  (Komut: 'movsq';              GrupNo: GRUP10_MOVSQ;         KomutTipi: ktIslemKodu),
-  (Komut: 'popa';               GrupNo: GRUP10_POPA;          KomutTipi: ktIslemKodu),
-  (Komut: 'popad';              GrupNo: GRUP10_POPAD;         KomutTipi: ktIslemKodu),
-  (Komut: 'popf';               GrupNo: GRUP10_POPF;          KomutTipi: ktIslemKodu),
-  (Komut: 'popfd';              GrupNo: GRUP10_POPFD;         KomutTipi: ktIslemKodu),
-  (Komut: 'popfq';              GrupNo: GRUP10_POPFQ;         KomutTipi: ktIslemKodu),
-  (Komut: 'pusha';              GrupNo: GRUP10_PUSHA;         KomutTipi: ktIslemKodu),
-  (Komut: 'pushad';             GrupNo: GRUP10_PUSHAD;        KomutTipi: ktIslemKodu),
-  (Komut: 'pushf';              GrupNo: GRUP10_PUSHF;         KomutTipi: ktIslemKodu),
-  (Komut: 'pushfd';             GrupNo: GRUP10_PUSHFD;        KomutTipi: ktIslemKodu),
-  (Komut: 'pushfq';             GrupNo: GRUP10_PUSHFQ;        KomutTipi: ktIslemKodu),
-  (Komut: 'rdtsc';              GrupNo: GRUP10_RDTSC;         KomutTipi: ktIslemKodu),
-  (Komut: 'rdtscp';             GrupNo: GRUP10_RDTSCP;        KomutTipi: ktIslemKodu),
-  (Komut: 'stc';                GrupNo: GRUP10_STC;           KomutTipi: ktIslemKodu),
-  (Komut: 'sti';                GrupNo: GRUP10_STI;           KomutTipi: ktIslemKodu),
-  (Komut: 'stosb';              GrupNo: GRUP10_STOSB;         KomutTipi: ktIslemKodu),
-  (Komut: 'stosd';              GrupNo: GRUP10_STOSD;         KomutTipi: ktIslemKodu),
-  (Komut: 'stosw';              GrupNo: GRUP10_STOSW;         KomutTipi: ktIslemKodu),
-  (Komut: 'stosq';              GrupNo: GRUP10_STOSQ;         KomutTipi: ktIslemKodu),
-  (Komut: 'syscall';            GrupNo: GRUP10_SYSCALL;       KomutTipi: ktIslemKodu),
-  (Komut: 'sysenter';           GrupNo: GRUP10_SYSENTER;      KomutTipi: ktIslemKodu),
-  (Komut: 'wbinvd';             GrupNo: GRUP10_WBINVD;        KomutTipi: ktIslemKodu),
+    // grup 10 - işlem kodu - (sıralama alfabetiktir)
+    // bu gruptaki komutlar: SADECE işlem koduna sahip, hiçbir öndeğer (parametre)
+    // almayan komutlardır
+    (Ad: 'aaa';                SNo: 0; GNo: GRUP10_AAA;           Tip: kIslemKodu),
+    (Ad: 'aas';                SNo: 0; GNo: GRUP10_AAS;           Tip: kIslemKodu),
+    (Ad: 'clc';                SNo: 0; GNo: GRUP10_CLC;           Tip: kIslemKodu),
+    (Ad: 'cld';                SNo: 0; GNo: GRUP10_CLD;           Tip: kIslemKodu),
+    (Ad: 'cli';                SNo: 0; GNo: GRUP10_CLI;           Tip: kIslemKodu),
+    (Ad: 'cmc';                SNo: 0; GNo: GRUP10_CMC;           Tip: kIslemKodu),
+    (Ad: 'cpuid';              SNo: 0; GNo: GRUP10_CPUID;         Tip: kIslemKodu),
+    (Ad: 'daa';                SNo: 0; GNo: GRUP10_DAA;           Tip: kIslemKodu),
+    (Ad: 'das';                SNo: 0; GNo: GRUP10_DAS;           Tip: kIslemKodu),
+    (Ad: 'emms';               SNo: 0; GNo: GRUP10_EMMS;          Tip: kIslemKodu),
+    (Ad: 'f2xm1';              SNo: 0; GNo: GRUP10_F2XM1;         Tip: kIslemKodu),
+    (Ad: 'fabs';               SNo: 0; GNo: GRUP10_FABS;          Tip: kIslemKodu),
+    (Ad: 'faddp';              SNo: 0; GNo: GRUP10_FADDP;         Tip: kIslemKodu),
+    (Ad: 'fchs';               SNo: 0; GNo: GRUP10_FCHS;          Tip: kIslemKodu),
+    (Ad: 'fclex';              SNo: 0; GNo: GRUP10_FCLEX;         Tip: kIslemKodu),
+    (Ad: 'fcos';               SNo: 0; GNo: GRUP10_FCOS;          Tip: kIslemKodu),
+    (Ad: 'fdecstp';            SNo: 0; GNo: GRUP10_FDECSTP;       Tip: kIslemKodu),
+    (Ad: 'fincstp';            SNo: 0; GNo: GRUP10_FINCSTP;       Tip: kIslemKodu),
+    (Ad: 'finit';              SNo: 0; GNo: GRUP10_FINIT;         Tip: kIslemKodu),
+    (Ad: 'fld1';               SNo: 0; GNo: GRUP10_FLD1;          Tip: kIslemKodu),
+    (Ad: 'fldl2e';             SNo: 0; GNo: GRUP10_FLDL2E;        Tip: kIslemKodu),
+    (Ad: 'fldl2t';             SNo: 0; GNo: GRUP10_FLDL2T;        Tip: kIslemKodu),
+    (Ad: 'fldlg2';             SNo: 0; GNo: GRUP10_FLDLG2;        Tip: kIslemKodu),
+    (Ad: 'fldln2';             SNo: 0; GNo: GRUP10_FLDLN2;        Tip: kIslemKodu),
+    (Ad: 'fldpi';              SNo: 0; GNo: GRUP10_FLDPI;         Tip: kIslemKodu),
+    (Ad: 'fldz';               SNo: 0; GNo: GRUP10_FLDZ;          Tip: kIslemKodu),
+    (Ad: 'fnclex';             SNo: 0; GNo: GRUP10_FNCLEX;        Tip: kIslemKodu),
+    (Ad: 'fninit';             SNo: 0; GNo: GRUP10_FNINIT;        Tip: kIslemKodu),
+    (Ad: 'fnop';               SNo: 0; GNo: GRUP10_FNOP;          Tip: kIslemKodu),
+    (Ad: 'fpatan';             SNo: 0; GNo: GRUP10_FPATAN;        Tip: kIslemKodu),
+    (Ad: 'fprem';              SNo: 0; GNo: GRUP10_FPREM;         Tip: kIslemKodu),
+    (Ad: 'fprem1';             SNo: 0; GNo: GRUP10_FPREM1;        Tip: kIslemKodu),
+    (Ad: 'fptan';              SNo: 0; GNo: GRUP10_FPTAN;         Tip: kIslemKodu),
+    (Ad: 'frndint';            SNo: 0; GNo: GRUP10_FRNDINT;       Tip: kIslemKodu),
+    (Ad: 'fscale';             SNo: 0; GNo: GRUP10_FSCALE;        Tip: kIslemKodu),
+    (Ad: 'fsin';               SNo: 0; GNo: GRUP10_FSIN;          Tip: kIslemKodu),
+    (Ad: 'fsincos';            SNo: 0; GNo: GRUP10_FSINCOS;       Tip: kIslemKodu),
+    (Ad: 'fsqrt';              SNo: 0; GNo: GRUP10_FSQRT;         Tip: kIslemKodu),
+    (Ad: 'ftst';               SNo: 0; GNo: GRUP10_FTST;          Tip: kIslemKodu),
+    (Ad: 'fyl2x';              SNo: 0; GNo: GRUP10_FYL2X;         Tip: kIslemKodu),
+    (Ad: 'fyl2xp1';            SNo: 0; GNo: GRUP10_FYL2XP1;       Tip: kIslemKodu),
+    (Ad: 'fxam';               SNo: 0; GNo: GRUP10_FXAM;          Tip: kIslemKodu),
+    (Ad: 'fxtract';            SNo: 0; GNo: GRUP10_FXTRACT;       Tip: kIslemKodu),
+    (Ad: 'hlt';                SNo: 0; GNo: GRUP10_HLT;           Tip: kIslemKodu),
+    (Ad: 'into';               SNo: 0; GNo: GRUP10_INTO;          Tip: kIslemKodu),
+    (Ad: 'lahf';               SNo: 0; GNo: GRUP10_LAHF;          Tip: kIslemKodu),
+    (Ad: 'leave';              SNo: 0; GNo: GRUP10_LEAVE;         Tip: kIslemKodu),
+    (Ad: 'lock';               SNo: 0; GNo: GRUP10_LOCK;          Tip: kIslemKodu),
+    (Ad: 'lodsb';              SNo: 0; GNo: GRUP10_LODSB;         Tip: kIslemKodu),
+    (Ad: 'lodsd';              SNo: 0; GNo: GRUP10_LODSD;         Tip: kIslemKodu),
+    (Ad: 'lodsw';              SNo: 0; GNo: GRUP10_LODSW;         Tip: kIslemKodu),
+    (Ad: 'lodsq';              SNo: 0; GNo: GRUP10_LODSQ;         Tip: kIslemKodu),
+    (Ad: 'movsb';              SNo: 0; GNo: GRUP10_MOVSB;         Tip: kIslemKodu),
+    (Ad: 'movsd';              SNo: 0; GNo: GRUP10_MOVSD;         Tip: kIslemKodu),
+    (Ad: 'movsw';              SNo: 0; GNo: GRUP10_MOVSW;         Tip: kIslemKodu),
+    (Ad: 'movsq';              SNo: 0; GNo: GRUP10_MOVSQ;         Tip: kIslemKodu),
+    (Ad: 'popa';               SNo: 0; GNo: GRUP10_POPA;          Tip: kIslemKodu),
+    (Ad: 'popad';              SNo: 0; GNo: GRUP10_POPAD;         Tip: kIslemKodu),
+    (Ad: 'popf';               SNo: 0; GNo: GRUP10_POPF;          Tip: kIslemKodu),
+    (Ad: 'popfd';              SNo: 0; GNo: GRUP10_POPFD;         Tip: kIslemKodu),
+    (Ad: 'popfq';              SNo: 0; GNo: GRUP10_POPFQ;         Tip: kIslemKodu),
+    (Ad: 'pusha';              SNo: 0; GNo: GRUP10_PUSHA;         Tip: kIslemKodu),
+    (Ad: 'pushad';             SNo: 0; GNo: GRUP10_PUSHAD;        Tip: kIslemKodu),
+    (Ad: 'pushf';              SNo: 0; GNo: GRUP10_PUSHF;         Tip: kIslemKodu),
+    (Ad: 'pushfd';             SNo: 0; GNo: GRUP10_PUSHFD;        Tip: kIslemKodu),
+    (Ad: 'pushfq';             SNo: 0; GNo: GRUP10_PUSHFQ;        Tip: kIslemKodu),
+    (Ad: 'rdtsc';              SNo: 0; GNo: GRUP10_RDTSC;         Tip: kIslemKodu),
+    (Ad: 'rdtscp';             SNo: 0; GNo: GRUP10_RDTSCP;        Tip: kIslemKodu),
+    (Ad: 'stc';                SNo: 0; GNo: GRUP10_STC;           Tip: kIslemKodu),
+    (Ad: 'sti';                SNo: 0; GNo: GRUP10_STI;           Tip: kIslemKodu),
+    (Ad: 'stosb';              SNo: 0; GNo: GRUP10_STOSB;         Tip: kIslemKodu),
+    (Ad: 'stosd';              SNo: 0; GNo: GRUP10_STOSD;         Tip: kIslemKodu),
+    (Ad: 'stosw';              SNo: 0; GNo: GRUP10_STOSW;         Tip: kIslemKodu),
+    (Ad: 'stosq';              SNo: 0; GNo: GRUP10_STOSQ;         Tip: kIslemKodu),
+    (Ad: 'syscall';            SNo: 0; GNo: GRUP10_SYSCALL;       Tip: kIslemKodu),
+    (Ad: 'sysenter';           SNo: 0; GNo: GRUP10_SYSENTER;      Tip: kIslemKodu),
+    (Ad: 'wbinvd';             SNo: 0; GNo: GRUP10_WBINVD;        Tip: kIslemKodu),
 
-  {
-    (Komut: 'cbw';        GrupNo: GRUP01_CBW;      KomutTipi: ktIslemKodu),
-    (Komut: 'cdq';        GrupNo: GRUP01_CDQ;      KomutTipi: ktIslemKodu),
-    (Komut: 'cwd';        GrupNo: GRUP01_CWD;      KomutTipi: ktIslemKodu),
-    (Komut: 'iret';       GrupNo: GRUP01_IRET;     KomutTipi: ktIslemKodu),
-    (Komut: 'iretd';      GrupNo: GRUP01_IRETD;    KomutTipi: ktIslemKodu),}
+    {
+      (Ad: 'cbw';        SNo: 0; GNo: GRUP01_CBW;      Tip: kIslemKodu),
+      (Ad: 'cdq';        SNo: 0; GNo: GRUP01_CDQ;      Tip: kIslemKodu),
+      (Ad: 'cwd';        SNo: 0; GNo: GRUP01_CWD;      Tip: kIslemKodu),
+      (Ad: 'iret';       SNo: 0; GNo: GRUP01_IRET;     Tip: kIslemKodu),
+      (Ad: 'iretd';      SNo: 0; GNo: GRUP01_IRETD;    Tip: kIslemKodu),}
 
-    // 11. grup komutlar
-    (Komut: 'bswap';            GrupNo: GRUP11_BSWAP;         KomutTipi: ktIslemKodu),
-    (Komut: 'call';             GrupNo: GRUP11_CALL;          KomutTipi: ktIslemKodu),
-    (Komut: 'dec';              GrupNo: GRUP11_DEC;           KomutTipi: ktIslemKodu),
-    (Komut: 'div';              GrupNo: GRUP11_DIV;           KomutTipi: ktIslemKodu),
-    (Komut: 'fld';              GrupNo: GRUP11_FLD;           KomutTipi: ktIslemKodu),
-    (Komut: 'fst';              GrupNo: GRUP11_FST;           KomutTipi: ktIslemKodu),
-    (Komut: 'fstp';             GrupNo: GRUP11_FSTP;          KomutTipi: ktIslemKodu),
-    (Komut: 'fxch';             GrupNo: GRUP11_FXCH;          KomutTipi: ktIslemKodu),
-    (Komut: 'inc';              GrupNo: GRUP11_INC;           KomutTipi: ktIslemKodu),
-    (Komut: 'int';              GrupNo: GRUP11_INT;           KomutTipi: ktIslemKodu),
-    (Komut: 'ja';               GrupNo: GRUP11_JA;            KomutTipi: ktIslemKodu),
-    (Komut: 'jae';              GrupNo: GRUP11_JAE;           KomutTipi: ktIslemKodu),
-    (Komut: 'jb';               GrupNo: GRUP11_JB;            KomutTipi: ktIslemKodu),
-    (Komut: 'jbe';              GrupNo: GRUP11_JBE;           KomutTipi: ktIslemKodu),
-    (Komut: 'jc';               GrupNo: GRUP11_JC;            KomutTipi: ktIslemKodu),
-    (Komut: 'jcxz';             GrupNo: GRUP11_JCXZ;          KomutTipi: ktIslemKodu),
-    (Komut: 'jecxz';            GrupNo: GRUP11_JECXZ;         KomutTipi: ktIslemKodu),
-    (Komut: 'jrcxz';            GrupNo: GRUP11_JRCXZ;         KomutTipi: ktIslemKodu),
-    (Komut: 'je';               GrupNo: GRUP11_JE;            KomutTipi: ktIslemKodu),
-    (Komut: 'jg';               GrupNo: GRUP11_JG;            KomutTipi: ktIslemKodu),
-    (Komut: 'jge';              GrupNo: GRUP11_JGE;           KomutTipi: ktIslemKodu),
-    (Komut: 'jl';               GrupNo: GRUP11_JL;            KomutTipi: ktIslemKodu),
-    (Komut: 'jle';              GrupNo: GRUP11_JLE;           KomutTipi: ktIslemKodu),
-    (Komut: 'jmp';              GrupNo: GRUP11_JMP;           KomutTipi: ktIslemKodu),
-    (Komut: 'jna';              GrupNo: GRUP11_JNA;           KomutTipi: ktIslemKodu),
-    (Komut: 'jnae';             GrupNo: GRUP11_JNAE;          KomutTipi: ktIslemKodu),
-    (Komut: 'jnb';              GrupNo: GRUP11_JNB;           KomutTipi: ktIslemKodu),
-    (Komut: 'jnbe';             GrupNo: GRUP11_JNBE;          KomutTipi: ktIslemKodu),
-    (Komut: 'jnc';              GrupNo: GRUP11_JNC;           KomutTipi: ktIslemKodu),
-    (Komut: 'jne';              GrupNo: GRUP11_JNE;           KomutTipi: ktIslemKodu),
-    (Komut: 'jng';              GrupNo: GRUP11_JNG;           KomutTipi: ktIslemKodu),
-    (Komut: 'jnge';             GrupNo: GRUP11_JNGE;          KomutTipi: ktIslemKodu),
-    (Komut: 'jnl';              GrupNo: GRUP11_JNL;           KomutTipi: ktIslemKodu),
-    (Komut: 'jnle';             GrupNo: GRUP11_JNLE;          KomutTipi: ktIslemKodu),
-    (Komut: 'jno';              GrupNo: GRUP11_JNO;           KomutTipi: ktIslemKodu),
-    (Komut: 'jnp';              GrupNo: GRUP11_JNP;           KomutTipi: ktIslemKodu),
-    (Komut: 'jns';              GrupNo: GRUP11_JNS;           KomutTipi: ktIslemKodu),
-    (Komut: 'jnz';              GrupNo: GRUP11_JNZ;           KomutTipi: ktIslemKodu),
-    (Komut: 'jo';               GrupNo: GRUP11_JO;            KomutTipi: ktIslemKodu),
-    (Komut: 'jp';               GrupNo: GRUP11_JP;            KomutTipi: ktIslemKodu),
-    (Komut: 'jpe';              GrupNo: GRUP11_JPE;           KomutTipi: ktIslemKodu),
-    (Komut: 'jpo';              GrupNo: GRUP11_JPO;           KomutTipi: ktIslemKodu),
-    (Komut: 'js';               GrupNo: GRUP11_JS;            KomutTipi: ktIslemKodu),
-    (Komut: 'jz';               GrupNo: GRUP11_JZ;            KomutTipi: ktIslemKodu),
-    (Komut: 'not';              GrupNo: GRUP11_NOT;           KomutTipi: ktIslemKodu),
-    (Komut: 'push';             GrupNo: GRUP11_PUSH;          KomutTipi: ktIslemKodu),
-    (Komut: 'pop';              GrupNo: GRUP11_POP;           KomutTipi: ktIslemKodu),
-    (Komut: 'ret';              GrupNo: GRUP11_RET;           KomutTipi: ktIslemKodu),
-    (Komut: 'retf';             GrupNo: GRUP11_RETF;          KomutTipi: ktIslemKodu),
-    (Komut: 'retn';             GrupNo: GRUP11_RETN;          KomutTipi: ktIslemKodu),
-    (Komut: 'sgdt';             GrupNo: GRUP11_SGDT;          KomutTipi: ktIslemKodu),
-    (Komut: 'sidt';             GrupNo: GRUP11_SIDT;          KomutTipi: ktIslemKodu),
+      // 11. grup komutlar
+      (Ad: 'bswap';            SNo: 0; GNo: GRUP11_BSWAP;         Tip: kIslemKodu),
+      (Ad: 'call';             SNo: 0; GNo: GRUP11_CALL;          Tip: kIslemKodu),
+      (Ad: 'dec';              SNo: 0; GNo: GRUP11_DEC;           Tip: kIslemKodu),
+      (Ad: 'div';              SNo: 0; GNo: GRUP11_DIV;           Tip: kIslemKodu),
+      (Ad: 'fld';              SNo: 0; GNo: GRUP11_FLD;           Tip: kIslemKodu),
+      (Ad: 'fst';              SNo: 0; GNo: GRUP11_FST;           Tip: kIslemKodu),
+      (Ad: 'fstp';             SNo: 0; GNo: GRUP11_FSTP;          Tip: kIslemKodu),
+      (Ad: 'fxch';             SNo: 0; GNo: GRUP11_FXCH;          Tip: kIslemKodu),
+      (Ad: 'inc';              SNo: 0; GNo: GRUP11_INC;           Tip: kIslemKodu),
+      (Ad: 'int';              SNo: 0; GNo: GRUP11_INT;           Tip: kIslemKodu),
+      (Ad: 'ja';               SNo: 0; GNo: GRUP11_JA;            Tip: kIslemKodu),
+      (Ad: 'jae';              SNo: 0; GNo: GRUP11_JAE;           Tip: kIslemKodu),
+      (Ad: 'jb';               SNo: 0; GNo: GRUP11_JB;            Tip: kIslemKodu),
+      (Ad: 'jbe';              SNo: 0; GNo: GRUP11_JBE;           Tip: kIslemKodu),
+      (Ad: 'jc';               SNo: 0; GNo: GRUP11_JC;            Tip: kIslemKodu),
+      (Ad: 'jcxz';             SNo: 0; GNo: GRUP11_JCXZ;          Tip: kIslemKodu),
+      (Ad: 'jecxz';            SNo: 0; GNo: GRUP11_JECXZ;         Tip: kIslemKodu),
+      (Ad: 'jrcxz';            SNo: 0; GNo: GRUP11_JRCXZ;         Tip: kIslemKodu),
+      (Ad: 'je';               SNo: 0; GNo: GRUP11_JE;            Tip: kIslemKodu),
+      (Ad: 'jg';               SNo: 0; GNo: GRUP11_JG;            Tip: kIslemKodu),
+      (Ad: 'jge';              SNo: 0; GNo: GRUP11_JGE;           Tip: kIslemKodu),
+      (Ad: 'jl';               SNo: 0; GNo: GRUP11_JL;            Tip: kIslemKodu),
+      (Ad: 'jle';              SNo: 0; GNo: GRUP11_JLE;           Tip: kIslemKodu),
+      (Ad: 'jmp';              SNo: 0; GNo: GRUP11_JMP;           Tip: kIslemKodu),
+      (Ad: 'jna';              SNo: 0; GNo: GRUP11_JNA;           Tip: kIslemKodu),
+      (Ad: 'jnae';             SNo: 0; GNo: GRUP11_JNAE;          Tip: kIslemKodu),
+      (Ad: 'jnb';              SNo: 0; GNo: GRUP11_JNB;           Tip: kIslemKodu),
+      (Ad: 'jnbe';             SNo: 0; GNo: GRUP11_JNBE;          Tip: kIslemKodu),
+      (Ad: 'jnc';              SNo: 0; GNo: GRUP11_JNC;           Tip: kIslemKodu),
+      (Ad: 'jne';              SNo: 0; GNo: GRUP11_JNE;           Tip: kIslemKodu),
+      (Ad: 'jng';              SNo: 0; GNo: GRUP11_JNG;           Tip: kIslemKodu),
+      (Ad: 'jnge';             SNo: 0; GNo: GRUP11_JNGE;          Tip: kIslemKodu),
+      (Ad: 'jnl';              SNo: 0; GNo: GRUP11_JNL;           Tip: kIslemKodu),
+      (Ad: 'jnle';             SNo: 0; GNo: GRUP11_JNLE;          Tip: kIslemKodu),
+      (Ad: 'jno';              SNo: 0; GNo: GRUP11_JNO;           Tip: kIslemKodu),
+      (Ad: 'jnp';              SNo: 0; GNo: GRUP11_JNP;           Tip: kIslemKodu),
+      (Ad: 'jns';              SNo: 0; GNo: GRUP11_JNS;           Tip: kIslemKodu),
+      (Ad: 'jnz';              SNo: 0; GNo: GRUP11_JNZ;           Tip: kIslemKodu),
+      (Ad: 'jo';               SNo: 0; GNo: GRUP11_JO;            Tip: kIslemKodu),
+      (Ad: 'jp';               SNo: 0; GNo: GRUP11_JP;            Tip: kIslemKodu),
+      (Ad: 'jpe';              SNo: 0; GNo: GRUP11_JPE;           Tip: kIslemKodu),
+      (Ad: 'jpo';              SNo: 0; GNo: GRUP11_JPO;           Tip: kIslemKodu),
+      (Ad: 'js';               SNo: 0; GNo: GRUP11_JS;            Tip: kIslemKodu),
+      (Ad: 'jz';               SNo: 0; GNo: GRUP11_JZ;            Tip: kIslemKodu),
+      (Ad: 'not';              SNo: 0; GNo: GRUP11_NOT;           Tip: kIslemKodu),
+      (Ad: 'push';             SNo: 0; GNo: GRUP11_PUSH;          Tip: kIslemKodu),
+      (Ad: 'pop';              SNo: 0; GNo: GRUP11_POP;           Tip: kIslemKodu),
+      (Ad: 'ret';              SNo: 0; GNo: GRUP11_RET;           Tip: kIslemKodu),
+      (Ad: 'retf';             SNo: 0; GNo: GRUP11_RETF;          Tip: kIslemKodu),
+      (Ad: 'retn';             SNo: 0; GNo: GRUP11_RETN;          Tip: kIslemKodu),
+      (Ad: 'sgdt';             SNo: 0; GNo: GRUP11_SGDT;          Tip: kIslemKodu),
+      (Ad: 'sidt';             SNo: 0; GNo: GRUP11_SIDT;          Tip: kIslemKodu),
 
-    // 12. grup komutlar
-    (Komut: 'adc';              GrupNo: GRUP12_ADC;           KomutTipi: ktIslemKodu),
-    (Komut: 'add';              GrupNo: GRUP12_ADD;           KomutTipi: ktIslemKodu),
-    (Komut: 'and';              GrupNo: GRUP12_AND;           KomutTipi: ktIslemKodu),
-    (Komut: 'cmp';              GrupNo: GRUP12_CMP;           KomutTipi: ktIslemKodu),
-    (Komut: 'imul';             GrupNo: GRUP12_IMUL;          KomutTipi: ktIslemKodu),
-    (Komut: 'in';               GrupNo: GRUP12_IN;            KomutTipi: ktIslemKodu),
-    (Komut: 'lea';              GrupNo: GRUP12_LEA;           KomutTipi: ktIslemKodu),
-    (Komut: 'mov';              GrupNo: GRUP12_MOV;           KomutTipi: ktIslemKodu),
-    (Komut: 'movsx';            GrupNo: GRUP12_MOVSX;         KomutTipi: ktIslemKodu),
-    (Komut: 'movzx';            GrupNo: GRUP12_MOVZX;         KomutTipi: ktIslemKodu),
-    (Komut: 'or';               GrupNo: GRUP12_OR;            KomutTipi: ktIslemKodu),
-    (Komut: 'out';              GrupNo: GRUP12_OUT;           KomutTipi: ktIslemKodu),
-    (Komut: 'rcl';              GrupNo: GRUP12_RCL;           KomutTipi: ktIslemKodu),
-    (Komut: 'rcr';              GrupNo: GRUP12_RCR;           KomutTipi: ktIslemKodu),
-    (Komut: 'rol';              GrupNo: GRUP12_ROL;           KomutTipi: ktIslemKodu),
-    (Komut: 'ror';              GrupNo: GRUP12_ROR;           KomutTipi: ktIslemKodu),
-    (Komut: 'sal';              GrupNo: GRUP12_SAL;           KomutTipi: ktIslemKodu),
-    (Komut: 'sar';              GrupNo: GRUP12_SAR;           KomutTipi: ktIslemKodu),
-    (Komut: 'sbb';              GrupNo: GRUP12_SBB;           KomutTipi: ktIslemKodu),
-    (Komut: 'shl';              GrupNo: GRUP12_SHL;           KomutTipi: ktIslemKodu),
-    (Komut: 'shr';              GrupNo: GRUP12_SHR;           KomutTipi: ktIslemKodu),
-    (Komut: 'sub';              GrupNo: GRUP12_SUB;           KomutTipi: ktIslemKodu),
-    (Komut: 'test';             GrupNo: GRUP12_TEST;          KomutTipi: ktIslemKodu),
-    (Komut: 'xchg';             GrupNo: GRUP12_XCHG;          KomutTipi: ktIslemKodu),
-    (Komut: 'xor';              GrupNo: GRUP12_XOR;           KomutTipi: ktIslemKodu),
+      // 12. grup komutlar
+      (Ad: 'adc';              SNo: 0; GNo: GRUP12_ADC;           Tip: kIslemKodu),
+      (Ad: 'add';              SNo: 0; GNo: GRUP12_ADD;           Tip: kIslemKodu),
+      (Ad: 'and';              SNo: 0; GNo: GRUP12_AND;           Tip: kIslemKodu),
+      (Ad: 'cmp';              SNo: 0; GNo: GRUP12_CMP;           Tip: kIslemKodu),
+      (Ad: 'imul';             SNo: 0; GNo: GRUP12_IMUL;          Tip: kIslemKodu),
+      (Ad: 'in';               SNo: 0; GNo: GRUP12_IN;            Tip: kIslemKodu),
+      (Ad: 'lea';              SNo: 0; GNo: GRUP12_LEA;           Tip: kIslemKodu),
+      (Ad: 'mov';              SNo: 0; GNo: GRUP12_MOV;           Tip: kIslemKodu),
+      (Ad: 'movsx';            SNo: 0; GNo: GRUP12_MOVSX;         Tip: kIslemKodu),
+      (Ad: 'movzx';            SNo: 0; GNo: GRUP12_MOVZX;         Tip: kIslemKodu),
+      (Ad: 'or';               SNo: 0; GNo: GRUP12_OR;            Tip: kIslemKodu),
+      (Ad: 'out';              SNo: 0; GNo: GRUP12_OUT;           Tip: kIslemKodu),
+      (Ad: 'rcl';              SNo: 0; GNo: GRUP12_RCL;           Tip: kIslemKodu),
+      (Ad: 'rcr';              SNo: 0; GNo: GRUP12_RCR;           Tip: kIslemKodu),
+      (Ad: 'rol';              SNo: 0; GNo: GRUP12_ROL;           Tip: kIslemKodu),
+      (Ad: 'ror';              SNo: 0; GNo: GRUP12_ROR;           Tip: kIslemKodu),
+      (Ad: 'sal';              SNo: 0; GNo: GRUP12_SAL;           Tip: kIslemKodu),
+      (Ad: 'sar';              SNo: 0; GNo: GRUP12_SAR;           Tip: kIslemKodu),
+      (Ad: 'sbb';              SNo: 0; GNo: GRUP12_SBB;           Tip: kIslemKodu),
+      (Ad: 'shl';              SNo: 0; GNo: GRUP12_SHL;           Tip: kIslemKodu),
+      (Ad: 'shr';              SNo: 0; GNo: GRUP12_SHR;           Tip: kIslemKodu),
+      (Ad: 'sub';              SNo: 0; GNo: GRUP12_SUB;           Tip: kIslemKodu),
+      (Ad: 'test';             SNo: 0; GNo: GRUP12_TEST;          Tip: kIslemKodu),
+      (Ad: 'xchg';             SNo: 0; GNo: GRUP12_XCHG;          Tip: kIslemKodu),
+      (Ad: 'xor';              SNo: 0; GNo: GRUP12_XOR;           Tip: kIslemKodu),
 
-    // 13. grup komutlar
-    (Komut: 'shld';             GrupNo: GRUP13_SHLD;          KomutTipi: ktIslemKodu),
-    (Komut: 'shrd';             GrupNo: GRUP13_SHRD;          KomutTipi: ktIslemKodu)
+      // 13. grup komutlar
+      (Ad: 'shld';             SNo: 0; GNo: GRUP13_SHLD;          Tip: kIslemKodu),
+      (Ad: 'shrd';             SNo: 0; GNo: GRUP13_SHRD;          Tip: kIslemKodu)
     );
 
-var
-  KomutListe: array[0..TOPLAM_KOMUT - 1] of TAsmKomut = (
-
-    // 1. grup komutlar
-    @Grup01Bildirim, @Grup01Bildirim, @Grup01Bildirim, @Grup01Bildirim,
-    @Grup01Bildirim, @Grup01Bildirim, @Grup01Bildirim,
-
-    // 2. grup komutlar
-    @Grup02Degisken, @Grup02Degisken, @Grup02Degisken, @Grup02Degisken,
-    @Grup02Degisken, @Grup02Degisken, @Grup02Degisken,
-
-    // 10. grup komutlar
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev, @Grup10Islev,
-    @Grup10Islev,
-    {
-    @Grup01Islev,           // cbw
-    @Grup01Islev,           // cdq
-    @Grup01Islev,           // cwd
-    @Grup01Islev,           // iret
-    @Grup01Islev,           // iretd}
-
-    // 11. grup komutlar
-    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev, @Grup11Islev,
-    @Grup11Islev, @Grup11Islev, @Grup11Islev,
-
-    // 12. grup komutlar
-    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
-    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
-    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
-    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
-    @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev, @Grup12Islev,
-
-    // 13. grup komutlar
-    @Grup13Islev, @Grup13Islev
-  );
-
-function KomutBilgisiAl(AKomut: string): TKomutDurum;
+function KomutBilgisiAl(AKomut: string): TKomut;
+function DegerBirKomutMu(ADeger: string): Boolean;
 function KomutHata(SatirNo: Integer; ParcaNo: Integer;
-  VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
+  VeriKontrolTip: TKomutTipi; Veri1: string; Veri2: QWord): Integer;
 
 implementation
 
 uses donusum;
 
-// komut ayrıntı bilgisini geri döndürür
-function KomutBilgisiAl(AKomut: string): TKomutDurum;
+// AKomut komut dizisini KomutListesi'nde arar, mevcut olması durumunda geriye
+// komut yapısını döndürür
+function KomutBilgisiAl(AKomut: string): TKomut;
 var
   i, KomutU: Integer;
   Komut: string;
@@ -496,26 +423,49 @@ begin
   Komut := KucukHarfeCevir(AKomut);
   KomutU := Length(Komut);
 
-  Result.SiraNo := -1;
-
+  Result.Tip := kTanimsiz;
   if(KomutU = 0) then Exit;
 
   for i := 0 to TOPLAM_KOMUT - 1 do
   begin
 
-    if(Length(KomutListesi[i].Komut) = KomutU) and (KomutListesi[i].Komut = Komut) then
+    if(Length(KomutListesi[i].Ad) = KomutU) and (KomutListesi[i].Ad = Komut) then
     begin
 
-      Result.KomutTipi := KomutListesi[i].KomutTipi;
-      Result.SiraNo := i;
-      Break;
+      Result := KomutListesi[i];
+      Exit;
+    end;
+  end;
+end;
+
+// ilgili değerin KomutListesi'ndeki bir değer olup olmadığını sorgular
+function DegerBirKomutMu(ADeger: string): Boolean;
+var
+  i, DegerU: Integer;
+  Deger: string;
+begin
+
+  Deger := KucukHarfeCevir(ADeger);
+  DegerU := Length(Deger);
+
+  Result := False;
+  if(DegerU = 0) then Exit;
+
+  for i := 0 to TOPLAM_KOMUT - 1 do
+  begin
+
+    if(Length(KomutListesi[i].Ad) = DegerU) and (KomutListesi[i].Ad = Deger) then
+    begin
+
+      Result := True;
+      Exit;
     end;
   end;
 end;
 
 // hata olması durumunda çağrılacak işlev
 function KomutHata(SatirNo: Integer; ParcaNo: Integer;
-  VeriKontrolTip: TVeriKontrolTip; Veri1: string; Veri2: QWord): Integer;
+  VeriKontrolTip: TKomutTipi; Veri1: string; Veri2: QWord): Integer;
 begin
 
   GHataAciklama := Veri1;

@@ -4,7 +4,7 @@
 
   İşlev: genel sabit, değişken, yapı ve işlevleri içerir
 
-  Güncelleme Tarihi: 25/08/2018
+  Güncelleme Tarihi: 15/09/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -17,8 +17,8 @@ uses Classes, SysUtils, Forms, asm2, ayarlar, paylasim, onekler, araclar,
 
 const
   ProgramAdi = 'Assembler 2 (a2)';
-  ProgramSurum = '0.0.18.2018';
-  SurumTarihi = '25.08.2018';
+  ProgramSurum = '0.0.18a.2018';
+  SurumTarihi = '26.11.2018';
 
 type
   TBilgiTipleri = (btBilgi, btUyari, btHata);
@@ -34,6 +34,7 @@ const
 
   // oluşturulacak azami dosya boyutu = 40MB
   AZAMI_DOSYA_BOYUTU = (40 * 1024 * 1024);
+
   // bellek artış blok uzunluğu = 4KB (her bir artışta eklenecek boyut)
   BELLEK_BLOK_UZUNLUGU = (4 * 1024);
 
@@ -156,43 +157,25 @@ var
   GProgramAyarDizin: string;                // program ayar dizinini içerir
   GSonKullanilanDizin: string;              // programın dosya açma / kaydetme için kullandığı en son dizin
   GProgramAyarlari: TProgramAyarlari;       // program ayar değerlerini içerir
-  // ("bellek db 10" örneğinde bellek değeri) değişken ilk değeri veya
-  // ("bellek = 10" örneğinde bellek değeri) tanım ilk değeri
-  GTanimlanacakVeri: string;
   GHataKodu: Integer;
   GHataAciklama: string;
 
   // tüm satır verilerini içerecek ana değer
-  SatirIcerik: TSatirIcerik;
+  SI: TSatirIcerik;
 
-  // GENEL BİLGİ:
-  // 1. her bir kod satırı, 3 öndeğeri (parametre) işleyecek şekilde yapılandırılmıştır
-  //   bunlar; TSatirIcerik yapısının BolumTip1, BolumTip2 ve BolumTip2 alt yapılarıdır
-  // 2. her 3 öndeğerin yazmaç olması halinde GYazmac1, GYazmac2 ve GYazmac3 değişkenleri
-  //   kullanılırken; adresleme işlemi için GYazmacB1 ve GYazmacB2 değişkenleri kullanımaktadır
-  GYazmac1, GYazmac2, GYazmac3,             // işlem kodunun kullanacağı yazmaç değerleri
-  GYazmacB1, GYazmacB2,                     // işlem kodunun kullanacağı bellek yazmaç değerleri
-  GOlcek,                                   // bellek adreslemede kullanılan ölçek değer
-  GBellekSabitDeger: Integer;               // bellek adresleme sabit değeri (yeni, ilgili kısımlara uygulansın)
-  GBellekSabitDegerVG: TVeriGenisligi;
-  GSabitDeger1, GSabitDeger2,               // not: programın her alanına uygulanmadı
-  GSabitDeger3: Integer;                    // her bir alan için tanımlanan sabit değer
   GSabitDegerVG: TVeriGenisligi;
   GYazmacB1OlcekM, GYazmacB2OlcekM: Boolean;// bellek yazmaçlarının ölçek değerleri var mı?
   GAktifDuzenleyici: TSynEdit = nil;        // aktif düzenleyici nesne değerini barındırır
-  GAktifDosya: PDosya = nil;                // aktif düzenleyicideki aktif dosya
+  GAktifProje: TDosya = nil;                // derlenecek aktif proje
+  GAktifDosya: TDosya = nil;                // düzenleyicideki aktif dosya
 
-  // -------------------------------------------------------------------------->
-  // etiket veya tanım ataması yapılırken işleme dahil olunan etiket ve / veya tanım
-  // olmaması durumunda, öndeğer sayısal değer kullanımında bu değişken aktifleştirilerek
-  // tekrarlı döngülerin sağlanması amaçlanmaktadır.
-  // atamalar tarafından atama listesinin güncellenmesi için kullanılır.
-  GEtiketHatasiMevcut: Boolean;
   // bir çevrim döngüsü içerisinde, o anda karşılığı olmayan etiket sayısı.
   // birden fazla çevrimlerin kontrol edilmesi amacıyla tasarlanmıştır.
   // döngüler, bu değişkenin 0'dan büyük olması aracılığı ile tekrar ettirilir
   GEtiketHataSayisi: Integer;
   // <--------------------------------------------------------------------------
+
+  KoseliParantezSayisi: Integer;
 
 function HataKodunuAl(HataKodu: Integer): string;
 

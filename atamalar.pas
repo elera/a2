@@ -4,7 +4,7 @@
 
   İşlev: proje içerisindeki etiket ve tanım değerlerini yönetir
 
-  Güncelleme Tarihi: 24/08/2018
+  Güncelleme Tarihi: 24/09/2018
 
   Bilgi: etiket ve tanım işlemlerindeki isimlendirmenin tümü küçük harflerle yapılmaktadır.
 
@@ -21,7 +21,10 @@ interface
 uses Classes, SysUtils, paylasim, dosya;
 
 type
-  TAtamaTipi = (atEtiket, atTanim);
+  // atEtiket->örnek   : etiket:
+  // atDegisken->örnek : degisken  dd  40
+  // atTanim->örnek    : SAYI_BES = 5
+  TAtamaTipi = (atEtiket, atDegisken, atTanim);
 
 type
   TAtama = class(TCollectionItem)
@@ -31,9 +34,11 @@ type
     FDosyaAdi,
     FsDeger: string;
     FiDeger, FBellekAdresi: QWord;
-    FVeriTipi: TTemelVeriTipi;
+    FVeriTipi: TVeriTipleri;
     FVeriUzunluk, FSatirNo: Integer;
-    FEtiketHatasiMevcut: Boolean;
+    // FYenidenAtanabilir değeri, her bir çevrimde yeniden atamanın
+    // gerçekleştirilebilmesi amacıyla tanımlanmıştır
+    FYenidenAtanabilir: Boolean;
   public
     constructor Create(ACollection: TCollection); override;
     destructor Destroy; override;
@@ -42,13 +47,12 @@ type
     property Tip: TAtamaTipi read FTip write FTip;
     property DosyaAdi: string read FDosyaAdi write FDosyaAdi;
     property BellekAdresi: QWord read FBellekAdresi write FBellekAdresi;
-    property VeriTipi: TTemelVeriTipi read FVeriTipi write FVeriTipi;
+    property VeriTipi: TVeriTipleri read FVeriTipi write FVeriTipi;
     property VeriUzunluk: Integer read FVeriUzunluk write FVeriUzunluk;
     property sDeger: string read FsDeger write FsDeger;
     property iDeger: QWord read FiDeger write FiDeger;
     property SatirNo: Integer read FSatirNo write FSatirNo;
-    property EtiketHatasiMevcut: Boolean read FEtiketHatasiMevcut
-      write FEtiketHatasiMevcut;
+    property YenidenAtanabilir: Boolean read FYenidenAtanabilir write FYenidenAtanabilir;
   end;
 
   TAtamaListesi = class(TCollection)
@@ -58,19 +62,18 @@ type
     function GetToplam: Integer;
   public
     constructor Create;
-    function Ekle(Dosya: PDosya; EtiketAdi: string; AtamaTipi: TAtamaTipi;
-      BellekAdresi: QWord; VeriTipi: TTemelVeriTipi; sDeger: string;
-      iDeger: QWord): Integer;
-    function Bul(Dosya: PDosya; AEtiket: string): TAtama;
+    function Ekle(Dosya: TDosya; AtamaTipi: TAtamaTipi;
+      EtiketVeyaAtananDeger: string; ParcaSonuc: TParcaSonuc): Integer;
+    function Bul(Dosya: TDosya; EtiketVeyaAtananDeger: string): TAtama;
     procedure Temizle;
-    function Temizle2: Integer;
+    procedure YeniCevrim;
     property Toplam: Integer read GetToplam;
     property Eleman[Sira: Integer]: TAtama read Al write Ver;
   end;
 
 implementation
 
-uses genel, donusum, yazmaclar, komutlar, onekler;
+uses genel, donusum, yazmaclar, komutlar, onekler, dbugintf;
 
 constructor TAtama.Create(ACollection: TCollection);
 begin
@@ -90,22 +93,20 @@ begin
   inherited Create(TAtama);
 end;
 
-function TAtamaListesi.Ekle(Dosya: PDosya; EtiketAdi: string; AtamaTipi: TAtamaTipi;
-  BellekAdresi: QWord; VeriTipi: TTemelVeriTipi; sDeger: string;
-  iDeger: QWord): Integer;
+function TAtamaListesi.Ekle(Dosya: TDosya; AtamaTipi: TAtamaTipi;
+  EtiketVeyaAtananDeger: string; ParcaSonuc: TParcaSonuc): Integer;
 var
+  PS: TParcaSonuc;
   DosyaAdUzanti, s: string;
   Etiket: TAtama;
-  Komut: TKomutDurum;
-  Yazmac: TYazmacDurum;
   SayiTipi: TVeriGenisligi;
 begin
 
   Result := HATA_YOK;
 
-  s := KucukHarfeCevir(EtiketAdi);
+  s := KucukHarfeCevir(EtiketVeyaAtananDeger);
 
-  // etiket, bir sayı ile başlayamaz!
+  // etiket, değişken ve tanım değeri bir sayı ile başlayamaz!
   if(s[1] in ['0'..'9']) then
   begin
 
@@ -113,77 +114,54 @@ begin
     Exit;
   end;
 
-  // etiket, işlem kodu veya yazmaç olamaz!
-  Komut := KomutBilgisiAl(EtiketAdi);
-  Yazmac := YazmacBilgisiAl(EtiketAdi);
-  if(Komut.SiraNo >= 0) or (Yazmac.Sonuc >= 0) then
+  // etiket, değişken ve tanım değeri bir işlem kodu olamaz!
+  if(DegerBirKomutMu(EtiketVeyaAtananDeger)) then
   begin
 
     Result := HATA_ETIKET_TANIM;
     Exit;
   end;
 
-  if(Length(Dosya^.ProjeDosyaUzanti) > 0) then
-    DosyaAdUzanti := Dosya^.ProjeDosyaAdi + '.' + Dosya^.ProjeDosyaUzanti
-  else DosyaAdUzanti := Dosya^.ProjeDosyaAdi;
+  // etiket, değişken ve tanım değeri bir yazmaç olamaz!
+  PS.HamVeri := EtiketVeyaAtananDeger;
+  PS := YazmacBilgisiAl(PS);
+  if(PS.VeriTipi = vYazmac) then
+  begin
 
-  // değişken 2 tip veri kullanır.
-  // 1 = tvtSayi, 2 = tvtKarakterDizisi
+    Result := HATA_ETIKET_TANIM;
+    Exit;
+  end;
+
+  if(Length(Dosya.ProjeDosyaUzanti) > 0) then
+    DosyaAdUzanti := Dosya.ProjeDosyaAdi + '.' + Dosya.ProjeDosyaUzanti
+  else DosyaAdUzanti := Dosya.ProjeDosyaAdi;
+
+  // etiket, değişken ve tanım değerini listeye ekle
   if(Toplam = 0) then
   begin
 
     Etiket := inherited Add as TAtama;
-    Etiket.Adi := s;
+    Etiket.FYenidenAtanabilir := False;
     Etiket.Tip := AtamaTipi;
     Etiket.DosyaAdi := DosyaAdUzanti;
+    Etiket.SatirNo := Dosya.IslenenToplamSatir;
+    Etiket.Adi := s;
 
-    if(AtamaTipi = atEtiket) then Etiket.BellekAdresi := BellekAdresi;
-
-    Etiket.VeriTipi := VeriTipi;
-
-    if(VeriTipi = tvtSayi) then
+    if(AtamaTipi = atEtiket) or (AtamaTipi = atDegisken) then
     begin
 
-      SayiTipi := SayiTipiniAl(iDeger);
-      case SayiTipi of
-        //stHatali: Etiket.VeriUzunluk := 0;
-        vgB1: Etiket.VeriUzunluk := 1;
-        vgB2: Etiket.VeriUzunluk := 2;
-        vgB4: Etiket.VeriUzunluk := 4;
-        vgB8: Etiket.VeriUzunluk := 8;
-      end;
-      Etiket.iDeger := iDeger;
+      Etiket.VeriTipi := vSayi;
+      Etiket.BellekAdresi := ParcaSonuc.VeriSD;
     end
-    else if(VeriTipi = tvtKarakterDizisi) then
+    else
     begin
 
-      Etiket.VeriUzunluk := Length(sDeger);
-      Etiket.sDeger := sDeger;
-    end;
+      Etiket.VeriTipi := ParcaSonuc.VeriTipi;
 
-    Etiket.SatirNo := Dosya^.IslenenToplamSatir;
-    Etiket.EtiketHatasiMevcut := GEtiketHatasiMevcut;
-  end
-  else
-  begin
-
-    Etiket := Bul(Dosya, s);
-    if(Etiket = nil) then
-    begin
-
-      Etiket := inherited Add as TAtama;
-      Etiket.Adi := s;
-      Etiket.Tip := AtamaTipi;
-      Etiket.DosyaAdi := DosyaAdUzanti;
-
-      if(AtamaTipi = atEtiket) then Etiket.BellekAdresi := BellekAdresi;
-
-      Etiket.VeriTipi := VeriTipi;
-
-      if(VeriTipi = tvtSayi) then
+      if(ParcaSonuc.VeriTipi = vSayi) then
       begin
 
-        SayiTipi := SayiTipiniAl(iDeger);
+        SayiTipi := SayiTipiniAl(ParcaSonuc.VeriSD);
         case SayiTipi of
           //stHatali: Etiket.VeriUzunluk := 0;
           vgB1: Etiket.VeriUzunluk := 1;
@@ -191,29 +169,80 @@ begin
           vgB4: Etiket.VeriUzunluk := 4;
           vgB8: Etiket.VeriUzunluk := 8;
         end;
-        Etiket.iDeger := iDeger;
+        Etiket.iDeger := ParcaSonuc.VeriSD;
       end
-      else if(VeriTipi = tvtKarakterDizisi) then
+      else if(ParcaSonuc.VeriTipi = vKarakterDizisi) then
       begin
 
-        Etiket.VeriUzunluk := Length(sDeger);
-        Etiket.sDeger := sDeger;
+        Etiket.VeriUzunluk := Length(ParcaSonuc.VeriKK);
+        Etiket.sDeger := ParcaSonuc.VeriKK;
       end;
+    end;
+  end
+  else
+  begin
 
-      Etiket.SatirNo := Dosya^.IslenenToplamSatir;
-      Etiket.EtiketHatasiMevcut := GEtiketHatasiMevcut;
-    end
-    else
+    Etiket := Bul(Dosya, s);
+    // etiket değerinin "YenidenAtanabilir" OLMAMASI durumunda
+    if not(Etiket = nil) and not(Etiket.FYenidenAtanabilir) then
     begin
 
       // farklı bir satırdaki etiket, tanımlanmış bir etiketi tekrar tanımlamaya
       // çalışırsa geriye hata kodu döndür
-      if(Etiket.SatirNo <> Dosya^.IslenenToplamSatir) then Result := HATA_ETIKET_TANIMLANMIS;
+      if(Etiket.SatirNo <> Dosya.IslenenToplamSatir) then Result := HATA_ETIKET_TANIMLANMIS;
+    end
+    else
+    begin
+
+      // etiket daha önce tanımlanmamışsa, oluştur
+      if(Etiket = nil) then
+      begin
+
+        Etiket := inherited Add as TAtama;
+        Etiket.Tip := AtamaTipi;
+        Etiket.DosyaAdi := DosyaAdUzanti;
+        Etiket.SatirNo := Dosya.IslenenToplamSatir;
+        Etiket.Adi := s;
+      end;
+      Etiket.FYenidenAtanabilir := False;
+
+      // etiket oluşturulduktan sonra veya daha önce oluşturulmuşsa
+      if(AtamaTipi = atEtiket) or (AtamaTipi = atDegisken) then
+      begin
+
+        Etiket.VeriTipi := vSayi;
+        Etiket.BellekAdresi := ParcaSonuc.VeriSD;
+      end
+      else
+      begin
+
+        Etiket.VeriTipi := ParcaSonuc.VeriTipi;
+
+        if(ParcaSonuc.VeriTipi = vSayi) then
+        begin
+
+          SayiTipi := SayiTipiniAl(ParcaSonuc.VeriSD);
+          case SayiTipi of
+            //stHatali: Etiket.VeriUzunluk := 0;
+            vgB1: Etiket.VeriUzunluk := 1;
+            vgB2: Etiket.VeriUzunluk := 2;
+            vgB4: Etiket.VeriUzunluk := 4;
+            vgB8: Etiket.VeriUzunluk := 8;
+          end;
+          Etiket.iDeger := ParcaSonuc.VeriSD;
+        end
+        else if(ParcaSonuc.VeriTipi = vKarakterDizisi) then
+        begin
+
+          Etiket.VeriUzunluk := Length(ParcaSonuc.VeriKK);
+          Etiket.sDeger := ParcaSonuc.VeriKK;
+        end;
+      end;
     end;
   end;
 end;
 
-function TAtamaListesi.Bul(Dosya: PDosya; AEtiket: string): TAtama;
+function TAtamaListesi.Bul(Dosya: TDosya; EtiketVeyaAtananDeger: string): TAtama;
 var
   i: Integer;
   DosyaAdUzanti, s: string;
@@ -223,16 +252,16 @@ begin
 
   if(Toplam = 0) then Exit;
 
-  s := KucukHarfeCevir(AEtiket);
+  s := KucukHarfeCevir(EtiketVeyaAtananDeger);
 
-  if(Length(Dosya^.ProjeDosyaUzanti) > 0) then
-    DosyaAdUzanti := Dosya^.ProjeDosyaAdi + '.' + Dosya^.ProjeDosyaUzanti
-  else DosyaAdUzanti := Dosya^.ProjeDosyaAdi;
+  if(Length(Dosya.ProjeDosyaUzanti) > 0) then
+    DosyaAdUzanti := Dosya.ProjeDosyaAdi + '.' + Dosya.ProjeDosyaUzanti
+  else DosyaAdUzanti := Dosya.ProjeDosyaAdi;
 
   for i := 0 to Toplam - 1 do
   begin
 
-    if(Eleman[i].DosyaAdi = DosyaAdUzanti) and (Eleman[i].Adi = s) then
+    if{(Eleman[i].DosyaAdi = DosyaAdUzanti) and} (Eleman[i].Adi = s) then
     begin
 
       Result := Eleman[i];
@@ -247,33 +276,21 @@ begin
   inherited Clear;
 end;
 
-// etiket veya tanım ataması yapılırken işleme dahil olunan etiket ve / veya tanım
-// olmaması durumunda öndeğer sayısal değer kullanan etiketler tanımlama listesinden
-// çıkarılıyor
-function TAtamaListesi.Temizle2: Integer;
+// yeni çevrim için mevcut veri tip tanımlamalarını tanımsız olarak atamalarını yapar
+procedure TAtamaListesi.YeniCevrim;
 var
   i: Integer;
 begin
 
-  Result := 0;
-
   if(Toplam > 0) then
   begin
 
-    for i := Toplam - 1 downto 0 do
+    for i := 0 to Toplam - 1 do
     begin
 
-      if(Eleman[i].EtiketHatasiMevcut) then
-      begin
-
-        inherited Delete(i);
-        Inc(Result);
-      end;
+      Eleman[i].FYenidenAtanabilir := True;
     end;
   end;
-
-  // hatalı etiket sayısının olmaması durumunda hatalı toplam etiket sayısını geri döndür
-  if(Result = 0) then Result := GEtiketHataSayisi;
 end;
 
 function TAtamaListesi.Al(ASiraNo: Integer): TAtama;

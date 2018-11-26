@@ -79,10 +79,11 @@ const
 
 procedure KodBellekDegerleriniIlklendir;
 function KodEkle(Kod: Byte): Boolean;
+function IslemKodlariniIsle(ParcaSonuc: TParcaSonuc): Integer;
 function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string;
   SayiTipi: TVeriGenisligi): Integer;
 function SayisalDegerKodla(ASayisalDeger: QWord; AVeriGenisligi: TVeriGenisligi = vgHatali): Integer;
-function BellekAdresle(IsKod8, IsKodDiger, MODRMDegeri: Byte; SatirIcerik:
+function BellekAdresle(IsKod8, IsKodDiger, MODRMDegeri: Byte; SI:
   TSatirIcerik): Integer;
 function GoreceliDegerEkle(Komut: Integer; KomutIK: Byte): Integer;
 function IslemKoduIleYazmacDegeriniBirlestir(IsKod8, IsKodDiger, Yazmac: Byte): Integer;
@@ -91,10 +92,18 @@ function YazmacKodla(IsKod8, IsKodDiger, HedefYazmac, KaynakYazmac: Byte;
   SI: TSatirIcerik): Integer;
 function YazmacaBellekBolgesiAta(YazmacaBB: Boolean; IsKod8, IsKodDiger: Byte): Integer;
 function SayisalDegerEkle(SayisalDeger: QWord; VeriGenisligi: TVeriGenisligi): Integer;
+function BellekBolgesineYazmacAta(SI: TSatirIcerik; Yazmac1,
+  Yazmac2: Integer): Integer;
+function BellekBolgesineSayisalDegerAta(SI: TSatirIcerik; Yazmac1,
+  Yazmac2: Integer): Integer;
 
 implementation
 
-uses genel, asm2, dbugintf;
+uses genel, asm2, dbugintf, hataayiklama;
+
+var
+  // IslemKodlariniIsle işlevi tarafından süreklilik (parça takibi) için kullanılmaktadır
+  BT: PBolumTip = nil;
 
 // kodların derlenerek yerleştirileceği belleği ilklendir
 procedure KodBellekDegerleriniIlklendir;
@@ -139,6 +148,181 @@ begin
   end
   { TODO : diğer formattaki dosyalar çoklu bölümler halinde burada kodlanacak }
   else Result := False;
+end;
+
+function IslemKodlariniIsle(ParcaSonuc: TParcaSonuc): Integer;
+var
+  i, i4: Integer;
+  VG: TVeriGenisligi;
+  procedure BTVerileriniSifirla(_BT: PBolumTip);
+  begin
+
+    _BT^.BolumAnaTip := batYok;
+    _BT^.BellekIcerik := [];
+  end;
+begin
+
+  if(SI.BolumNo = 0) then
+  begin
+
+    SI.BolumNo := 1;
+    BT := @SI.B1;
+    BTVerileriniSifirla(BT);
+  end;
+
+  {if(((SI.B1.BolumAnaTip = batYok) or (SI.B1.BolumAnaTip = batBellek)) and
+    not(GVirgulKullanildi)) then BT := @SI.B1
+  else if(((SI.B2.BolumAnaTip = batYok) or (SI.B2.BolumAnaTip = batBellek)) and
+    (GVirgulKullanildi)) then BT := @SI.B2
+  else if(((SI.B3.BolumAnaTip = batYok) or (SI.B3.BolumAnaTip = batBellek)) and
+    (GVirgulKullanildi)) then BT := @SI.B3
+  else BT := nil;}
+
+  // ÖNEMLİ:
+  // 1. .BolumTip1, .BolumTip2 ve .BolumTip3 alt yapılarına anasayfa'da batYok değeri atanmaktadır
+  // 2. .BolumTip1, .BolumTip2 ve .BolumTip3 alt yapılarına vtKPAc kısmında batBellek tipi atanmaktadır
+  // 3. Köşeli parantez kontrolü vtKPAc sorgulama kısmında gerçekleştiriliyor
+  // 4. Sabit sayısal değer (imm) ve ölçek değeri (scale) diğer sorgu aşamalarında atanmaktadır
+  if(ParcaSonuc.ParcaTipi = ptVeri) and (ParcaSonuc.VeriTipi = vYazmac) then
+  begin
+
+    if(BT = nil) then
+    begin
+
+      Result := HATA_ISL_KOD_KULLANIM;
+      Exit;
+    end;
+
+    //  örnek: işlemkodu B1, B2, B3
+
+    //GVirgulKullanildi := False;
+
+    if(BT^.BolumAnaTip = batYok) then
+    begin
+
+      BT^.BolumAnaTip := batYazmac;
+      BT^.Yazmac := ParcaSonuc.SiraNo;
+      Result := HATA_YOK;
+    end
+    // bellek yazmaç bildirimlerinin hangi alana yapılacağı kontrolü
+    // bu aşamada değil; son aşamada gerçekleştirilecektir
+    else if(BT^.BolumAnaTip = batBellek) then
+    begin
+
+      if(biYazmac1 in BT^.BellekIcerik) then
+      begin
+
+        if(biYazmac2 in BT^.BellekIcerik) then
+        begin
+
+          Result := HATA_ISL_KOD_KULLANIM
+        end
+        else
+        begin
+
+          BT^.BellekIcerik += [biYazmac2];
+          BT^.YazmacB2 := ParcaSonuc.SiraNo;
+          Result := HATA_YOK;
+        end;
+      end
+      else
+      begin
+
+        BT^.YazmacB1 := ParcaSonuc.SiraNo;
+        BT^.BellekIcerik += [biYazmac1];
+        Result := HATA_YOK;
+      end;
+    end else Result := HATA_ISL_KULLANIM;
+  end
+  else if(ParcaSonuc.ParcaTipi = ptIslem) and (ParcaSonuc.IslemTipi = iVirgul) then
+  begin
+
+    // işlem kodundan sonra veya 3. (son) bölümden sonra , gelmişse
+    if(SI.BolumNo = 0) or (SI.BolumNo = 3) then
+    begin
+
+      Result := HATA_ISL_KOD_KULLANIM;
+    end
+    // mevcut bölüm tipine hiç atama yapılmamışsa
+    else if(BT^.BolumAnaTip = batYok) then
+    begin
+
+      Result := HATA_ISL_KOD_KULLANIM;
+    end
+    else
+    begin
+
+      Inc(SI.BolumNo);
+      case SI.BolumNo of
+        //1: BT := @SI.B1;  // 1. atama işlevin en üst kısmında yapılmaktadır
+        2: begin BT := @SI.B2; BTVerileriniSifirla(BT); end;
+        3: begin BT := @SI.B3; BTVerileriniSifirla(BT); end;
+      end;
+
+      Result := HATA_YOK;
+    end;
+  end
+  // tamamlanmadı
+  else if(ParcaSonuc.ParcaTipi = ptIslem) and (ParcaSonuc.IslemTipi = iTopla) then
+  begin
+
+    Result := HATA_YOK;
+  end
+  else if(ParcaSonuc.ParcaTipi = ptIslem) and (ParcaSonuc.IslemTipi = iKPAc) then
+  begin
+
+    // daha önce köşeli parantez kullanılmışsa
+    if(KoseliParantezSayisi > 0) then
+
+      Result := HATA_ISL_KOD_KULLANIM
+    else
+    begin
+
+      // bu kodlar daha yüksek mantıkla güçlendirilmeli
+      if(SI.B1.BolumAnaTip = batYok) then SI.B1.BolumAnaTip := batBellek
+      else if(SI.B2.BolumAnaTip = batYok) then SI.B2.BolumAnaTip := batBellek
+      else if(SI.B3.BolumAnaTip = batYok) then SI.B3.BolumAnaTip := batBellek;
+
+      Inc(KoseliParantezSayisi);
+      Result := HATA_YOK;
+    end;
+  end
+  else if(ParcaSonuc.ParcaTipi = ptIslem) and (ParcaSonuc.IslemTipi = iKPKapat) then
+  begin
+
+    // açılan parantez sayısı kadar parantez kapatılmalıdır
+    if(KoseliParantezSayisi < 1) then
+
+      Result := HATA_ISL_KOD_KULLANIM
+    else
+    begin
+
+      Dec(KoseliParantezSayisi);
+      Result := HATA_YOK;
+    end;
+  end
+  {else if(VeriKontrolTip = vktKarakterDizisi) then
+  begin
+
+    Result := HATA_DEVAM_EDEN_CALISMA;
+  end   }
+  else if(ParcaSonuc.ParcaTipi = ptVeri) and (ParcaSonuc.VeriTipi = vSayi) then
+  begin
+
+    if(BT^.BolumAnaTip = batYok) then
+    begin
+
+      BT^.BolumAnaTip := batSayisalDeger;
+      BT^.SabitDeger := ParcaSonuc.VeriSD;
+      Result := HATA_YOK;
+    end else if(BT^.BolumAnaTip = batBellek) then
+    begin
+
+      BT^.BellekIcerik += [biSabitDeger];
+      BT^.SabitDeger := ParcaSonuc.VeriSD;
+      Result := HATA_YOK;
+    end else Result := HATA_ISL_KOD_KULLANIM;
+  end
 end;
 
 function KayanNoktaSayiDegeriniKodla(KayanNoktaSayi: string;
@@ -231,14 +415,16 @@ begin
   Result := HATA_YOK;
 end;
 
+// çalışma, şu aşamada tek değişkenli (g11islev) işlevlerin alt yapısını içerir
 // [...] içeriğindeki adresleme için kullanılan öndeğerleri yönetir.
 // 1. tek öndeğere sahip yazmaçların bellek adreslenmesi tamamlandı
 // 2. birden fazla yazmacın bellek adreslenmesi gerçekleştirilecek
 // 3. yazmaç + sayısaldeğer, yazmaç + ölçek bellek adreslemesi gerçekleştirilecek
-function BellekAdresle(IsKod8, IsKodDiger, MODRMDegeri: Byte; SatirIcerik:
+function BellekAdresle(IsKod8, IsKodDiger, MODRMDegeri: Byte; SI:
   TSatirIcerik): Integer;
 var
   KodDeger, i: Byte;
+  VG: TVeriGenisligi;
 
   procedure IslemKoduEkle;
   begin
@@ -251,15 +437,32 @@ var
   end;
 begin
 
+  // 8 ve 16 bitlik sabit değer atamaları da eklenecek
+
+  // bellek içeriğinde SADECE sayısal değer var ise...
+  if(biSabitDeger in SI.B1.BellekIcerik) then
+  begin
+
+    VG := SayiTipiniAl(SI.B1.SabitDeger);
+
+    if(VG = vgB2) then
+    begin
+
+      KodEkle(IsKodDiger);
+      KodEkle((MODRMDegeri shl 3) or 6);
+      SayisalDegerEkle(SI.B1.SabitDeger, VG);
+      Result := HATA_YOK;
+    end;
+  end
   // 16 bitlik genel yazmaç bellek adreslemesi
-  if(YazmacListesi[GYazmacB1].Uzunluk = yu16bGY) then
+  else if(YazmacListesi[SI.B1.YazmacB1].Uzunluk = yu16bGY) then
   begin
 
     // KodDeger değişkeninin
     // 7..4 bit = 1. bellek yazmacı
     // 3..0 bit = 2. bellek yazmacı
     KodDeger := 0;
-    case YazmacListesi[GYazmacB1].Ad of
+    case YazmacListesi[SI.B1.YazmacB1].Ad of
       'bx': KodDeger := (3 shl 4);
       'bp': KodDeger := (5 shl 4);
       'si': KodDeger := (6 shl 4);
@@ -267,14 +470,14 @@ begin
       else KodDeger := (15 shl 4);  // 15 = $F
     end;
 
-    // 2. yazmaç var ve 16 bitlik değil ise, hata kodu ile çık
-    if(baBellekYazmac2 in SatirIcerik.BolumTip1.BolumAyrinti) then
+    // 2. yazmaç var ve 16 bitlik ise
+    if(biYazmac2 in SI.B1.BellekIcerik) then
     begin
 
-      if(YazmacListesi[GYazmacB2].Uzunluk = yu16bGY) then
+      if(YazmacListesi[SI.B1.YazmacB2].Uzunluk = yu16bGY) then
       begin
 
-        case YazmacListesi[GYazmacB2].Ad of
+        case YazmacListesi[SI.B1.YazmacB2].Ad of
           'bx': KodDeger += 3;
           'bp': KodDeger += 5;
           'si': KodDeger += 6;
@@ -290,6 +493,7 @@ begin
       end
     end;
 
+    // kullanılabilinecek tüm olasılıklar
     case KodDeger of
       $36, $63: i := 0;   // bx + si veya si + bx
       $37, $73: i := 1;   // bx + di veya di + bx
@@ -309,6 +513,7 @@ begin
       Exit;
     end;
 
+    KodEkle(IsKodDiger);
     KodEkle((MODRMDegeri shl 3) or i);
     Result := HATA_YOK;
   end
@@ -317,20 +522,20 @@ begin
   begin
 
     // sayısal değer kontrolü burada yapılacak
-    if(baBellekSabitDeger in SatirIcerik.BolumTip1.BolumAyrinti) then
+    if(biSabitDeger in SI.B1.BellekIcerik) then
     begin
 
       IslemKoduEkle;
       KodEkle($05);
       { TODO : 4 bytelık veri olarak belirlenmiştir. diğer veri tipleri de incelensin}
-      Result := SayisalDegerKodla(GBellekSabitDeger, vgB4);
+      Result := SayisalDegerKodla(SI.B1.SabitDeger, vgB4);
     end
     // 1. 32 bitlik yazmaç adresleme
-    else if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
+    else if(YazmacListesi[SI.B1.Yazmac].Uzunluk = yu32bGY) then
     begin
 
       // ayrıntılar eklenecek - sayısal değer gerekebilir
-      if(YazmacListesi[GYazmac1].Ad = 'esp') then
+      if(YazmacListesi[SI.B1.Yazmac].Ad = 'esp') then
       begin
 
         IslemKoduEkle;
@@ -339,7 +544,7 @@ begin
         Result := HATA_YOK;
       end
       // ebp yazmacının öndeğer alması gerekmektedir. [ebp+0] gibi
-      else if(YazmacListesi[GYazmac1].Ad = 'ebp') then
+      else if(YazmacListesi[SI.B1.Yazmac].Ad = 'ebp') then
       begin
 
         Result := HATA_ISL_KOD_KULLANIM;
@@ -361,51 +566,51 @@ begin
       begin
 
         // 32 bitlik yazmaçların kodlanması
-        if(YazmacListesi[GYazmac1].DesMim = dmTum) then
+        if(YazmacListesi[SI.B1.Yazmac].DesMim = dmTum) then
         begin
 
           // mimarinin 16 bit, yazmaçların 32 bit olması durumunda
-          if(GAktifDosya^.Mimari = mim16Bit) then
+          if(GAsm2.Derleyici.Mimari = mim16Bit) then
           begin
 
             KodEkle($67);
             KodEkle($66);
           end
           // mimarinin 64 bit, yazmaçların 32 bit olması durumunda
-          else if(GAktifDosya^.Mimari = mim64Bit) then KodEkle($67);
+          else if(GAsm2.Derleyici.Mimari = mim64Bit) then KodEkle($67);
 
           IslemKoduEkle;
-          KodEkle((MODRMDegeri shl 3) or YazmacListesi[GYazmac1].Deger);
+          KodEkle((MODRMDegeri shl 3) or YazmacListesi[SI.B1.Yazmac].Deger);
           Result := HATA_YOK;
         end
         // 32 / 64 bitlik yazmaçların kodlanması
-        else if(YazmacListesi[GYazmac1].DesMim = dm64Bit) then
+        else if(YazmacListesi[SI.B1.Yazmac].DesMim = dm64Bit) then
         begin
 
           // mimarinin 16 bit, yazmaçların 32 bit olması durumunda
-          if(GAktifDosya^.Mimari = mim64Bit) then
+          if(GAsm2.Derleyici.Mimari = mim64Bit) then
           begin
 
             KodEkle($67);
             KodEkle($41);
 
             IslemKoduEkle;
-            KodEkle((MODRMDegeri shl 3) or (YazmacListesi[GYazmac1].Deger - 8));
+            KodEkle((MODRMDegeri shl 3) or (YazmacListesi[SI.B1.Yazmac].Deger - 8));
             Result := HATA_YOK;
           end else Result := HATA_ISL_KOD_KULLANIM;
         end;
       end;
     end
     // 2. 64 bitlik yazmaç adresleme
-    else if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) then
+    else if(YazmacListesi[SI.B1.Yazmac].Uzunluk = yu64bGY) then
     begin
 
-      if(YazmacListesi[GYazmac1].Deger > 7) then
+      if(YazmacListesi[SI.B1.Yazmac].Deger > 7) then
       begin
 
         KodEkle($41);
-        i := YazmacListesi[GYazmac1].Deger - 8;
-      end else i := YazmacListesi[GYazmac1].Deger;
+        i := YazmacListesi[SI.B1.Yazmac].Deger - 8;
+      end else i := YazmacListesi[SI.B1.Yazmac].Deger;
 
       IslemKoduEkle;
       KodEkle((MODRMDegeri shl 3) or i);
@@ -429,9 +634,9 @@ begin
   // bu komutlar bir komut grubu olup, bulunulan konumdan kaç adım ileri veya
   // geri (relative) adrese dallanma yapılacağını bildirir
   // not: şu aşamada 8 bitlik katı kodlama uygulanmıştır
-  if(GSabitDeger1 < (MevcutBellekAdresi + 2)) then
-    ii := -((MevcutBellekAdresi + 2) - GSabitDeger1)
-  else ii := GSabitDeger1 - (MevcutBellekAdresi + 2);
+  if(SI.B1.SabitDeger < (MevcutBellekAdresi + 2)) then
+    ii := -((MevcutBellekAdresi + 2) - SI.B1.SabitDeger)
+  else ii := SI.B1.SabitDeger - (MevcutBellekAdresi + 2);
 
   KodEkle(KomutIK);
   KodEkle(ii);
@@ -445,35 +650,35 @@ end;
 function IslemKoduIleYazmacDegeriniBirlestir2(IK8, IKDiger, ModRMDeger: Byte; SI: TSatirIcerik): Integer;
 begin
 
-  if(YazmacListesi[GYazmac1].Uzunluk = yu8bGY) then
+  if(YazmacListesi[SI.B1.Yazmac].Uzunluk = yu8bGY) then
   begin
 
-    KodEkle(IK8 + (ModRMDeger shl 3) or (YazmacListesi[GYazmac1].Deger and 7));
+    KodEkle(IK8 + (ModRMDeger shl 3) or (YazmacListesi[SI.B1.Yazmac].Deger and 7));
     Result := HATA_YOK;
   end
-  else if(YazmacListesi[GYazmac1].Uzunluk = yu16bGY) then
+  else if(YazmacListesi[SI.B1.Yazmac].Uzunluk = yu16bGY) then
   begin
 
-    KodEkle(IKDiger + (ModRMDeger shl 3) or (YazmacListesi[GYazmac1].Deger and 7));
+    KodEkle(IKDiger + (ModRMDeger shl 3) or (YazmacListesi[SI.B1.Yazmac].Deger and 7));
     Result := HATA_YOK;
   end
-  else if(YazmacListesi[GYazmac1].Uzunluk = yu32bGY) then
+  else if(YazmacListesi[SI.B1.Yazmac].Uzunluk = yu32bGY) then
   begin
 
-    if(YazmacListesi[GYazmac1].DesMim = dm64Bit) then KodEkle($41);
+    if(YazmacListesi[SI.B1.Yazmac].DesMim = dm64Bit) then KodEkle($41);
 
-    KodEkle(IKDiger + (ModRMDeger shl 3) or (YazmacListesi[GYazmac1].Deger and 7));
+    KodEkle(IKDiger + (ModRMDeger shl 3) or (YazmacListesi[SI.B1.Yazmac].Deger and 7));
     Result := HATA_YOK;
   end
-  else if(YazmacListesi[GYazmac1].Uzunluk = yu64bGY) then
+  else if(YazmacListesi[SI.B1.Yazmac].Uzunluk = yu64bGY) then
   begin
 
-    if(YazmacListesi[GYazmac1].Deger > 7) then
+    if(YazmacListesi[SI.B1.Yazmac].Deger > 7) then
       KodEkle($4C)
     else KodEkle($48);
 
     KodEkle(IKDiger);
-    KodEkle($C0 + (ModRMDeger shl 3) or (YazmacListesi[GYazmac1].Deger and 7));
+    KodEkle($C0 + (ModRMDeger shl 3) or (YazmacListesi[SI.B1.Yazmac].Deger and 7));
     Result := HATA_YOK;
   end;
 end;
@@ -504,7 +709,7 @@ begin
     // 64 bitlik mimarinin 8 bitlik yazmaçları
     begin
 
-      if(GAktifDosya^.Mimari = mim64Bit) then
+      if(GAsm2.Derleyici.Mimari = mim64Bit) then
       begin
 
         if((YazmacListesi[HedefYazmac].Ad = 'spl') or (YazmacListesi[HedefYazmac].Ad = 'bpl') or
@@ -525,7 +730,7 @@ begin
     if(YazmacListesi[HedefYazmac].DesMim = dmTum) then
     begin
 
-      if not(GAktifDosya^.Mimari = mim16Bit) then KodEkle($66);
+      if not(GAsm2.Derleyici.Mimari = mim16Bit) then KodEkle($66);
 
       KodEkle(IsKodDiger);
       KodEkle($C0 + (YazmacListesi[KaynakYazmac].Deger shl 3) or
@@ -536,7 +741,7 @@ begin
     // 64 bitlik mimarinin 8 bitlik yazmaçları
     begin
 
-      if(GAktifDosya^.Mimari = mim64Bit) then
+      if(GAsm2.Derleyici.Mimari = mim64Bit) then
       begin
 
         KodEkle($66);
@@ -555,7 +760,7 @@ begin
     if(YazmacListesi[HedefYazmac].DesMim = dmTum) then
     begin
 
-      if(GAktifDosya^.Mimari = mim16Bit) then KodEkle($66);
+      if(GAsm2.Derleyici.Mimari = mim16Bit) then KodEkle($66);
 
       KodEkle(IsKodDiger);
       KodEkle($C0 or (YazmacListesi[KaynakYazmac].Deger shl 3) or
@@ -566,7 +771,7 @@ begin
     // 64 bitlik mimarinin 8 bitlik yazmaçları
     begin
 
-      if(GAktifDosya^.Mimari = mim64Bit) then
+      if(GAsm2.Derleyici.Mimari = mim64Bit) then
       begin
 
         KodEkle($41);
@@ -620,18 +825,18 @@ begin
   if(YazmacaBB) then
   begin
 
-    BT1 := SatirIcerik.BolumTip1;
-    BT2 := SatirIcerik.BolumTip2;
-    Y1 := GYazmac1;
-    Y2 := GYazmac2;
+    BT1 := SI.B1;
+    BT2 := SI.B2;
+    Y1 := SI.B1.YazmacB1;      // ... bu ve ...
+    Y2 := SI.B1.YazmacB2;
   end
   else
   begin
 
-    BT1 := SatirIcerik.BolumTip2;
-    BT2 := SatirIcerik.BolumTip1;
-    Y1 := GYazmac2;
-    Y2 := GYazmac1;
+    BT1 := SI.B2;
+    BT2 := SI.B1;
+    Y1 := SI.B1.YazmacB2;    // ... bu kısımlar teyit edilsin
+    Y2 := SI.B1.YazmacB1;
   end;
 
   if(BT1.BolumAnaTip = batYazmac) and (BT2.BolumAnaTip = batBellek) then
@@ -642,17 +847,17 @@ begin
       KodEkle(IsKod8)
     else KodEkle(IsKodDiger);
 
-    if(baBellekSabitDeger in BT2.BolumAyrinti) then
+    if(biSabitDeger in BT2.BellekIcerik) then
     begin
 
       KodEkle((YazmacListesi[Y1].Deger shl 3) or 5);
-      SayisalDegerEkle(GBellekSabitDeger, vgB4);
+      SayisalDegerEkle(SI.B2.SabitDeger, vgB4);
     end
     else
     begin
 
       KodEkle((YazmacListesi[Y1].Deger shl 3) or
-        (YazmacListesi[GYazmacB1].Deger and 7));
+        (YazmacListesi[SI.B1.YazmacB1].Deger and 7));
     end;
 
     Result := HATA_YOK;
@@ -676,7 +881,7 @@ begin
     // 64 bitlik mimarinin 8 bitlik yazmaçları
     begin
 
-      if(GAktifDosya^.Mimari = mim64Bit) then
+      if(GAsm2.Derleyici.Mimari = mim64Bit) then
       begin
 
         if((YazmacListesi[Yazmac].Ad = 'spl') or (YazmacListesi[Yazmac].Ad = 'bpl') or
@@ -695,7 +900,7 @@ begin
     if(YazmacListesi[Yazmac].DesMim = dmTum) then
     begin
 
-      if not(GAktifDosya^.Mimari = mim16Bit) then KodEkle($66);
+      if not(GAsm2.Derleyici.Mimari = mim16Bit) then KodEkle($66);
 
       KodEkle(IsKodDiger + (YazmacListesi[Yazmac].Deger));
       Result := HATA_YOK;
@@ -704,7 +909,7 @@ begin
     // 64 bitlik mimarinin 16 bitlik yazmaçları
     begin
 
-      if(GAktifDosya^.Mimari = mim64Bit) then
+      if(GAsm2.Derleyici.Mimari = mim64Bit) then
       begin
 
         KodEkle($66);
@@ -721,7 +926,7 @@ begin
     if(YazmacListesi[Yazmac].DesMim = dmTum) then
     begin
 
-      if(GAktifDosya^.Mimari = mim16Bit) then KodEkle($66);
+      if(GAsm2.Derleyici.Mimari = mim16Bit) then KodEkle($66);
 
       KodEkle(IsKodDiger + (YazmacListesi[Yazmac].Deger));
       Result := HATA_YOK;
@@ -730,7 +935,7 @@ begin
     // 64 bitlik mimarinin 32 bitlik yazmaçları
     begin
 
-      if(GAktifDosya^.Mimari = mim64Bit) then
+      if(GAsm2.Derleyici.Mimari = mim64Bit) then
       begin
 
         KodEkle($41);
@@ -823,9 +1028,9 @@ begin
   // bu komutlar bir komut grubu olup, bulunulan konumdan kaç adım ileri veya
   // geri (relative) adrese dallanma yapılacağını bildirir
   // not: şu aşamada 8 bitlik katı kodlama uygulanmıştır
-  if(GSabitDeger1 < (MevcutBellekAdresi - 1)) then
-    SayisalVeri := -((MevcutBellekAdresi - 1) - GSabitDeger1)
-  else SayisalVeri := GSabitDeger1 - (MevcutBellekAdresi - 1);
+  if(SI.B1.SabitDeger < (MevcutBellekAdresi - 1)) then
+    SayisalVeri := -((MevcutBellekAdresi - 1) - SI.B1.SabitDeger)
+  else SayisalVeri := SI.B1.SabitDeger - (MevcutBellekAdresi - 1);
 
   SayiTipi := SayiTipiniAl(SayisalVeri);
 
@@ -846,6 +1051,20 @@ begin
     KodEkle(Byte(SayisalVeri));
     SayisalVeri := SayisalVeri shr 8;
   end;
+end;
+
+// 5.4 - bellek bölgesine yazmaç ata
+function BellekBolgesineYazmacAta(SI: TSatirIcerik; Yazmac1,
+  Yazmac2: Integer): Integer;
+begin
+
+end;
+
+// 5.5 - bellek bölgesine sayısal değer ata
+function BellekBolgesineSayisalDegerAta(SI: TSatirIcerik; Yazmac1,
+  Yazmac2: Integer): Integer;
+begin
+
 end;
 
 end.

@@ -1,0 +1,2 @@
+MAKİNE_TİP_I386 = 14Ch
+MAKİNE_TİP_X64 = 8664h

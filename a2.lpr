@@ -7,8 +7,9 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, anasayfaform, atamalarform, derlemebilgisiform, LConvEncoding, sysutils,
-  genel, paylasim, g11islev, onekler, ayarlarform, araclar, g13islev, derleyici;
+  Forms, anasayfaform, atamalarform, derlemebilgisiform, LConvEncoding,
+  sysutils, genel, paylasim, g11islev, onekler, ayarlarform, araclar, g13islev,
+  derleyici, hataayiklama, aramaform;
 
 {$R *.res}
 
@@ -27,5 +28,6 @@ begin
   Application.CreateForm(TfrmDerlemeBilgisi, frmDerlemeBilgisi);
   Application.CreateForm(TfrmAtamalar, frmAtamalar);
   Application.CreateForm(TfrmAyarlar, frmAyarlar);
+  Application.CreateForm(TfrmAra, frmAra);
   Application.Run;
 end.

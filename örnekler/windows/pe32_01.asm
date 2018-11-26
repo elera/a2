@@ -121,7 +121,7 @@ kod_başlangıç:
         push    0
         call    [ExitProcessİşlevi]
 
-dosya.ekle 'islevler.inc'
+;dosya.ekle 'islevler.inc'
 
 ;===============================================================================
 ; işlev adı: SayısalDeğeriKaraktereÇevir

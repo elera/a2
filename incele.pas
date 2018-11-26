@@ -27,499 +27,84 @@ interface
   yerini alma (displacement): 1-4 byte
   sayısal değer (immediate): 1-4 byte
 }
-uses genel, Dialogs, dosya;
+uses genel, Dialogs, dosya, paylasim;
 
-function KodUret(Dosya: PDosya; KodDizisi: string): Integer;
+function KodUret(Dosya: TDosya; KodDizisi: string): Integer;
+function VerileriIsle(ParcaSonuc: TParcaSonuc): Integer;
+function Parcala(var SonParca: Boolean): TParcaSonuc;
+function KomutYorumla(ParcaSonuc: TParcaSonuc): TParcaSonuc;
+function SayisalVeriyiIsle(AIslemTipi: TIslemTipleri; AVeriTip: TVeriTipleri;
+  ASayisalDeger: string): Integer;
 
 implementation
 
-uses atamalar, sysutils, donusum, yazmaclar, komutlar, paylasim, g00islev,
-  onekler, makrolar;
-
-type
-  TIfadeDurum = (idYok, idKPAc, idKPKapat);
+uses atamalar, sysutils, donusum, yazmaclar, komutlar, tanimlar, onekler,
+  makrolar, bildirimler, degiskenler, g10islev, g11islev, g12islev, g13islev,
+  dbugintf, kodlama, hataayiklama, anasayfaform;
 
 var
-  SonVeriKontrolTip: TVeriKontrolTip;     // en son işlenen veri tipini içerir
-  iKomutYorumla: TAsmKomut = nil;         // assembler komutuna işaretçi (pointer)
+  KomutUz: Integer;
+
+  GKodDizisi: string;
+  KodDiziUzunluk, KodDiziSira: Integer;
+  GTanimlanacakVeri1: string;
 
 // her bir kod satırının yönlendirildiği, incelenerek parçalara ayrıldığı,
 // assembler kodlarının üretildiği ana bölüm
-function KodUret(Dosya: PDosya; KodDizisi: string): Integer;
+function KodUret(Dosya: TDosya; KodDizisi: string): Integer;
 var
   Atama: TAtama;
-  Komut, s: string;
-  KomutUz: Integer;
-  UKodDizisi, KodDizisiSira: Integer;
   C: Char;
-  ParcaNo, i: Integer;
-  IfadeDurum: TIfadeDurum;
-  SatirSonu: Boolean;
+  i, KSiraNo: Integer;
   SayisalDeger: QWord;        // geçici deger değişkeni
   KPSayisi: Integer;          // köşeli parantezlerin takibini gerçekleştiren değişken
   TekTirnakSayisi: Integer;   // karakter katarı (string) takibini gerçekleştiren değişken
   OlcekDegerMevcut: Boolean;  // dizi içerisinde ölçek değer (scale) olup olmadığını takip eder
   SonKullanilanIsleyici: Char;
-  VeriTipi: TTemelVeriTipi;   // dizi içerisinde veri tiplerini tanımlamak için
-  YazmacDurum: TYazmacDurum;
-  Yazmac: TYazmacDurum;
+  OncekiParcaSonuc, ParcaSonuc: TParcaSonuc;
   OnEk: TOnEk;
-
-  // her bir komutun yorumlanarak ilgili işleve yönlendirilmesini sağlar
-  // ParcaNo değişkeninin artırma işlemini SADECE bu işlev gerçekleştirmektedir
-  function KomutYorumla(AParcaNo: Integer; AVeriKontrolTip: TVeriKontrolTip;
-    AVeri1: string; AVeri2: QWord): Integer;
-  var
-    _VeriUzunlugu, _i: Integer;
-    _AVeriKontrolTip: TVeriKontrolTip;
-    _Yazmac: TYazmacDurum;
-    _KomutDurum: TKomutDurum;
-    _Komut: TKomut;
-  begin
-
-    _AVeriKontrolTip := AVeriKontrolTip;
-
-    // iKomutYorumla çağrı değişkenine atama YAPILMAMIŞSA (ilk kez çağrı yapılacaksa)
-    // burada ilk 2 verinin ne olduğu kararlaştırılmakta ve verinin devamlılığı bu karara
-    // göre gelişmektedir. 1. aşamada verinin işlem kodu (opcode), 2. aşamada ise verinin
-    // tanımlama olması gerekmektedir. aksi durumda işlem diğer aşamalarda kesilecektir.
-    if(iKomutYorumla = nil) then
-    begin
-
-      // ParcaNo = 1 = İşlem Kodu incelenmekte
-      // ParcaNo = 2 = Tanımlama incelenmektedir
-      if(ParcaNo < 3) then
-      begin
-
-        // komutun bir işlem kodu olup olmadığı test ediliyor
-        _KomutDurum := KomutBilgisiAl(AVeri1);
-
-        // eğer komut, komut listesinde yok ise, öndeğere sahip
-        // hata işlevini çağrı değişkenine ata
-        if(_KomutDurum.SiraNo = -1) then
-        begin
-
-          // 1. aşamada ilgili komutun işlem kodu olmaması durumunda, 2. aşamada
-          // komutun bir değişken veya tanım olasılığına karşı veri saklanıyor
-          if(ParcaNo = 1) then
-          begin
-
-            { TODO : boşluk olmaksızın açıklama gelmesi durumunda veri buraya
-              gelmektedir. Her ne kadar sonuç olarak bir problem olmasa da çözümlenmesi
-              gerekmektedir. }
-            GTanimlanacakVeri := AVeri1;
-            Result := HATA_YOK
-          end
-          else if(ParcaNo = 2) and (AVeriKontrolTip = vktEsittir) then
-          begin
-
-            SatirIcerik.Komut.KomutTipi := ktTanim;
-            SonVeriKontrolTip := vktIlk;
-
-            iKomutYorumla := @Grup00Islev;
-            Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo - 1,
-              SonVeriKontrolTip, GTanimlanacakVeri, 0);
-
-            SonVeriKontrolTip := vktEsittir;
-            Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
-              SonVeriKontrolTip, '', 0);
-          end
-          else
-          begin
-
-            iKomutYorumla := @KomutHata;
-            GHataAciklama := GTanimlanacakVeri;
-            Result := HATA_BILINMEYEN_KOMUT;
-          end;
-        end
-        else
-        begin
-
-          // işlem kodu işlevine ilk çağrı yapılıyor
-          if(_KomutDurum.KomutTipi = ktIslemKodu) then
-          begin
-
-            SatirIcerik.Komut.KomutTipi := ktIslemKodu;
-            SonVeriKontrolTip := vktIlk;
-            iKomutYorumla := KomutListe[_KomutDurum.SiraNo];
-            Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo, vktIlk,
-              AVeri1, _KomutDurum.SiraNo);
-          end
-          // bildirim işlevine ilk çağrı yapılıyor
-          else if(_KomutDurum.KomutTipi = ktBildirim) then
-          begin
-
-            SatirIcerik.Komut.KomutTipi := ktBildirim;
-            SonVeriKontrolTip := vktIlk;
-            iKomutYorumla := KomutListe[_KomutDurum.SiraNo];
-            Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo, vktIlk,
-              AVeri1, _KomutDurum.SiraNo);
-
-            // boşluktan önce eşittir verisinin gelmesi durumunda,
-            // veri ilgili işleve gönderiliyor
-            if(Result = HATA_YOK) and (AVeriKontrolTip = vktEsittir) then
-            begin
-
-              SonVeriKontrolTip := vktEsittir;
-              Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
-                SonVeriKontrolTip, '', 0);
-            end;
-          end
-          // değişken işlevine ilk çağrı yapılıyor
-          else
-          begin
-
-            SatirIcerik.Komut.KomutTipi := ktDegisken;
-            SonVeriKontrolTip := vktIlk;
-
-            _Komut := KomutListesi[_KomutDurum.SiraNo];
-            case _Komut.GrupNo of
-              GRUP02_DB: _VeriUzunlugu := 1;
-              GRUP02_DW: _VeriUzunlugu := 2;
-              GRUP02_DD: _VeriUzunlugu := 4;
-              GRUP02_DQ: _VeriUzunlugu := 8;
-            end;
-
-            iKomutYorumla := KomutListe[_KomutDurum.SiraNo];
-
-            Result := HATA_YOK;
-
-            // 1. tanım etiketini listeye ekle
-            // { TODO : tvtTanimsiz incelensin }
-            if(ParcaNo = 2) then Result := GAsm2.AtamaListesi.Ekle(Dosya,
-              GTanimlanacakVeri, atEtiket, MevcutBellekAdresi, tvtTanimsiz, '', 0);
-
-            // 2. hata olmaması durumunda ilgili işleve çağrıda bulun
-            if(Result = HATA_YOK) then
-              Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
-                vktIlk, '', _KomutDurum.SiraNo);
-          end;
-        end;
-      end else Result := HATA_BILINMEYEN_KOMUT;
-
-      Inc(ParcaNo);
-    end
-    // veri herhangi bir kontrole tabi tutulmadan ilgili işleve yönlendiriliyor
-    else if(_AVeriKontrolTip = vktKarakterDizisi) then
-    begin
-
-      SonVeriKontrolTip := vktKarakterDizisi;
-      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
-        SonVeriKontrolTip, AVeri1, 0);
-    end
-    // değişken verisinin yazmaç, işlem kodu ve diğer tanımlama olup olmadığının
-    // kontrol edilmesi için işleme alındığı bölüm
-    else if(_AVeriKontrolTip = vktDegisken) then
-    begin
-
-      if(SatirIcerik.Komut.KomutTipi = ktTanim) then
-      begin
-
-        SonVeriKontrolTip := vktDegisken;
-        Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo, SonVeriKontrolTip,
-          AVeri1, 0)
-      end
-      else
-      begin
-
-        _Yazmac := YazmacBilgisiAl(AVeri1);
-        if(_Yazmac.Sonuc > -1) then
-        begin
-
-          _i := _Yazmac.Sonuc;
-        end;
-
-        { TODO : yazmaç değeri alt kısımlara eklenecek. buradan çıkarılacak }
-        SonVeriKontrolTip := vktYazmac;
-        Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
-          SonVeriKontrolTip, '', _i);
-      end;
-    end
-    // ölçek ve sayı verilerinin işlenmesi
-    else if(_AVeriKontrolTip = vktOlcek) or (_AVeriKontrolTip = vktSayi) then
-    begin
-
-      SonVeriKontrolTip := _AVeriKontrolTip;
-      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
-        SonVeriKontrolTip, '', AVeri2);
-    end
-    // kayan nokta verilerinin işlenmesi
-    else if(_AVeriKontrolTip = vktKayanNokta)then
-    begin
-
-      SonVeriKontrolTip := _AVeriKontrolTip;
-      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
-        SonVeriKontrolTip, AVeri1, 0);
-    end
-    else if(_AVeriKontrolTip = vktVirgul) then
-    begin
-
-      SonVeriKontrolTip := vktVirgul;
-      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
-        SonVeriKontrolTip, '', 0);
-
-      Inc(ParcaNo);
-
-      Result := HATA_YOK;
-    end
-    else if(_AVeriKontrolTip = vktArti) or (_AVeriKontrolTip = vktKPAc) or
-      (_AVeriKontrolTip = vktKPKapat) or (_AVeriKontrolTip = vktEsittir) then
-    begin
-
-      // öntanımlı değer
-      Result := HATA_YOK;
-
-      // ilgili işleyicilerden önce bir veri var ise değerlendir
-      if(Length(AVeri1) > 0) then
-      begin
-
-        _Yazmac := YazmacBilgisiAl(AVeri1);
-        if(_Yazmac.Sonuc > -1) then
-        begin
-
-          _i := _Yazmac.Sonuc;
-          SonVeriKontrolTip := vktYazmac;
-          Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
-            SonVeriKontrolTip, '', _i);
-        end;
-      end;
-
-      // işleyici değerini işleve yönlendir.
-      { TODO : (burada virgül kontrolü tekrar ele alınmalıdır) }
-      if(Result = HATA_YOK) then
-      begin
-
-        // tanım işleminde = verisinin gönderilmesi için
-        if(_AVeriKontrolTip = vktEsittir) then
-        begin
-
-          SonVeriKontrolTip := vktEsittir;
-          Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
-            SonVeriKontrolTip, '', 0);
-        end
-        else
-        begin
-
-          SonVeriKontrolTip := _AVeriKontrolTip;
-          Result := iKomutYorumla(Dosya^.IslenenToplamSatir, AParcaNo,
-            SonVeriKontrolTip, AVeri1, _i);
-        end;
-      end;
-
-      // virgül olması durumunda ParcaNo değişkenini 1 artır
-      if(SatirIcerik.Komut.KomutTipi = ktIslemKodu) and (_AVeriKontrolTip = vktVirgul) then
-        Inc(ParcaNo);
-    end
-    else if(_AVeriKontrolTip = vktYazmac) then
-    begin
-
-      //SendDebug('Yazmaç Kod: ' + IntToStr(AVeri2));
-
-      SonVeriKontrolTip := vktYazmac;
-      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, ParcaNo,
-        SonVeriKontrolTip, '', AVeri2);
-    end
-    else if(_AVeriKontrolTip = vktSon) then
-    begin
-
-      SonVeriKontrolTip := vktSon;
-      Result := iKomutYorumla(Dosya^.IslenenToplamSatir, 0, SonVeriKontrolTip, '', 0);
-    end;
-
-    // işlenen değişkenlerin ilk değer atamalarını gerçekleştir
-    Komut := '';
-    KomutUz := 0;
-
-    // VeriTipi'nin tvtTanimsiz olarak tanımlandığı;
-    // 1. nokta işlevin ana başlangıcı
-    // 2. nokta SayisalVeriyiIsle işlevi
-    // 3. ve son nokta ise burasıdır
-    VeriTipi := tvtTanimsiz;
-  end;
-
-  // sayısal çoklu veriyi işleme işlevi
-  // etiket ve tanım sayısal veriler burada işlenecek ve sonuçları alınacak
-  // hesaplanan verilerin sıfırlanması diğer işlevler tarafından gerçekleştirilecektir
-  function SayisalVeriyiIsle(AIsleyici: string): Integer;
-  var
-    _Atama: TAtama;
-  begin
-
-    if(AIsleyici = '(') then
-    begin
-
-      if(KomutUz > 0) then
-        Result := GAsm2.Matematik.ParantezEkle(AIsleyici[1], True, StrToInt(Komut))
-      else Result := GAsm2.Matematik.ParantezEkle(AIsleyici[1], False, 0);
-    end
-    else if(AIsleyici = ')') then
-    begin
-
-      if(KomutUz > 0) then
-        Result := GAsm2.Matematik.ParantezEkle(AIsleyici[1], True, StrToInt(Komut))
-      else Result := GAsm2.Matematik.ParantezEkle(AIsleyici[1], False, 0);
-    end
-    else
-    begin
-
-      if(KomutUz > 0) then
-      begin
-
-        if(VeriTipi = tvtSayi) then
-        begin
-
-          if(SayiyaCevir(Komut, SayisalDeger)) then
-          begin
-
-            if(Length(AIsleyici) > 0) then
-            begin
-
-              //GAsm2.Matematik.SayiEkle(SonKullanilanIsleyici, True, SayisalDeger);
-              GAsm2.Matematik.SayiEkle(AIsleyici[1], True, SayisalDeger);
-              SonKullanilanIsleyici := AIsleyici[1];
-            end
-            else
-            begin
-
-              GAsm2.Matematik.SayiEkle('+', True, SayisalDeger);
-              //GAsm2.Matematik.SayiEkle(SonKullanilanIsleyici, True, SayisalDeger);
-              SonKullanilanIsleyici := '+';     // geçici değer
-            end;
-
-            Result := HATA_YOK;
-          end else Result := HATA_SAYISAL_DEGER;
-        end
-        else if(VeriTipi = tvtMakro) then
-        begin
-
-          Result := MakroIslev(AIsleyici, Komut, SonKullanilanIsleyici);
-        end
-        // aksi durumda veri bir değişkendir
-        // bilgi: karaktersel veriler ana bölümde ele alınmaktadır
-        else // if(VeriTipi = tvtDiger) then
-        begin
-
-          _Atama := GAsm2.AtamaListesi.Bul(Dosya, Komut);
-          if(_Atama = nil) then
-          begin
-
-            // Sayısal değerin öndeğer 0 olarak belirlenmesi bölme işleminde
-            // problem oluşturabilir
-            SayisalDeger := $FFFFFF0;    // etiketin bulunamaması durumunda öndeğer alacak
-            GEtiketHatasiMevcut := True;
-            Inc(GEtiketHataSayisi);
-            //SendDebug('Satır No: ' + IntToStr(SatirNo));
-
-            if(Length(AIsleyici) > 0) then
-            begin
-
-              //GAsm2.Matematik.SayiEkle(SonKullanilanIsleyici, True, SayisalDeger);
-              GAsm2.Matematik.SayiEkle(AIsleyici[1], True, SayisalDeger);
-              SonKullanilanIsleyici := AIsleyici[1];
-            end
-            else
-            begin
-
-              //GAsm2.Matematik.SayiEkle(SonKullanilanIsleyici, True, SayisalDeger);
-              GAsm2.Matematik.SayiEkle('+', True, SayisalDeger);
-              SonKullanilanIsleyici := '+';     // geçici değer
-            end;
-
-            //Result := HATA_ETIKET_TANIMLANMAMIS;
-            Result := HATA_YOK;
-          end
-          else
-          begin
-
-            //SendDebug('İşleyici: ' + AIsleyici);
-            //SendDebug('İşleyici Değişken: ' + Komut);
-            //SendDebug('SonKullanilanIsleyici: ' + SonKullanilanIsleyici);
-
-            //if(_Degisken.VeriTipi = tvtSayi) or (_Degisken.VeriTipi = tvtDiger) or
-//              (_Degisken.VeriTipi = tvtTanimsiz) then
-            //begin
-
-              if(_Atama.Tip = atEtiket) then
-                SayisalDeger := _Atama.BellekAdresi
-              else //if(_Degisken.VeriTipi = tvtSayi) then
-                SayisalDeger := _Atama.iDeger;
-              //else if(_Degisken.VeriTipi = tvtDiger) then   // karakterdizisi
-                //SayisalDeger := _Degisken.BellekAdresi
-            //end;
-
-            if(Length(AIsleyici) > 0) then
-            begin
-
-              //GAsm2.Matematik.SayiEkle(SonKullanilanIsleyici, True, SayisalDeger);
-              GAsm2.Matematik.SayiEkle(AIsleyici[1], True, SayisalDeger);
-              SonKullanilanIsleyici := AIsleyici[1];
-            end
-            else
-            begin
-
-              //GAsm2.Matematik.SayiEkle(SonKullanilanIsleyici, True, SayisalDeger);
-              GAsm2.Matematik.SayiEkle('+', True, SayisalDeger);
-              SonKullanilanIsleyici := '+';     // geçici değer
-            end;
-
-            // gerekli olup olmadığı incelensin
-            GAsm2.Matematik.Sonuc(SayisalDeger);
-            //SendDebug('Sonuç: ' + IntToStr(SayisalDeger));
-            //SendDebug('İşleyici Değişken: ' + Komut);
-
-            Result := HATA_YOK;
-          end;
-        end;  //?? { TODO : karaktersel veri tipi buraya eklenecek }
-      end //else GAsm2.Matematik.SayiEkle(AIsleyici, False, 0);
-    end;
-
-    // işlenen değişkenlerin ilk değer atamalarını gerçekleştir
-    Komut := '';
-    KomutUz := 0;
-
-    // VeriTipi'nin tvtTanimsiz olarak tanımlandığı;
-    // 1. nokta işlevin ana başlangıcı
-    // 2. nokta KomutYorumla işlevi
-    // 3. nokta ise burasıdır
-    VeriTipi := tvtTanimsiz;
-  end;
+  SonParca: Boolean;
+  KomutTip: TKomutTipi;
+  Bildirim: TBildirim;
+  VeriyiIsle: Boolean;
 begin
 
   // ilk değer atamaları
 
-  UKodDizisi := Length(KodDizisi);
+  GKodDizisi := KodDizisi;
 
-  SonVeriKontrolTip := vktYok;
-  ParcaNo := 1;
-  KodDizisiSira := 1;
   GHataKodu := HATA_YOK;
   KPSayisi := 0;
   TekTirnakSayisi := 0;
   OlcekDegerMevcut := False;
-  SatirSonu := False;
 
   // VeriTipi'nin tvtTanimsiz olarak tanımlandığı;
   // 1. nokta KomutYorumla işlevi
   // 2. nokta SayisalVeriyiIsle işlevi
   // 3. nokta ise burasıdır
-  VeriTipi := tvtTanimsiz;
+  //VeriTipi := ktTanimsiz;
 
-  Komut := '';
+  Bildirim.Esittir := False;
+
+  //BirOncekiParcaSonuc.ParcaTipi := ptYok;
+  //OncekiParcaSonuc.ParcaTipi := ptYok;
+  ParcaSonuc.ParcaTipi := ptYok;
+
+  ParcaSonuc.VeriKK := '';
+
+  // son aşamayı temsil eden değişken
+  //SonParcaSonuc.VeriKK := '';
+
+  //GKomut := '';
   KomutUz := 0;
   SonKullanilanIsleyici := '+';
 
-  GTanimlanacakVeri := '';
-
-  IfadeDurum := idYok;
-
-  iKomutYorumla := nil;
+  GTanimlanacakVeri1 := '';
 
   GAsm2.Matematik.Temizle;      // mevcut matematisel işlemleri temizle
 
-  GEtiketHatasiMevcut := False;
-
   GSabitDegerVG := vgHatali;
-  GBellekSabitDegerVG := vgHatali;
+  //GBellekSabitDegerVG := vgHatali;
 
   // bir satırın değerlendirilme süreci
   // örnekler:
@@ -534,640 +119,858 @@ begin
   // 5. kontrol - öndeğer bir karakter katarı mı?
   // 6. kontrol - öndeğer bir değişken mi?
 
-  repeat
+  KodDiziUzunluk := Length(KodDizisi);
+  KodDiziSira := 1;
 
-    // karakter değerini al
-    C := KodDizisi[KodDizisiSira];
+  // ->>>>> HER BİR SATIRIN PARÇA BAZLI İŞLENDİĞİ BÖLÜM
+  SonParca := False;
+  while not SonParca and (GHataKodu = HATA_YOK) do
+  begin
 
-    // satırın sonuna gelinmiş mi? kontrol et!
-    Inc(KodDizisiSira);
-    if(KodDizisiSira > UKodDizisi) then SatirSonu := True;
+    //BirOncekiParcaSonuc := OncekiParcaSonuc;
+    OncekiParcaSonuc := ParcaSonuc;
 
-    // satır içeriğini kontrol edecek kontrol değer kahramanları
-    if not(dvAciklama in SatirIcerik.DigerVeri) and
-      (C in [' ', '''', '.', ',', ':', ';', '=', '(', ')', '[', ']', '+', '-',
-        '*', '/', '%', #9]) then
+    ParcaSonuc.ParcaTipi := ptTanimsiz;
+    ParcaSonuc.VeriTipi := vTanimsiz;
+
+    // verinin işlenmesi öndeğer true olarak değerlendirilecek
+    VeriyiIsle := True;
+
+    // Parçala işlemi tarafından değerlendirilerek gelen veriler:
+    // 1. işlem kodlarından: =,[]+-*/()
+    // 2. makro kodlarının tümü: %
+    // 3. ; karakteriyle başlayan açıklama verilerinin tümü
+    // 4. '..' aralığından tanımlanan karakter verilerinin tümü
+    // 5. sayısal değer olan 0..9 arası sayısal değer ile başlayan, sayısal ve kayan nokta verilerinin tümü
+    ParcaSonuc := Parcala(SonParca);
+
+    //VeriBilgisiniGoruntule(ParcaSonuc);
+
+    // parça tipinin olmaması durumunda bir sonraki parçayı al
+    if(ParcaSonuc.ParcaTipi = ptYok) then Continue;
+
+    if{(ParcaSonuc.ParcaTipi = ptVeri) and} (ParcaSonuc.VeriTipi = vAciklama) then
     begin
 
-      {
-        Virgül işlevi ->
-      }
-      if(C = ',') then
+      //SendDebug('Açıklama: ' + ParcaSonuc.HamVeri);
+      GHataKodu := HATA_YOK;
+         Continue;
+
+      {if(SI.Komut.Tip = kDegisken) then
       begin
 
-        if(SatirIcerik.Komut.KomutTipi = ktIslemKodu) then
+        if(OncekiParcaSonuc.VeriTipi = vKarakterDizisi) then
         begin
 
-          if(ParcaNo = 1) then
-          begin
-
-            GHataKodu := HATA_ISL_KULLANIM;
-          end
-          else
-          begin
-
-            if(KomutUz > 0) then
-            begin
-
-              Yazmac := YazmacBilgisiAl(Komut);
-              if(Yazmac.Sonuc > -1) then
-              begin
-
-                i := Yazmac.Sonuc;
-                SonVeriKontrolTip := vktYazmac;
-                GHataKodu := KomutYorumla(ParcaNo, vktYazmac, '', i);
-              end
-              // eğer veri sayısal bir değer ise...
-              else if(VeriTipi = tvtSayi) then
-              begin
-
-                GHataKodu := SayisalVeriyiIsle('');
-                GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
-
-                GHataKodu := iKomutYorumla(Dosya^.IslenenToplamSatir, ParcaNo,
-                  vktSayi, '', SayisalDeger);
-
-                //GHataKodu := iKomutYorumla(SatirNo, ParcaNo, vktVirgul, '', 0);
-
-                GAsm2.Matematik.Temizle;
-              end;
-            end;
-
-            if(GHataKodu = HATA_YOK) then
-              GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0);
-          end;
-        end
-        // ktDegisken değerini gerekliliği kontrol edilsin
-        else if(SatirIcerik.Komut.KomutTipi = ktDegisken) or (SatirIcerik.Komut.KomutTipi = ktTanim) then
-        begin
-
-          // tanım işleminde virgül öncesi veri var ise ...
-          if(KomutUz > 0) then
-          begin
-
-            // eğer veri sayısal bir değer ise...
-            if(VeriTipi = tvtSayi) then
-            begin
-
-              GHataKodu := SayisalVeriyiIsle('');
-              GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
-
-              GHataKodu := iKomutYorumla(Dosya^.IslenenToplamSatir, ParcaNo,
-                vktSayi, '', SayisalDeger);
-
-              GHataKodu := iKomutYorumla(Dosya^.IslenenToplamSatir, ParcaNo,
-                vktVirgul, '', 0);
-
-              GAsm2.Matematik.Temizle;
-
-              //if(SayiyaCevir(Komut, SayisalDeger)) then
-              //begin
-
-                //GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
-//                if(GHataKodu = HATA_YOK) then
-//                  GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0)
-              //end else GHataKodu := HATA_SAYISAL_DEGER;
-            end
-            else
-            begin
-
-              {Atama := GAsm2.AtamaListesi.Bul(Komut);
-              if(Atama <> nil) then
-              begin
-
-                if(Atama.VeriTipi = tvtSayi) then
-                begin
-
-                  SayisalDeger := Atama.iDeger;
-                  GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
-
-                  if(GHataKodu = HATA_YOK) then
-                    GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0)
-                end; // ??
-              end
-              else
-              begin
-
-                GEtiketHatasiMevcut := True;
-                Inc(GEtiketHataSayisi);
-
-                SayisalDeger := $FFFFFF0;
-                GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
-
-                if(GHataKodu = HATA_YOK) then
-                  GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0)
-
-                //GHataKodu := HATA_BILINMEYEN_HATA; SendDebug('Test: ' + Komut); end;
-              end;}
-
-              if(SatirIcerik.Komut.KomutTipi = ktTanim) then
-              begin
-
-                GHataKodu := SayisalVeriyiIsle('');
-
-                if(GHataKodu = HATA_YOK) then
-                begin
-
-                  GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
-
-                  if(GHataKodu = HATA_YOK) then
-                    GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
-
-                  // tüm satırın işlendiğine dair sonlandırma mesajı gönder
-                  if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0);
-
-                  GAsm2.Matematik.Temizle;
-
-                  //Inc(ParcaNo);
-                end //else GHataKodu := HATA_YOK;
-              end
-              else
-              // niçin yazıldığı açıklansın
-              begin
-
-                GAsm2.Matematik.Sonuc(SayisalDeger);
-
-                GHataKodu := SayisalVeriyiIsle('');
-
-                if(GHataKodu = HATA_YOK) then
-                begin
-
-                  GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
-
-                  if(GHataKodu = HATA_YOK) then
-                    GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
-
-                  // tüm satırın işlendiğine dair sonlandırma mesajı gönder
-                  if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0);
-
-                  GAsm2.Matematik.Temizle;
-                end //else GHataKodu := HATA_YOK;
-              end;
-            end;
-          end
-          else
-          begin
-
-            GHataKodu := KomutYorumla(ParcaNo, vktVirgul, '', 0)
-          end;
-        end;
-      end
-      {
-        <- Virgül işlevi
-      }
-      else if(C = '=') then
-      begin
-
-        // abvtBildirim ve abvtTanim işlevlerinin bu işleyiciyi yorumlamasını sağla
-        GHataKodu := KomutYorumla(ParcaNo, vktEsittir, Komut, 0);
-      end
-      else if(C = '[') or (C = ']') then
-      begin
-
-        // bu işleyiciler SADECE 2 ve sonraki aşamalarda kullanılabilir
-        if(ParcaNo = 1) then
-        begin
-
-          GHataKodu := HATA_ISL_KULLANIM;
+          ParcaSonuc.VeriTipi := vKarakterDizisi;
+          GHataKodu := VerileriIsle(ParcaSonuc);
         end
         else
         begin
 
-          case C of
-            //',': GHataKodu := KomutYorumla(ParcaNo, vktVirgul, Komut, 0);
-            '[':
-            begin
-
-              Inc(KPSayisi);
-              GHataKodu := KomutYorumla(ParcaNo, vktKPAc, Komut, 0);
-            end;
-            ']':
-            begin
-
-              // ölçek değerin olması durumunda işleve ölçek değer yönlendiriliyor
-              if(OlcekDegerMevcut) then
-              begin
-
-                if(KomutUz > 0) then
-                begin
-
-                  i := StrToInt(Komut);
-                  GHataKodu := KomutYorumla(ParcaNo, vktOlcek, '', i);
-                end else GHataKodu := HATA_OLCEK_DEGER_GEREKLI;
-
-                OlcekDegerMevcut := False;
-              end;
-
-              // eğer varsa sayısal sabit değer işleve yönlendiriliyor
-              if(GHataKodu = HATA_YOK) then
-              begin
-                // satır sonuna gelinmesi durumunda, işlenen değer ilgili
-                // komuta yönlendirilmektedir
-                if(VeriTipi = tvtSayi) then
-                begin
-
-                  if(KomutUz > 0) then GHataKodu := SayisalVeriyiIsle('');
-                  if(GHataKodu = HATA_YOK) then
-                  begin
-
-                    GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
-                    if(GHataKodu = HATA_YOK) then
-                    begin
-
-                      //VeriTipi := tvtTanimsiz; // işlevini yitirmiştir
-                      GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
-                    end;
-                  end;
-                end
-                // { TODO : tvtTanimsiz verisi tekrar incelensin }
-                else if(VeriTipi = tvtTanimsiz) then
-                begin
-
-                  YazmacDurum := YazmacBilgisiAl(Komut);
-                  if(YazmacDurum.Sonuc > -1) then
-                  begin
-
-                    VeriTipi := tvtYazmac;
-                    //SendDebug('Yazmaç: ' + YazmacListesi[YazmacDurum.Sonuc].Ad);
-                    GHataKodu := KomutYorumla(ParcaNo, vktYazmac, '', YazmacDurum.Sonuc);
-                  end
-                  else
-                  begin
-
-                    //SendDebug('ValX: ' + Komut);
-
-                    if(KomutUz > 0) then GHataKodu := SayisalVeriyiIsle('');
-                    if(GHataKodu = HATA_YOK) then
-                    begin
-
-                      GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
-                      if(GHataKodu = HATA_YOK) then
-                      begin
-
-                        //VeriTipi := tvtTanimsiz; işlevini yitirmiştir
-                        GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
-                      end;
-                    end;
-                  end;
-                end;
-
-                if(GHataKodu = HATA_YOK) then
-                begin
-
-                  Dec(KPSayisi);
-                  GHataKodu := KomutYorumla(ParcaNo, vktKPKapat, Komut, 0);
-                end;
-
-                // bu satır normalde en alt satırda olacak
-                if(SatirSonu) and (GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
-              end;
-            end;
-          end;
+          GHataKodu := GAsm2.Matematik.Sonuc(ParcaSonuc.VeriSD);
+          GHataKodu := VerileriIsle(ParcaSonuc);
         end;
+
+        VeriyiIsle := False;
+        Continue;
       end
-      // tek tırnak kontrol işlemi
-      else if(C = '''') {and (GAnaBolumVeriTipi = abvtTanim) idi} then
+      else}
       begin
 
-        if(TekTirnakSayisi = 0) then
-        begin
-
-          if(KomutUz = 0) then
-          begin
-
-            VeriTipi := tvtKarakterDizisi;
-            Inc(TekTirnakSayisi);
-          end;
-        end
-        else if(TekTirnakSayisi = 1) then
-        begin
-
-          if(KomutUz > 0) then
-          begin
-
-            GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);
-            TekTirnakSayisi := 0;
-            Komut := '';
-            KomutUz := 0;
-
-            // VeriTipi := tvtTanimsiz 3 yerde tanımlanmıştır.
-            // burada tanımlanmasının veya nasıl tanımlanmasının gerekliliği incelensin
-            VeriTipi := tvtTanimsiz;
-
-            // vktSon bir burada bir de aşağıda tanımlanmıştır. ortak noktada birleşebilir
-            // tüm satırın işlendiğine dair sonlandırma mesajı gönder
-            if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
-          end;
-        end;
-      end
-      // etiket ve yazmaç ön ek kontrol işleminin yapıldığı kısım
-      // örnek etiket      : etiket:
-      // örnek yazmaç ön ek: [cs:edi]
-      else if(C = ':') then
-      begin
-
-        if(KomutUz > 0) then
-        begin
-
-          { *** Etiket İşlevi >>>>>>>>>>>>>>>>>>>> }
-
-          // etiket, satırın ilk parçasında olmak zorunda
-          if(ParcaNo = 1) then
-          begin
-
-            if(dvEtiket in SatirIcerik.DigerVeri) then
-
-              GHataKodu := HATA_BIRDEN_FAZLA_ETIKET
-            else
-            begin
-
-              SatirIcerik.DigerVeri += [dvEtiket];
-              SatirIcerik.Etiket := Komut;
-
-              // etiketin mevcut olup olmadığını gerçekleştir
-              GHataKodu := GAsm2.AtamaListesi.Ekle(Dosya, SatirIcerik.Etiket,
-                atEtiket, MevcutBellekAdresi, tvtSayi, '', 0);
-
-              if(GHataKodu = HATA_YOK) then
-              begin
-
-                Komut := '';
-                KomutUz := 0;
-              end else GHataAciklama := Komut;    // hata olması durumunda
-            end;
-          end;
-          { *** Etiket İşlevi <<<<<<<<<<<<<<<<<<<< }
-        end;
-      end
-      else if(C = '.') then
-      begin
-
-        // eğer değer sayı olarak belirlenmişse, kayan nokta sayı olarak değiştir
-        if(VeriTipi = tvtSayi) then VeriTipi := tvtKayanNokta64;
-
-        Komut += C;
-        Inc(KomutUz);
         GHataKodu := HATA_YOK;
-      end
-      // boşluk karakteri SADECE işlem kodunu almak için kullanılıyor
-      else if(C = ' ') or (C = #9) then
+        Continue;
+      end;
+
+    //SendDebug('GI');
+    end;
+
+    if(ParcaSonuc.ParcaTipi = ptVeri) and (ParcaSonuc.VeriTipi = vMakroDeger) then
+    begin
+
+      MakroIslev(ParcaSonuc);
+    end;
+
+    // ->>>>> TANIMLANMAMIŞ KOMUTLARIN TANIMLANMAYA ÇALIŞILDIĞI BÖLÜM
+    if(SI.Komut.Tip = kTanimsiz) or (SI.Komut.Tip = kTanimlanacak) {and not(ParcaSonuc.VeriTipi = vAciklama)} then
+    begin
+
+      //SendDebug('İşlem Kodu: ' + KomutListesi[SonParcaSonuc.SiraNo].Ad);
+
+
+      // komut henüz tanımlanmadı ise, etiket kontrolü
+      // örnek: etiket:
+      if(Length(ParcaSonuc.HamVeri) > 0) and (ParcaSonuc.HamVeri[Length(ParcaSonuc.HamVeri)] = ':') then
       begin
 
-        // mantıksal tutarlılığı incelensin
-        if(KomutUz > 0) then
-        begin
+        if(dvEtiket in SI.DigerVeri) then
 
-          OnEk := OnEkBilgisiAl(Komut);
-          if(OnEk.Deger = vgHatali) then
-          begin
-
-            if(SatirIcerik.Komut.KomutTipi = ktTanim) and (KomutUz > 0) then
-            begin
-
-              GHataKodu := SayisalVeriyiIsle('');
-            end
-            else if((SatirIcerik.Komut.KomutTipi = ktBelirsiz) or (SatirIcerik.Komut.KomutTipi = ktBildirim))
-              and (KomutUz > 0) then
-
-              GHataKodu := KomutYorumla(ParcaNo, vktBosluk, Komut, 0)
-            else if(SatirIcerik.Komut.KomutTipi = ktDegisken) and (TekTirnakSayisi > 0) then
-            begin
-
-              Komut += C;
-              Inc(KomutUz);
-            end;
-          end
-          else
-          // ön ek değer hem adreslemede hem de sayısal değer veri genişliği
-          // için kullanılmaktadır
-          begin
-
-            { TODO : GBellekSabitDegerVG değeri de burada değerlendirilecek }
-            GSabitDegerVG := OnEk.Deger;
-
-            Komut := '';
-            KomutUz := 0;
-            GHataKodu := HATA_YOK;
-          end;
-        end;
-      end
-      // açıklama durumunun haricinde tüm bu işleyicilerin çalışma durumu
-      else if((not(dvAciklama in SatirIcerik.DigerVeri)) and ((C = '(') or (C = ')') or (C = '+') or
-        (C = '-') or (C = '*') or (C = '/'))) then
-      begin
-
-        // ölçek verisinin işlendiği bölüm
-        if(KPSayisi > 0) and (C = '*') and (KomutUz > 0) then
-        begin
-
-          GHataKodu := KomutYorumla(ParcaNo, vktDegisken, Komut, 0);
-          if(SonVeriKontrolTip = vktYazmac) then OlcekDegerMevcut := True;
-        end
+          GHataKodu := HATA_BIRDEN_FAZLA_ETIKET
         else
         begin
 
-          // ölçek işleyici (*) mevcut iken değer mevcut değil ise ...
-          if(OlcekDegerMevcut) and (KomutUz = 0) then
+          SI.DigerVeri += [dvEtiket];
+          SI.Etiket := Copy(ParcaSonuc.HamVeri, 1, Length(ParcaSonuc.HamVeri) - 1);
+
+          ParcaSonuc.VeriTipi := vSayi;
+          ParcaSonuc.VeriSD := MevcutBellekAdresi;
+
+          // etiketi atama listesine ekle
+          GHataKodu := GAsm2.AtamaListesi.Ekle(Dosya, atEtiket, SI.Etiket,
+            ParcaSonuc);
+        end;
+      end
+      else
+      // komut daha önce tanımlanmamış ise ...
+      begin
+
+        // .. komutu yeniden tanımlamaya çalış
+        if(ParcaSonuc.ParcaTipi = ptTanimsiz) then
+          ParcaSonuc := KomutYorumla(ParcaSonuc);
+
+        // tanımsız komutun birinci aşamada tanımlanamaması
+        if(ParcaSonuc.ParcaTipi = ptTanimsiz) then
+        begin
+
+          if(SI.Komut.Tip = kTanimsiz) then
           begin
 
-            GHataKodu := HATA_OLCEK_DEGER_GEREKLI;
+            SI.Komut.Tip := kTanimlanacak;
+            GTanimlanacakVeri1 := ParcaSonuc.HamVeri;
+            VeriyiIsle := False;
           end
-          else if(OlcekDegerMevcut) and (KomutUz > 0) then
+          else if(SI.Komut.Tip = kTanimlanacak) then
           begin
 
-            // ölçek değerinden sonra bir işleyici (op) gelecekse bu işleyicinin
-            // + veya - (işaretli veya işaretsiz) sayısal değer veya + yazmaç olması gerekmektedir
-            if not((C = '+') or (C = '-')) then
+            //SI.Komut.Tip := kTanimlanacak;
+            //GTanimlanacakVeri1 := ParcaSonuc.HamVeri;
+            //VeriyiIsle := False;
+            GHataKodu := HATA_BILINMEYEN_KOMUT;
+          end;
+        end
+        // komutun tanımlanabilmesi halinde
+        else if(ParcaSonuc.ParcaTipi = ptKomut) then
+        begin
 
-              GHataKodu := HATA_ISL_KULLANIM
+          SI.Komut.Tip := ParcaSonuc.Komut.Tip;
+          SI.Komut.Ad := ParcaSonuc.Komut.Ad;
+          SI.Komut.SNo := ParcaSonuc.Komut.SNo;
+          SI.Komut.GNo := ParcaSonuc.Komut.GNo;
+          //SI.VeriKK := GTanimlanacakVeri1;    // ?
+
+          //KomutBilgisiniGoruntule;
+
+          //ParcaSonuc.VeriTipi := vSayi;   // ?
+          //ParcaSonuc.VeriSD := MevcutBellekAdresi; // ?
+
+          // komut tanım verisi işlenmeyecektir
+          VeriyiIsle := False;
+        end
+        // 1. aşamada tanımlanamayan komutun 2. aşamada tanımlanabilmesi
+        else if(ParcaSonuc.ParcaTipi = ptIslem) and (ParcaSonuc.IslemTipi = iEsittir)
+          and (SI.Komut.Tip = kTanimlanacak) then
+        begin
+
+          //SendDebug('İşlem Kodu5: ' + GTanimlanacakVeri1);
+
+          SI.Komut.Tip := kTanim;
+          SI.VeriKK := GTanimlanacakVeri1;
+          //GTanimlanacakVeri1 := ParcaSonuc.HamVeri;
+          //SendDebug('Tanım: Eşittir');
+          //GHataKodu := 1;
+
+          VeriyiIsle := False;
+        end
+        else
+        // tanımsız komutun ilk aşamada tanımlanması
+        begin
+
+          GHataKodu := 1;
+
+          {SI.KomutSiraNo := ParcaSonuc.SiraNo;
+          SI.Komut.Tip := ParcaSonuc.KomutTipi;
+          SI.Komut.Ad := KomutListesi[ParcaSonuc.SiraNo].Ad;
+          SI.Komut.GrupNo := KomutListesi[ParcaSonuc.SiraNo].GrupNo;
+
+          // ParcaNo değişkeninin değeri SADECE burada artırılmaktadır
+          Inc(GParcaNo);
+
+          VeriyiYonlendir := False;}
+
+          //SendDebug('Komut: ' + IntToStr(SI.Komut.GrupNo));
+          //SendDebug('Komut: ' + SI.Komut.Ad);
+        end;
+      end;
+    end
+    // <<<<<- TANIMLANMAMIŞ KOMUTLARIN TANIMLANMAYA ÇALIŞILDIĞI BÖLÜM
+    else
+    // ->>>>> BU AŞAMADA KOMUT TANIMLANMIŞ
+    // ->>>>> TANIMLANMAMIŞ PARÇALARININ TANIMLANMAYA ÇALIŞILDIĞI BÖLÜM
+    begin
+
+      // parcala işlevinden herhangi bir veri tipi dönmüşse
+      // ptYok = hiçbir veri yok
+      if not(ParcaSonuc.ParcaTipi = ptYok) then
+      begin
+
+        // kontrol edilsin
+        {if(ParcaSonuc.ParcaTipi = ptIslem) and
+          ((ParcaSonuc.IslemTipi = iTopla) or (ParcaSonuc.IslemTipi = iEsittir) or
+          (ParcaSonuc.IslemTipi = iVirgul)) then
+          Inc(GParcaNo)
+
+        else}
+
+        // -> TANIMSIZ verilerin tanımlanmaya çalışılması
+        // ----------------------------------------------
+        if(ParcaSonuc.ParcaTipi = ptTanimsiz) then
+        begin
+
+          if(SI.Komut.Tip = kDegisken) then
+          begin
+
+            Atama := GAsm2.AtamaListesi.Bul(Dosya, ParcaSonuc.HamVeri);
+            if(Atama <> nil) then
+            begin
+
+              SendDebug('Tanımlı Veri: ' + ParcaSonuc.HamVeri);
+
+              case Atama.Tip of
+                atEtiket:
+                begin
+
+                  ParcaSonuc.VeriTipi := vSayi;
+                  GHataKodu := SayisalVeriyiIsle(OncekiParcaSonuc.IslemTipi, vSayi,
+                    IntToStr(Atama.BellekAdresi));
+                  VeriyiIsle := False;
+                  //SendDebug('Tanımsız-Etiket: ' + IntToStr(Atama.BellekAdresi));
+                end
+                else
+                begin
+
+                  if(Atama.VeriTipi = vSayi) then
+                  begin
+
+                    ParcaSonuc.VeriTipi := vSayi;
+                    GHataKodu := SayisalVeriyiIsle(OncekiParcaSonuc.IslemTipi,
+                      vSayi, IntToStr(Atama.iDeger));
+                    VeriyiIsle := False;
+                    //SendDebug('Tanımsız-Sayı: ' + IntToStr(Atama.iDeger))
+                  end
+                  else if(Atama.VeriTipi = vKarakterDizisi) then
+                  begin
+
+                    ParcaSonuc.VeriTipi := vKarakterDizisi;
+                    ParcaSonuc.VeriKK := ParcaSonuc.VeriKK + Atama.sDeger;
+                    VeriyiIsle := False;
+
+                    //SendDebug('Tanımsız-Karakter: ' + Atama.sDeger);
+                  end;
+                end;
+              end;
+              //SendDebug('sDeğer: ' + ParcaSonuc.HamVeri);
+            end
             else
             begin
 
-              i := StrToInt(Komut);
-              GHataKodu := KomutYorumla(ParcaNo, vktOlcek, Komut, i);
-              OlcekDegerMevcut := False;
-              SonKullanilanIsleyici := C;
+              frmAnaSayfa.mLog.Lines.Add('Tanımsız Veri: ' + ParcaSonuc.HamVeri);
+
+              // sonradan tanımlanan değerlerin işlenmesi
+              ParcaSonuc.ParcaTipi := ptVeri;
+              ParcaSonuc.VeriTipi := vSayi;
+              ParcaSonuc.HamVeri := '500000';
+
+              Inc(GEtiketHataSayisi);
+
+              //GHataKodu := SayisalVeriyiIsle(OncekiParcaSonuc.IslemTipi, vSayi, ParcaSonuc.HamVeri);
+              //VeriyiIsle := False;
             end;
           end
           else
           begin
 
-            // açıklama haline getirilen satırlar bağlam noktasında anlamsızdır
-            if(VeriTipi = tvtSayi) or (VeriTipi = tvtMakro) or (VeriTipi = tvtTanimsiz) then
-            begin
-
-              GHataKodu := SayisalVeriyiIsle(C);
-            end
-            else
-            begin
-
-              Komut += C;
-              Inc(KomutUz);
-            end;
-            {else
-            begin
-
-              if(KomutUz > 0) then
-              begin
-
-                GHataKodu := KomutYorumla(ParcaNo, vktDegisken, Komut, 0);
-                if(GHataKodu = HATA_YOK) then
-                  GHataKodu := KomutYorumla(ParcaNo, vktArti, '', 0);
-              end;
-            end; } // bu kısım SayisalVeriyiIsle kısmında değerlendirşlmektedir
+            ParcaSonuc := KomutYorumla(ParcaSonuc);
+            {if(ParcaSonuc.ParcaTipi = ptVeri) and (ParcaSonuc.VeriTipi = vYazmac) then
+              ParcaSonuc.VeriSD := KSiraNo;}
           end;
         end;
-      end
-      { *** Açıklama İşlevi >>>>>>>>>>>>>>>>>>>> }
-      else if(C = ';') and not(dvAciklama in SatirIcerik.DigerVeri) then
-      begin
+        // ----------------------------------------------
+        // <- TANIMSIZ verilerin tanımlanmaya çalışılması
 
-        // açıklama satırından önce sürmekte olan komutun yorumlanmasını sağla
-        if(KomutUz > 0) then
+
+        if(ParcaSonuc.ParcaTipi = ptVeri) and (ParcaSonuc.VeriTipi = vYazmac) then
         begin
 
-          { TODO : bu kısımda her türlü komut olabilir. başlamış / başlayacak veya
-            tamamlanacak olabilir. kısacası KomutYorumla işlevinin bu yapıyı yönetecek
-            bir biçimde yeniden yapılandırılması gerekmekte }
-          //GHataKodu := KomutYorumla(ParcaNo, vktDegisken, Komut, 0);
+          GHataKodu := VerileriIsle(ParcaSonuc);
+          VeriyiIsle := False;
+        end
+
+        // -> her bir veri parçasının / tipinin değerlendirilmesi
+        // toplama işlemi yönlendirilmeyecek - geçici çözüm
+        else if(ParcaSonuc.ParcaTipi = ptIslem) and ((ParcaSonuc.IslemTipi = iTopla) or
+          (ParcaSonuc.IslemTipi = iCikart) or (ParcaSonuc.IslemTipi = iCarp) or
+          (ParcaSonuc.IslemTipi = iBol)) then
+        begin
+
+          //frmAnaSayfa.Memo1.Lines.Add('Çıkart');
+          VeriyiIsle := False
+        end
+        else if(ParcaSonuc.ParcaTipi = ptIslem) and (ParcaSonuc.IslemTipi = iVirgul) then
+        begin
+
+          if(SI.Komut.Tip = kDegisken) and (OncekiParcaSonuc.VeriTipi = vSayi) then
+          begin
+          // önceki değerin sayı olması durumunda aşağıdaki komutlar devreye sokulaca ve yapılandırılacak
+          GHataKodu := GAsm2.Matematik.Sonuc(ParcaSonuc.VeriSD);
+          //SendDebug('Sayısal Veri:' + IntToStr(ParcaSonuc.VeriSD));
+
+          ParcaSonuc.ParcaTipi := ptVeri;
+          ParcaSonuc.VeriTipi := vSayi;
+
+          GHataKodu := VerileriIsle(ParcaSonuc);
+          //SonParcaSonuc.VeriKK := '';
+          //SonParcaSonuc.VeriSD := 0;
+
+          ParcaSonuc.VeriKK := '';
+          ParcaSonuc.VeriSD := 0;
+
+          VeriyiIsle := False;
+
+          GAsm2.Matematik.Temizle;
+          end;
+        end
+        else if(ParcaSonuc.ParcaTipi = ptVeri) and (ParcaSonuc.VeriTipi = vSayi) then
+        begin
+
+          //SendDebug('Sayısal Veri:' + ParcaSonuc.HamVeri);
+          GHataKodu := SayisalVeriyiIsle(OncekiParcaSonuc.IslemTipi, vSayi, ParcaSonuc.HamVeri);
+          VeriyiIsle := False;
+        end
+        else if(ParcaSonuc.ParcaTipi = ptVeri) and (ParcaSonuc.VeriTipi = vKayanNokta) then
+        begin
+
+          // birden fazla değerin matematiksel işleme tabi tutulması burada gerçekleştirilecek
+
+          //SendDebug('Sayısal Veri:' + ParcaSonuc.HamVeri);
+          ParcaSonuc.VeriTipi := vKayanNokta;
+          ParcaSonuc.VeriKK := ParcaSonuc.HamVeri;
+          //GHataKodu := SayisalVeriyiIsle(vSayi, ParcaSonuc.HamVeri, OncekiParcaSonuc.IslemTipi);
+          VeriyiIsle := False;
+        end
+        else if(ParcaSonuc.ParcaTipi = ptVeri) and (ParcaSonuc.VeriTipi = vKarakterDizisi) then
+        begin
+
+          ParcaSonuc.VeriTipi := vKarakterDizisi;
+          ParcaSonuc.VeriKK := ParcaSonuc.VeriKK + ParcaSonuc.HamVeri;
+          VeriyiIsle := False;
+          //SendDebug('Sayısal Veri:' + SonParcaSonuc.VeriKK)
+        end
+        else if(ParcaSonuc.ParcaTipi = ptIslem) and (ParcaSonuc.IslemTipi = iKPKapat) then
+        begin
+
+          if(OncekiParcaSonuc.ParcaTipi = ptVeri) and (OncekiParcaSonuc.VeriTipi = vSayi) then
+          begin
+
+            ParcaSonuc.ParcaTipi := ptVeri;
+            ParcaSonuc.VeriTipi := vSayi;
+            GHataKodu := GAsm2.Matematik.Sonuc(ParcaSonuc.VeriSD);
+            if(GHataKodu = HATA_YOK) then GHataKodu := VerileriIsle(ParcaSonuc);
+
+            ParcaSonuc.ParcaTipi := ptIslem;
+            ParcaSonuc.IslemTipi := iKPKapat;
+          end;
+        end
+        else if(ParcaSonuc.ParcaTipi = ptIslem) and (ParcaSonuc.IslemTipi = iEsittir) then
+        begin
+
+          if(SI.Komut.Tip = kBildirim) then
+          begin
+
+            if(Bildirim.Esittir = False) then
+              Bildirim.Esittir := True
+            else GHataKodu := HATA_BEKLENMEYEN_IFADE;
+
+            VeriyiIsle := False;   // ??
+          end;
+        end;
+        // <- her bir veri parçasının / tipinin değerlendirilmesi
+
+        if(SonParca) then
+        begin
+
+          if(ParcaSonuc.VeriTipi = vSayi) then
+          begin
+
+            //MesajGoruntule('Sayı', 'Sayı');
+
+            GHataKodu := GAsm2.Matematik.Sonuc(ParcaSonuc.VeriSD);
+          {else if(ParcaSonuc.ParcaTipi = ptVeri) and (ParcaSonuc.VeriTipi = vKarakterDizisi) then
+            ParcaSonuc.VeriKK := ParcaSonuc.VeriKK + ParcaSonuc.HamVeri;}
+
+            if(SI.Komut.Tip = kIslemKodu) then
+            begin
+
+              //MesajGoruntule('Sayı', IntToStr(ParcaSonuc.VeriSD));
+              GHataKodu := VerileriIsle(ParcaSonuc);
+              VeriyiIsle := False;
+            end
+            {else if(SI.Komut.Tip = kDegisken) {and (VeriyiYonlendir)} then
+            begin
+
+              GHataKodu := VerileriIsle(ParcaSonuc);
+              VeriyiIsle := False;
+            end;}
+          end;
         end;
 
-        // hata yok ise, satırın açıklama bilgisine sahip olduğunu belirle
-        if(GHataKodu = HATA_YOK) then SatirIcerik.DigerVeri += [dvAciklama];
+        if(VeriyiIsle) then
+        begin
+
+          // sadece aritmetiksel işlemlerin gerçekleştirilmesi için ( ve )
+          // işleyicilerin yürütülmesi için eklenmiştir
+          if(ParcaSonuc.ParcaTipi = ptIslem) and ((ParcaSonuc.IslemTipi = iPAc) or
+            (ParcaSonuc.IslemTipi = iPKapat)) then
+          begin
+
+            // eğer dizi "x + y + (" biçimindeyse
+            if((ParcaSonuc.ParcaTipi = ptIslem) and (ParcaSonuc.IslemTipi = iPAc)) then
+            begin
+
+              if((OncekiParcaSonuc.ParcaTipi = ptIslem) and ((OncekiParcaSonuc.IslemTipi = iTopla) or
+                (OncekiParcaSonuc.IslemTipi = iCikart) or (OncekiParcaSonuc.IslemTipi = iCarp) or
+                (OncekiParcaSonuc.IslemTipi = iBol))) then
+              begin
+
+                GHataKodu := SayisalVeriyiIsle(OncekiParcaSonuc.IslemTipi, vSayi, '');
+              end;
+            end;
+
+            GHataKodu := SayisalVeriyiIsle(ParcaSonuc.IslemTipi, vSayi, '');
+
+            // bir sonraki gelecek değerin sayısal değer olması ihtimaline karşı
+            // işleve tekrar ( işleyicinin gitmemesi için islem tipi iBelirsiz olarak belirleniyor
+            ParcaSonuc.IslemTipi := iBelirsiz;
+
+          end else if(SI.Komut.Tip = kIslemKodu) then GHataKodu := VerileriIsle(ParcaSonuc)
+        end;
+      end;
+    end;
+    // <<<<<- BU AŞAMADA KOMUT TANIMLANMIŞ
+    // <<<<<- TANIMLANMAMIŞ PARÇALARININ TANIMLANMAYA ÇALIŞILDIĞI BÖLÜM
+  end;
+  // <<<<<- HER BİR SATIRIN PARÇA BAZLI İŞLENDİĞİ BÖLÜM
+
+  // ->>>>> BU AŞAMADA TÜM KOMUT VE PARÇALARI YORUMLANDI
+  // ->>>>> EĞER VARSA, SON İŞLEMLER
+  if(GHataKodu = HATA_YOK) then
+  begin
+
+    if(SI.Komut.Tip = kBildirim) then
+    begin
+
+      {SendDebug('Bildirim: ' + SonParcaSonuc.VeriKK);
+      Result := HATA_YOK;
+      Exit;}
+
+      Bildirim.SiraNo := SI.Komut.SNo;
+      Bildirim.GrupNo := SI.Komut.GNo;
+      Bildirim.Ad := SI.Komut.Ad;
+      Bildirim.VeriTipi := ParcaSonuc.VeriTipi;
+      Bildirim.VeriKK := ParcaSonuc.VeriKK;
+
+      if(Bildirim.VeriTipi = vSayi) then
+        GHataKodu := GAsm2.Matematik.Sonuc(Bildirim.VeriSD);
+
+      GHataKodu := BildirimleriTamamla(Bildirim);
+    end
+    else if(SI.Komut.Tip = kDegisken) then
+    begin
+
+      GHataKodu := GAsm2.Matematik.Sonuc(ParcaSonuc.VeriSD);
+
+      //frmAnaSayfa.mLog.Lines.Add('Değişken Değer: ' + IntToStr(ParcaSonuc.VeriSD));
+
+      if(GHataKodu = HATA_YOK) then GHataKodu := DegiskenleriTamamla(ParcaSonuc)
+
+      //GHataKodu := DegiskenleriTamamla(Dosya^.IslenenToplamSatir, ParcaNo, vktBosluk, '', 0)
+    end
+    else if(SI.Komut.Tip = kTanim) then
+    begin
+
+      //SendDebug('Tanım Değer: ' + IntToStr(SonParcaSonuc.VeriSD));
+      GHataKodu := TanimlariTamamla(ParcaSonuc)
+    end
+
+    else if(SI.Komut.Tip = kIslemKodu) then
+    begin
+
+      //SendDebug('İşlem Kodu: ' + KomutListesi[SonParcaSonuc.SiraNo].Ad);
+
+      case (SI.Komut.GNo shr 16) of
+
+        $10: GHataKodu := Grup10Islev;
+        $11: GHataKodu := Grup11Islev;
+        $12: GHataKodu := Grup12Islev;
+        $13: GHataKodu := Grup13Islev;
+        else GHataKodu := 1;
+      end;
+    end;
+  end;
+  // <<<<<- BU AŞAMADA TÜM KOMUT VE PARÇALARI YORUMLANDI
+  // <<<<<- EĞER VARSA, SON İŞLEMLER
+  Result := GHataKodu;
+end;
+
+function VerileriIsle(ParcaSonuc: TParcaSonuc): Integer;
+begin
+
+  case SI.Komut.Tip of
+    // kBildirim:
+    kDegisken:
+    begin
+
+      //SendDebug('Değer: ' + IntToStr(ParcaSonuc.VeriSD));
+      Result := DegiskenleriTamamla(ParcaSonuc);
+    end;
+    //kTanim: Result := TanimlariIsle(ParcaNo, ParcaSonuc);
+    kIslemKodu: Result := IslemKodlariniIsle(ParcaSonuc);
+  end;
+end;
+
+
+// her bir komutun yorumlanarak ilgili işleve yönlendirilmesini sağlar
+// ParcaNo değişkeninin artırma işlemini SADECE bu işlev gerçekleştirmektedir
+function KomutYorumla(ParcaSonuc: TParcaSonuc): TParcaSonuc;
+var
+  PS: TParcaSonuc;
+  Komut: TKomut;
+begin
+
+  Result := ParcaSonuc;
+  Result.ParcaTipi := ptTanimsiz;
+
+  // iKomutYorumla çağrı değişkenine atama YAPILMAMIŞSA (ilk kez çağrı yapılacaksa)
+  // burada ilk 2 verinin ne olduğu kararlaştırılmakta ve verinin devamlılığı bu karara
+  // göre gelişmektedir. 1. aşamada verinin işlem kodu (opcode), 2. aşamada ise verinin
+  // tanımlama olması gerekmektedir. aksi durumda işlem diğer aşamalarda kesilecektir.
+  //if(iKomutYorumla = nil) then
+  if(SI.Komut.Tip = kTanimsiz) then
+  begin
+
+    // komutun, komut listesinde olup olmadığı test ediliyor
+    // eğer komut, komut listesinde yok ise, öndeğere sahip
+    // hata işlevini çağrı değişkenine ata
+    Komut := KomutBilgisiAl(ParcaSonuc.HamVeri);
+    if(Komut.Tip <> kTanimsiz) then
+    begin
+
+      Result.ParcaTipi := ptKomut;
+      Result.Komut.Tip := Komut.Tip;
+      Result.Komut.Ad := Komut.Ad;
+      Result.Komut.SNo := Komut.SNo;
+      Result.Komut.GNo := Komut.GNo;
+    end;
+  end
+  else
+  begin
+
+    PS := YazmacBilgisiAl(ParcaSonuc);
+    if(PS.VeriTipi = vYazmac) then
+    begin
+
+      Result.ParcaTipi := ptVeri;
+      Result.VeriTipi := PS.VeriTipi;
+      Result.SiraNo := PS.SiraNo;
+    end;
+  end;
+end;
+
+// işlev içerisinde kullanılan karakter katarlarını yönetir
+function KarakterKatarVerisiniIsle(KK: string): Integer;
+begin
+
+  {if(GVT = ktTanimsiz) then
+  begin
+
+    GVT := ktKarakterDizisi;
+    GKK := KK;
+    Result := HATA_YOK;
+  end
+  else if(GVT = ktKarakterDizisi) then
+  begin
+
+    if(GIslem = iTopla) then
+    begin
+
+      GKK := GKK + KK;
+      GIslem := iBelirsiz;
+      Result := HATA_YOK;
+    end else Result := HATA_VERI_TIPI;
+  end else Result := HATA_VERI_TIPI;}
+
+  //GKomut := '';
+  KomutUz := 0;
+end;
+
+// sayısal çoklu veriyi işleme işlevi
+// etiket ve tanım sayısal veriler burada işlenecek ve sonuçları alınacak
+// hesaplanan verilerin sıfırlanması diğer işlevler tarafından gerçekleştirilecektir
+function SayisalVeriyiIsle(AIslemTipi: TIslemTipleri; AVeriTip: TVeriTipleri;
+  ASayisalDeger: string): Integer;
+var
+  SayisalDeger: QWord;
+begin
+
+  if(AIslemTipi = iPAc) then
+  begin
+
+    //SendDebug('Parantez (: ' + ASayisalDeger);
+
+    //if(Length(ASayisalDeger) > 0) then
+      //Result := GAsm2.Matematik.ParantezEkle(AIslemTipi, True, StrToInt(ASayisalDeger))
+    //else
+    Result := GAsm2.Matematik.ParantezEkle(AIslemTipi, False, 0);
+  end
+  else if(AIslemTipi = iPKapat) then
+  begin
+
+    //SendDebug('Parantez ): ' + ASayisalDeger);
+
+    {if(KomutUz > 0) then
+      Result := GAsm2.Matematik.ParantezEkle(AIslemTipi, True, StrToInt(ASayisalDeger))
+    else} Result := GAsm2.Matematik.ParantezEkle(AIslemTipi, False, 0);
+  end
+  else
+  begin
+
+    //SendDebug('Sayısal Str: ' + ASayisalDeger);
+
+    if(Length(ASayisalDeger) > 0) then
+    begin
+
+      if(AVeriTip = vSayi) then
+      begin
+
+        if(SayiyaCevir(ASayisalDeger, SayisalDeger)) then
+        begin
+
+          GAsm2.Matematik.SayiEkle(AIslemTipi, SayisalDeger);
+        end;
+
+        Result := HATA_YOK;
+      end else Result := HATA_SAYISAL_DEGER;
+    end //else GAsm2.Matematik.SayiEkle(AIsleyici, False, 0);
+  end;
+end;
+
+// satır verisini parçalara bölerek her bir parçayı geri döndürür
+function Parcala(var SonParca: Boolean): TParcaSonuc;
+var
+  VD: TVeriDurum;
+  C: Char;
+  PS: TParcaSonuc;
+begin
+
+  Result.ParcaTipi := ptYok;
+
+  PS.ParcaTipi := ptYok;
+  PS.HamVeri := '';
+
+  VD := vdBaslamadi;
+
+  while (KodDiziSira <= KodDiziUzunluk) and
+    (GKodDizisi[KodDiziSira] in [' ', #9]) do Inc(KodDiziSira);
+
+  if(KodDiziSira > KodDiziUzunluk) then Exit;
+
+  // satır sonuna gelinceye veya ilgili parça bulununcaya kadar döngüye devam et
+  while (KodDiziSira <= KodDiziUzunluk) and (VD <> vdTamamlandi) do
+  begin
+
+    // karakter değerini al
+    C := GKodDizisi[KodDiziSira];
+
+    // alınacak parça değerinin hangi karakterlerden BAŞLAMAMASI gerekiyor
+    if(VD = vdBaslamadi) then
+    begin
+
+      if(C = '=') then
+      begin
+
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptIslem;
+        PS.IslemTipi := iEsittir;
+        VD := vdTamamlandi;
+      end
+      else if(C = ',') then
+      begin
+
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptIslem;
+        PS.IslemTipi := iVirgul;
+        VD := vdTamamlandi;
+      end
+      else if(C = '[') then
+      begin
+
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptIslem;
+        PS.IslemTipi := iKPAc;
+        VD := vdTamamlandi;
+      end
+      else if(C = ']') then
+      begin
+
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptIslem;
+        PS.IslemTipi := iKPKapat;
+        VD := vdTamamlandi;
+      end
+      else if(C = '+') then
+      begin
+
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptIslem;
+        PS.IslemTipi := iTopla;
+        VD := vdTamamlandi;
+      end
+      else if(C = '-') then
+      begin
+
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptIslem;
+        PS.IslemTipi := iCikart;
+        VD := vdTamamlandi;
+      end
+      else if(C = '*') then
+      begin
+
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptIslem;
+        PS.IslemTipi := iCarp;
+        VD := vdTamamlandi;
+      end
+      else if(C = '/') then
+      begin
+
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptIslem;
+        PS.IslemTipi := iBol;
+        VD := vdTamamlandi;
+      end
+      else if(C = '(') then
+      begin
+
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptIslem;
+        PS.IslemTipi := iPAc;
+        VD := vdTamamlandi;
+      end
+      else if(C = ')') then
+      begin
+
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptIslem;
+        PS.IslemTipi := iPKapat;
+        VD := vdTamamlandi;
       end
       else if(C = '%') then
       begin
 
-        Komut := '%';
-        KomutUz := 1;
-        VeriTipi := tvtMakro;
-      end;
-      { *** Açıklama İşlevi <<<<<<<<<<<<<<<<<<<< }
-    end
-    else
-    // bir satırdaki her bir boşluk veya tab karakterinden sonraki karakter
-    // yukarıdaki kontrol karakterlerinden biri değilse
-    begin
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptVeri;
+        PS.VeriTipi := vMakroDeger;
+        VD := vdBasladi;
+      end
+      else if(C = '''') then
+      begin
 
-      if(dvAciklama in SatirIcerik.DigerVeri) then
+        Inc(KodDiziSira);
+        PS.ParcaTipi := ptVeri;
+        PS.VeriTipi := vKarakterDizisi;
+        VD := vdBasladi;
+      end
+      else if(C = ';') then
+      begin
 
-        SatirIcerik.Aciklama += C
+        Inc(KodDiziSira);
+        VD := vdBasladi;
+        PS.ParcaTipi := ptVeri;
+        PS.VeriTipi := vAciklama;
+        PS.HamVeri := C;
+      end
       else
       begin
 
-        if(KomutUz = 0) and (TekTirnakSayisi = 0) then
+        if(C in ['0'..'9']) then
         begin
 
-          // 3 veri tipinden ikisi burada kontrol ediliyor
-          // diğer bir tanesi ise ''' olarak yukarıda
-          if(VeriTipi = tvtTanimsiz) then
-          begin
+          PS.ParcaTipi := ptVeri;
+          PS.VeriTipi := vSayi;
+        end else PS.ParcaTipi := ptTanimsiz;
 
-            if(C in ['0'..'9']) then VeriTipi := tvtSayi;
-          end;
-        end;
+        Inc(KodDiziSira);
+        VD := vdBasladi;
 
-        Komut += C;
-        Inc(KomutUz);
-      end;
-    end;
-
-    if(SatirSonu) then
+        PS.HamVeri := C;
+      end
+    end
+    else if(VD = vdBasladi) then
     begin
 
-      if(KomutUz > 0) then
+      if(PS.ParcaTipi = ptVeri) and (PS.VeriTipi = vAciklama) then
       begin
 
-        // tek kelimelik komut tiplerinin olması durumunda. cld, cli gibi
-        if(SatirIcerik.Komut.KomutTipi = ktBelirsiz) then
+        Inc(KodDiziSira);
+        PS.HamVeri := PS.HamVeri + C;
+      end
+      else if(PS.ParcaTipi = ptVeri) and (PS.VeriTipi = vSayi) and
+        (C = '.') then
+      begin
+
+        Inc(KodDiziSira);
+        PS.HamVeri := PS.HamVeri + C;
+        PS.VeriTipi := vKayanNokta;
+      end
+      else if(PS.ParcaTipi = ptVeri) and (C in ['''']) then
+      begin
+
+        if(Length(PS.HamVeri) > 0) then
         begin
 
-          GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);
-
-          // tüm satırın işlendiğine dair sonlandırma mesajı gönder
-          if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
-        end
-        else
-        begin
-
-          if(VeriTipi = tvtMakro) then
-          begin
-
-            // geçici - test edilecek
-            GHataKodu := MakroIslev('', Komut, SonKullanilanIsleyici);
-          end
-          else if(VeriTipi = tvtKarakterDizisi) then
-          begin
-
-            GHataKodu := KomutYorumla(ParcaNo, vktKarakterDizisi, Komut, 0);
-          end
-          else if(VeriTipi = tvtKayanNokta64) then
-          begin
-
-            GHataKodu := KomutYorumla(ParcaNo, vktKayanNokta, Komut, 0);
-            if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
-          end
-          else if(VeriTipi = tvtSayi) then
-          begin
-
-            // SayisalVeriyiIsle işlevinden dönen değer SADECE bu işlevi bilgilendirmek
-            // içindir. SayisalVeriyiIsle işlevi her zaman öndeğerli değerleri işler
-            GHataKodu := SayisalVeriyiIsle('');
-
-            if(GHataKodu = HATA_YOK) then
-            begin
-
-              GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
-
-              if(GHataKodu = HATA_YOK) then
-                GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
-
-              // tüm satırın işlendiğine dair sonlandırma mesajı gönder
-              if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
-            end //else GHataKodu := HATA_YOK;
-          end
-          // diğer veri tipi ya bir değişken ya da bir yazmaçtır
-          else if(VeriTipi = tvtTanimsiz) then
-          begin
-
-            YazmacDurum := YazmacBilgisiAl(Komut);
-
-            // değişken veri
-            if(YazmacDurum.Sonuc = -1) then
-            begin
-
-              GHataKodu := SayisalVeriyiIsle('');
-
-              //SendDebug('Etiket Kodu: ' + Komut);
-              if(GHataKodu = HATA_YOK) then
-              begin
-
-                GHataKodu := GAsm2.Matematik.Sonuc(SayisalDeger);
-
-                if(GHataKodu = HATA_YOK) then
-                  GHataKodu := KomutYorumla(ParcaNo, vktSayi, '', SayisalDeger);
-
-                // tüm satırın işlendiğine dair sonlandırma mesajı gönder
-                if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
-              end; //else GHataKodu := HATA_YOK;
-            end
-            else
-            begin
-
-              GHataKodu := KomutYorumla(ParcaNo, vktYazmac, '', YazmacDurum.Sonuc);
-
-              // tüm satırın işlendiğine dair sonlandırma mesajı gönder
-              if(GHataKodu = HATA_YOK) then GHataKodu := KomutYorumla(ParcaNo, vktSon, '', 0);
-            end;
-          end;
+          Inc(KodDiziSira);
+          VD := vdTamamlandi;
         end;
+      end
+      else if(C in ['=', ',', '[', ']', '+', '-', '*', '/', '(', ')', ' ', #9]) then
+      begin
+
+        // db 'karakter verisi' türünde veriler için
+        if(PS.ParcaTipi = ptVeri) and ((PS.VeriTipi = vKarakterDizisi) or (PS.VeriTipi = vAciklama)) then
+        begin
+
+          Inc(KodDiziSira);
+          PS.HamVeri := PS.HamVeri + C;
+        end
+        else if(Length(PS.HamVeri) > 0) then
+        begin
+
+          VD := vdTamamlandi;
+        end;
+      end
+      else
+      begin
+
+        Inc(KodDiziSira);
+        PS.HamVeri := PS.HamVeri + C;
       end;
     end;
+  end;
 
-  // satır sonuna gelinceye veya hata oluncaya kadar döngüye devam et!
-  until (SatirSonu) or (GHataKodu > HATA_YOK);
+  // verinin sonuna gelindi mi?
+  SonParca := (KodDiziSira > KodDiziUzunluk);
 
-  Result := GHataKodu;
+  Result := PS;
 end;
 
 end.

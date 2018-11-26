@@ -12,8 +12,6 @@
   çoklu aritmetik / parantez önceliği / mantıksal işlemler dahilinde yorumlanması
 - windows pe dosya format çalışması tamamlanacak
 - 32-64 bit exe ve 32-64 bit dll windows / linux dosya biçim çalışmaları başladı
-- veritipi ve diğer ana bölümlerin tutarlılığı sağlanacak
-  - 1. ParcaNo kontrol, 2. Sayısal işlem, 3. komut yorumlama birlikteliği sağlanacak
 - linux çalıştırılabilir dosya biçim çalışmalarına başlandı
 - karaktersel etiketler kontrol edilecek
 - sayısal olmayan (etiket) değerlerin çevriminde kullanılan öndeğer mutlaka incelenecek, gerekirse değiştirilecek
@@ -21,11 +19,7 @@
 - STI gibi küçük harfe çevrildiğinde içerisinde türkçe karakter barındıran işlem kodları (opcode) ingilizce karakter olarak muhafaza edilecek
 - [] tanımlı değerlerin incele kısmındaki çözümü sağlanacak
 - program çıkışı veya mevcut / yeni dosya açılması sırasında mevcut dosyanın kaydedilip kaydedilmeyeceği kontrol edilecek
-- tvtTanimsiz verileri tekrar incelenerek yazmaç ve karakterdizisi olarak ayrılacak
-- vktYazmac tanımlarının problemleri giderildikten sonra vktKarakterDizisi veri yapısı tamamlanacak
-- ParcaNo değerinin diğer kontrollerden önce ya da sonra artırılması düzenlenecek
 - göreceli (relative) adres hesaplama işlevi eklenecek (8/16/32/64 bit jxx komutları için)
-- KomutYorumla işlevi, dvAciklama tanımlamasındaki açıklama gereğince yeniden tanımlanacak
 - FLD, FST, komut çalışmaları sürdürülecek
 - 16 sayısal değerini kaarkter katarına dönüştürecek işlev yazılacak
 - lodsx, movsx, stosx işlevleri test edilecek
@@ -37,6 +31,15 @@
 - her dosyanın değiştirilip değiştirilmediği algılanacak ve derleme / programdan
   çıkış esnasında dosyalar kaydedilecek
 - proje içerisine eklenen kod dosyalarının (dosya.ekle / include) test işlemi gerçekleştirilecek
+- işlem kodlarına fazladan değer eklentileri kontrol edilecek (g10islev: hlt 2 gibi)
+
+- mevcut çalışma g11islev ve kodlama üzerine bellek adreslemesi üzerinedir
+- incele kısmı ilgili işlevlere sürekli parça veri göndermeyecek, kendi verisini
+  işledikten sonra satır içerik olarak veriyi gönderecektir
+- işlem kodlarının çalışma yapıları değişecek. veriler toplu olarak alınacak.
+
+- dec [bx+si] komutunda ] karakteri alınamıyor
+- derlenecek 2. dosya düzenleyicide açıksa program hata veriyor. (hata büyük ihtimalle dosyanın bellekte veya düzenleyicide olmasında)
 
 +-------------------------------------------------------------+-------------+
 |                     Çalışma Alanı                           | Tamamlanma  |

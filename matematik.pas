@@ -23,11 +23,11 @@ unit matematik;
 
 interface
 
-uses Classes, SysUtils;
+uses Classes, SysUtils, paylasim;
 
 type
   TIslem = record
-    Isaret: Char;               // işlem ve parantez işareti (+-*/)
+    Isaret: TIslemTipleri;      // işlem ve parantez işareti (+-*/)
     DegerMevcutMu: Boolean;     // parantez öncesi değer mevcut mu?
     Deger: QWord;               // işlenecek değer
   end;
@@ -43,8 +43,8 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure SayiEkle(AIslem: string; ADegerMevcut: Boolean; ADeger: QWord);
-    function ParantezEkle(Parantez: Char; DegerMevcut: Boolean;
+    procedure SayiEkle(AIslem: TIslemTipleri; ADeger: QWord);
+    function ParantezEkle(Parantez: TIslemTipleri; DegerMevcut: Boolean;
       ADeger: QWord): Integer;
     function Sonuc(var SonucDeger: QWord): Integer;
     procedure Temizle;
@@ -54,7 +54,7 @@ type
 
 implementation
 
-uses genel;
+uses genel, dbugintf;
 
 constructor TMatematik.Create;
 begin
@@ -67,7 +67,7 @@ begin
 
   FSayiMevcut := False;
 
-  FAktifIslem.Isaret := '+';
+  FAktifIslem.Isaret := iTopla;
   FAktifIslem.Deger := 0;
 end;
 
@@ -81,47 +81,47 @@ end;
 
 // nesneye sayı ekleme işlevini yerine getirir
 // AIslem değişkeni, ileriye yönelik mantıksal değerleri yönetmek için tasarlanmıştır
-procedure TMatematik.SayiEkle(AIslem: string; ADegerMevcut: Boolean; ADeger: QWord);
+procedure TMatematik.SayiEkle(AIslem: TIslemTipleri; ADeger: QWord);
 begin
+
+  {case AIslem of
+    iTopla: SendDebug('Sayısal Veri+:' + IntToStr(ADeger));
+    iCikar: SendDebug('Sayısal Veri-:' + IntToStr(ADeger));
+    iCarp: SendDebug('Sayısal Veri*:' + IntToStr(ADeger));
+    iBol: SendDebug('Sayısal Veri/:' + IntToStr(ADeger));
+  end;}
+
 
   // eğer işlem yapılıyor aktif değil ise, aktifleştir
   if not(FIslemYapiliyor) then FIslemYapiliyor := True;
 
-  // değerin mevcut olmaması halinde mevcut değerin işareti değiştirilir
-  // ör: (3 + 1) - (3 + 1) işleminde - işareti solundaki değeri - olarak belirler
-  if not(ADegerMevcut) then
-
-    FAktifIslem.Isaret := AIslem[1]
-  else
-  begin
-
-    // öncelikle mevcut işlemi gerçekleştir, daha sonra işareti ekle
-    // ör: 1 + 2 gibi. buradaki işlem + 1 + 2 olarak değerlendirilmektedir
-    case FAktifIslem.Isaret of
-      '+': FAktifIslem.Deger := FAktifIslem.Deger + ADeger;
-      '-': FAktifIslem.Deger := FAktifIslem.Deger - ADeger;
-      '*': FAktifIslem.Deger := FAktifIslem.Deger * ADeger;
-      '/': FAktifIslem.Deger := FAktifIslem.Deger div ADeger;
-    end;
-
-    // işlem yapıldıktan sonra bir sonraki işlemin işaretini ata
-    if(Length(AIslem) = 1) then
-      FAktifIslem.Isaret := AIslem[1]
-    else FAktifIslem.Isaret := '+';
-
-    FSayiMevcut := True;
+  // öncelikle mevcut işlemi gerçekleştir, daha sonra işareti ekle
+  // ör: 1 + 2 gibi. buradaki işlem + 1 + 2 olarak değerlendirilmektedir
+  case AIslem of
+    iTopla: FAktifIslem.Deger := FAktifIslem.Deger + ADeger;
+    iCikart: FAktifIslem.Deger := FAktifIslem.Deger - ADeger;
+    iCarp:  FAktifIslem.Deger := FAktifIslem.Deger * ADeger;
+    iBol:   FAktifIslem.Deger := FAktifIslem.Deger div ADeger;
+    // işleyici olmaması durumunda öndeğer toplama işlemidir
+    else FAktifIslem.Deger := FAktifIslem.Deger + ADeger;
   end;
+
+  if(AIslem = iBelirsiz) then
+    FAktifIslem.Isaret := iTopla
+  else FAktifIslem.Isaret := AIslem;
+
+  FSayiMevcut := True;
 end;
 
 // öncelik içeren parantez işlemleri
-function TMatematik.ParantezEkle(Parantez: Char; DegerMevcut: Boolean;
+function TMatematik.ParantezEkle(Parantez: TIslemTipleri; DegerMevcut: Boolean;
   ADeger: QWord): Integer;
 begin
 
   // eğer işlem yapılıyor aktif değil ise, aktifleştir
   if not(FIslemYapiliyor) then FIslemYapiliyor := True;
 
-  if(Parantez = '(') then
+  if(Parantez = iPAc) then
   begin
 
     // parantez öncesi değer gelmemesi gerekmekte
@@ -157,12 +157,12 @@ begin
 
       // öndeğerleri uygula
       FSayiMevcut := False;
-      FAktifIslem.Isaret := '+';
+      FAktifIslem.Isaret := iTopla;
       FAktifIslem.Deger := 0;
       Result := 0;
     end;
   end
-  else if(Parantez = ')') then
+  else if(Parantez = iPKapat) then
   begin
 
     // 2/1 değer mevcut ise, aktif değere ekle
@@ -170,10 +170,10 @@ begin
     begin
 
       case FAktifIslem.Isaret of
-        '+': FAktifIslem.Deger := FAktifIslem.Deger + ADeger;
-        '-': FAktifIslem.Deger := FAktifIslem.Deger - ADeger;
-        '*': FAktifIslem.Deger := FAktifIslem.Deger * ADeger;
-        '/': FAktifIslem.Deger := FAktifIslem.Deger div ADeger;
+        iTopla: FAktifIslem.Deger := FAktifIslem.Deger + ADeger;
+        iCikart: FAktifIslem.Deger := FAktifIslem.Deger - ADeger;
+        iCarp:  FAktifIslem.Deger := FAktifIslem.Deger * ADeger;
+        iBol:   FAktifIslem.Deger := FAktifIslem.Deger div ADeger;
       end;
     end;
 
@@ -186,10 +186,10 @@ begin
       begin
 
         case FIslemDizi[FElemanSayisi - 1].Isaret of
-          '+': FAktifIslem.Deger := FAktifIslem.Deger + FIslemDizi[FElemanSayisi - 1].Deger;
-          '-': FAktifIslem.Deger := FAktifIslem.Deger - FIslemDizi[FElemanSayisi - 1].Deger;
-          '*': FAktifIslem.Deger := FAktifIslem.Deger * FIslemDizi[FElemanSayisi - 1].Deger;
-          '/': FAktifIslem.Deger := FAktifIslem.Deger div FIslemDizi[FElemanSayisi - 1].Deger;
+          iTopla: FAktifIslem.Deger := FAktifIslem.Deger + FIslemDizi[FElemanSayisi - 1].Deger;
+          iCikart: FAktifIslem.Deger := FAktifIslem.Deger - FIslemDizi[FElemanSayisi - 1].Deger;
+          iCarp:  FAktifIslem.Deger := FAktifIslem.Deger * FIslemDizi[FElemanSayisi - 1].Deger;
+          iBol:   FAktifIslem.Deger := FAktifIslem.Deger div FIslemDizi[FElemanSayisi - 1].Deger;
         end;
       end;
 
@@ -229,7 +229,7 @@ begin
   FElemanSayisi := 0;
   SetLength(FIslemDizi, FElemanSayisi);
 
-  FAktifIslem.Isaret := '+';
+  FAktifIslem.Isaret := iTopla;
   FAktifIslem.Deger := 0;
 
   // işlem yapılıyor değişkenini güncelleştir

@@ -4,7 +4,7 @@
 
   İşlev: tüm birimlerin kullandığı sabit, değişken ve yapıları içerir
 
-  Güncelleme Tarihi: 25/08/2018
+  Güncelleme Tarihi: 15/09/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
@@ -19,35 +19,29 @@ type
   // oluşturulacak dosya biçimleri
   TDosyaBicim = (dbBilinmiyor, dbIkili, dbPE64);
 
-  // dosyanın nerede açık olma durumu
-  TDosyaAcikDurum = (damDuzenleyici, damDerleyici);
+  TVeriDurum = (vdBaslamadi, vdBasladi, vdTamamlandi);
 
-  // dosyanın, düzenleyicideki durumu
+  // dosya durumları:
   // ddYeni, ddKaydedildi, ddDegistirildi durumları düzenleyicideki durumlardır
-  // ddDerleyici ise dosyanın derleme amaçlı açıldığı ve düzenleyicide olmadığı durumdur
-  TDosyaDurum = (ddYeni, ddKaydedildi, ddDegistirildi, ddDerleyici);
+  // ddBellekte ise dosyanın düzenleyicide olmadığı durumdur
+  TDosyaDurum = (ddYeni, ddKaydedildi, ddDegistirildi, ddBellekte);
 
-  // satır içerisinde kullanılan temel veri tipi
-  TTemelVeriTipi = (tvtTanimsiz, tvtKarakterDizisi,
-    tvtSayi,                  // normal sayı
-    tvtKayanNokta64,          // 64 bitlik kayan nokta (floating point)
-    tvtYazmac, tvtMakro);
+  // her bir satırdaki her bir parçanın parça tipi
+  TParcaTipi = (ptYok, ptTanimsiz, ptKomut, ptVeri, ptIslem);
 
-  // her bir satırın veri tipi.
-  // not 1: abvtBuyukYapi (makrolar) ileride tanımlanabilir - 03.02.2018
-  // not 2: tanım verileri sabit veri değildir. tanımlaması programcı
-  //  tarafından gerçekleştirilir
-  TKomutTipi = (ktBelirsiz, ktIslemKodu, ktDegisken, ktTanim, ktBildirim, ktMakro);
+  // her bir komut parçasının komut tipi
+  // kTanimsiz = komutun ilk halini; kTanimlanacak ise, kTanim gibi 1. aşamada
+  //   tanımlanamayan ama 2. aşamada tanımlanacak veriyi tanımlar
+  TKomutTipi = (kTanimsiz, kTanimlanacak, kIslemKodu, kDegisken, kTanim, kBildirim);
 
-  // alt satırdaki veriler TAnaBolumVeriTipi içerisinde yok edilecek
-  // işlem kod ana ve alt bölümleri
-  TVeriKontrolTip = (vktYok, vktDegisken, vktKarakterDizisi,
-    vktSayi,                  // normal sayı
-    vktKayanNokta,            // 32 / 64 bitlik kayan nokta (floating point)
-    vktYazmac, vktOnEk, vktBosluk, vktVirgul, vktEsittir, vktArti,
-    vktKPAc, vktKPKapat, vktOlcek, vktIlk, vktSon);
+  // her bir veri parçasının veri tipi
+  TVeriTipleri = (vTanimsiz, vYazmac, vKarakterDizisi, vSayi, vKayanNokta,
+    vMakroDeger, vOnEk, vOlcek, vAciklama);
 
-/////////////////////////
+  // her bir işlem parçasının işlem tipi
+  TIslemTipleri = (iBelirsiz, iTopla, iCikart, iCarp, iBol, iVirgul, iEsittir,
+    iBosluk, iKPAc, iKPKapat, iPAc, iPKapat);
+
 type
   TDigerVeriler = (dvEtiket, dvAciklama);
   TDigerVeri = set of TDigerVeriler;
@@ -59,33 +53,63 @@ type
   // ya da  push [eax]  gibi batBellek'tir
   TBolumAnaTip = (batYok, batSayisalDeger, batYazmac, batBellek);
 
-type                  // baHedefYazmac ve baKaynakYazmac değerleri birleştirilebişir
-  TBolumAyrintilar = (baHedefYazmac, baKaynakYazmac, baBellekYazmac1, baBellekYazmac2,
-    baOlcek, baSabitDeger, baBellekSabitDeger);
-  TBolumAyrinti = set of TBolumAyrintilar;
+type
+  TBellekIcerikler = (biYazmac1, biYazmac2, biOlcek, biSabitDeger);
+  TBellekIcerik = set of TBellekIcerikler;
+
+type
+  TBildirim = record
+    SiraNo,                   // bildirim sıra numarası
+    GrupNo: Integer;          // komut grup numarası
+    Ad: string;               // bildirim adı
+    Esittir: Boolean;         // bildirim eşittir işleminin kullanılıp kullanılmadığı
+    VeriTipi: TVeriTipleri;   // bildirim veri tipi
+    VeriKK: string;           // Karakter Katarı veri değeri
+    VeriSD: QWord;            // Sayısal Değer karater katarı
+  end;
+
+type
+  TKomut = record
+    Ad: string[15];
+    SNo: Integer;       // komut sıra no
+    GNo: Integer;       // komut grup no
+    Tip: TKomutTipi;
+  end;
 
 type
   PBolumTip = ^TBolumTip;
   TBolumTip = record
     BolumAnaTip: TBolumAnaTip;
-    BolumAyrinti: TBolumAyrinti;
-  end;
-
-type
-  TKomut = record
-    Komut: string[15];
-    GrupNo: Integer;
-    KomutTipi: TKomutTipi;
+    BellekIcerik: TBellekIcerik;
+    Yazmac,                       // işlem kodunun bölümde kullanacağı yazmaç
+    YazmacB1, YazmacB2,           // işlem kodunun bölümde kullanacağı 2 bellek yazmaç
+    SabitDeger,                   // işlem kodunun bölümde kullanacağı sabit değer
+    OlcekDeger: Integer;          // işlem kodunun bölümde kullanacağı ölçek değer
   end;
 
 type
   TSatirIcerik = record
     Komut: TKomut;
-    BolumTip1: TBolumTip;
-    BolumTip2: TBolumTip;
-    BolumTip3: TBolumTip;
+    BolumNo: Integer;
+    B1: TBolumTip;
+    B2: TBolumTip;
+    B3: TBolumTip;
     DigerVeri: TDigerVeri;
+    VeriKK: string;
+    VeriSD: Integer;
     Etiket, Aciklama: string;
+  end;
+
+type
+  TParcaSonuc = record
+    ParcaTipi: TParcaTipi;
+    VeriTipi: TVeriTipleri;
+    IslemTipi: TIslemTipleri;
+    Komut: TKomut;            // veri bir komut ise, komut bilgileri
+    SiraNo: Integer;          // komut, yazmaç vb. sıra no
+    HamVeri,                  // verinin ilk işlendiği işlevdeki durumu
+    VeriKK: string;           // Karakter Katarı veri değeri
+    VeriSD: QWord;            // Sayısal Değer karater katarı
   end;
 
 implementation

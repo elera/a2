@@ -4,13 +4,15 @@
 
   İşlev: yazmaç ve işlevlerini içerir
 
-  Güncelleme Tarihi: 15/04/2018
+  Güncelleme Tarihi: 08/09/2018
 
 -------------------------------------------------------------------------------}
 {$mode objfpc}{$H+}
 unit yazmaclar;
 
 interface
+
+uses paylasim;
 
 type
   // yazmaçların kullanılabilineceği / desteklenen mimariler
@@ -25,12 +27,6 @@ type
     Uzunluk: TYazmacUzunluk;
     Deger: Byte;
     DesMim: TDestekleyenMimari;
-  end;
-
-type
-  TYazmacDurum = record
-    Sonuc: Integer;
-    Uzunluk: TYazmacUzunluk;
   end;
 
 { yazmaç listesi }
@@ -228,20 +224,20 @@ const
     (Ad: 'ymm14';   Uzunluk: yu256bYMM;   Deger: 14),
     (Ad: 'ymm15';   Uzunluk: yu256bYMM;   Deger: 15));
 
-function YazmacBilgisiAl(AYazmac: string): TYazmacDurum;
+function YazmacBilgisiAl(ParcaSonuc: TParcaSonuc): TParcaSonuc;
 
 implementation
 
-// yazmaç sıra değerini geri döndürür
-function YazmacBilgisiAl(AYazmac: string): TYazmacDurum;
+// yazmaç değerini yazmaç listesinde bulur ve geriye yazmaç verilerini döndürür
+function YazmacBilgisiAl(ParcaSonuc: TParcaSonuc): TParcaSonuc;
 var
   i: Integer;
   Yazmac: string;
 begin
 
-  Yazmac := LowerCase(AYazmac);
+  Result.VeriTipi := vTanimsiz;
 
-  Result.Sonuc := -1;
+  Yazmac := LowerCase(ParcaSonuc.HamVeri);
 
   for i := 0 to TOPLAM_YAZMAC - 1 do
   begin
@@ -249,9 +245,9 @@ begin
     if(YazmacListesi[i].Ad = Yazmac) then
     begin
 
-      Result.Sonuc := i;
-      Result.Uzunluk := YazmacListesi[i].Uzunluk;
-      Break;
+      Result.VeriTipi := vYazmac;
+      Result.SiraNo := i;
+      Exit;
     end;
   end;
 end;

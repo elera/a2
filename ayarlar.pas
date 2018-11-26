@@ -132,10 +132,10 @@ begin
 
           // bilgi-1: DosyaAcik değerinin hata değeri döndürmesinin burada kontrol
           // edilmesi önemli değil
-          // bilgi-2: ddDerleyici değeri, dosyanın derleyici için arka planda
-          // açıldığını belirtir. ana formun onShow olayında bu dosya durum değerleri
+          // bilgi-2: ddBellekte değeri, dosyanın arka planda açıldığını belirtir.
+          // daha sonra ana formun onShow olayında bu dosya durum değerleri
           // ddKaydedildi olarak değiştirilir.
-          GAsm2.Dosyalar.Ekle(s, ddDerleyici, DosyaAcik);
+          GAsm2.Dosyalar.ListeyeEkle(s, ddBellekte, DosyaAcik);
         end;
       end;
 
@@ -149,7 +149,7 @@ end;
 // program ayarlarını ini dosyasına yaz
 procedure INIDosyasinaYaz(ProgramAyarlari: TProgramAyarlari);
 var
-  Dosya: PDosya;
+  Dosya: TDosya;
   INIDosyasi: TINIFile;
   FileName: string;
   i, j: Integer;
@@ -189,12 +189,12 @@ begin
     begin
 
       Dosya := GAsm2.Dosyalar.Bul(frmAnaSayfa.pcDosyalar.Pages[i].Tag);
-      if(Dosya^.Durum = ddKaydedildi) then
+      if(Dosya.Durum = ddKaydedildi) then
       begin
 
         INIDosyasi.WriteString('AcikDosyalar', 'Dosya' + IntToStr(j),
-          Dosya^.ProjeDizin + DirectorySeparator + Dosya^.ProjeDosyaAdi + '.' +
-          Dosya^.ProjeDosyaUzanti);
+          Dosya.ProjeDizin + DirectorySeparator + Dosya.ProjeDosyaAdi + '.' +
+          Dosya.ProjeDosyaUzanti);
 
         Inc(j);
       end;

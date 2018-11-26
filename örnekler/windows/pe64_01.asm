@@ -54,7 +54,7 @@ db	04Ch
 db	0CDh
 db	021h
 
-db      'This program cannot be run in DOS mode.',0Dh, 0Ah
+db      'This program cannot be run in DOS mode.' ,0Dh, 0Ah
 db      '$'
 
 
